@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MSEL MENTE - Engineers Portal</title>
+<link rel="icon" href="logo.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#0f172a;color:#fff}
+.container{max-width:1000px;margin:0 auto;padding:15px}
+.header{text-align:center;padding:25px;background:#00924C;border-radius:14px;margin-bottom:20px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:20px;margin-bottom:18px}
+input{width:100%;padding:13px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:#fff;margin-top:10px}
+button{width:100%;padding:14px;border-radius:10px;border:0;font-weight:800;cursor:pointer;margin-top:12px}
+.btn-green{background:#22c55e;color:#0f172a}
+.btn-orange{background:#E67E22;color:#fff}
+.btn-outline{background:transparent;border:1px solid #22c55e;color:#22c55e}
+.hidden{display:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:15px}
+.product{background:#0f172a;border:1px solid #334155;border-radius:12px;padding:16px}
+.price{color:#22c55e;font-weight:900;font-size:18px}
+.badge{background:#22c55e22;color:#22c55e;padding:4px 10px;border-radius:20px;font-size:11px;display:inline-block;margin-bottom:6px}
+.account{background:#22c55e;color:#0f172a;padding:18px;border-radius:12px;text-align:center;font-weight:bold}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header"><h1>🔒 MSEL MENTORSHIP</h1><h2>MSEL MENTE - Engineers Portal</h2><p>Private Materials Shop for Certified Engineers Only</p></div>
+<div id="authView">
+<div class="card" style="text-align:center"><h2>Private Shop Locked 🔒</h2><p style="opacity:.7;font-size:14px">Price list ONLY for engineers trained by MSEL. Public must book construction. Engineers login to see cost.</p></div>
+<div class="card"><h3>Login - I am MSEL Engineer</h3><input id="code" placeholder="Enter Code: MSELMENTE"><button class="btn-green" onclick="login()">Unlock Shop →</button><p style="font-size:11px;opacity:.5;text-align:center;margin-top:8px">Code is in MSEL MENTORSHIP WhatsApp Group</p></div>
+<div class="card"><h3>New Engineer? Register</h3><input id="rname" placeholder="Full Name"><input id="rphone" placeholder="WhatsApp No"><input id="rloc" placeholder="Location"><button class="btn-outline" onclick="reg()">Send Registration to Admin</button></div>
+</div>
+<div id="shopView" class="hidden">
+<div class="account">✅ ACCESS GRANTED - Welcome Engineer!<br><br>Most Successful Energy Limited<br>ACCESS BANK - 1817568677<br>Shop: wa.me/c/2347011620564<br><br><a href="https://wa.me/c/2347011620564" target="_blank" style="background:#0f172a;color:#22c55e;padding:10px 18px;border-radius:8px;text-decoration:none;">Open WhatsApp Catalog →</a></div>
+<div class="card"><h2>🔥 9 Materials Ready</h2>
+<div class="grid">
+<div class="product"><span class="badge">PUMP</span><h4>Electric Biogas Pump</h4><p>Electric, pumps biogas to burner</p><div class="price">₦70,000</div><a href="https://wa.me/p/28005537468141500/2347011620564"><button class="btn-orange" style="padding:8px">Order</button></a></div>
+<div class="product"><span class="badge">PUMP+SOLAR</span><h4>Biogas Solar Pump</h4><p>Complete with solar panel</p><div class="price">₦165,000</div><button class="btn-orange" style="padding:8px">Order</button></div>
+<div class="product"><span class="badge">STORAGE</span><h4>500L Storage Bag</h4><p>High density</p><div class="price">₦30,000</div><button class="btn-green" style="padding:8px">Order</button></div>
+<div class="product"><span class="badge">STORAGE</span><h4>1,000L Storage Bag</h4><p>High density</p><div class="price">₦49,500</div><button class="btn-green" style="padding:8px">Order</button></div>
+<div class="product"><span class="badge">BIG</span><h4>5,000L Storage Bag</h4><p>Industrial bag</p><div class="price">₦120,000</div><button class="btn-green" style="padding:8px">Order</button></div>
+<div class="product"><span class="badge">STOVE</span><h4>Double Burner Stove</h4><p>High Quality</p><div class="price">₦35,000</div><button class="btn-green" style="padding:8px">Order</button></div>
+<div class="product"><span class="badge">STOVE</span><h4>Single Burner Stove</h4><p>High Quality</p><div class="price">₦28,500</div><button class="btn-green" style="padding:8px">Order</button></div>
+<div class="product"><span class="badge">SCRUBBER</span><h4>Desulphurizer - China</h4><p>Removes H2S</p><div class="price">₦75,000</div><button class="btn-green" style="padding:8px">Order</button></div>
+<div class="product"><span class="badge">SCRUBBER</span><h4>Biogas Scrubber</h4><p>Removes CO2</p><div class="price">₦45,000</div><button class="btn-green" style="padding:8px">Order</button></div>
+</div>
+<br><div class="account" style="background:#0f172a;border:1px dashed #22c55e;color:#fff"><b>How to Order:</b><br>1. Sum total<br>2. Transfer to: Most Successful Energy Limited - 1817568677 - ACCESS BANK<br>3. Send proof + list to WhatsApp Shop<br>4. We ship!</div>
+<button class="btn-outline" onclick="logout()">Logout</button>
+</div>
+</div>
+</div>
+<script>
+function login(){let v=document.getElementById('code').value.trim().toUpperCase().replace(/\s/g,'');if(v==='MSELMENTE'||v==='MSELMENTORSHIP'||v==='MSEL2024'){localStorage.setItem('msel','yes');document.getElementById('authView').classList.add('hidden');document.getElementById('shopView').classList.remove('hidden');}else{alert('Wrong Code! Ask Admin in MSEL MENTORSHIP group.');}}
+function logout(){localStorage.removeItem('msel');location.reload();}
+function reg(){let n=document.getElementById('rname').value,p=document.getElementById('rphone').value,l=document.getElementById('rloc').value;if(!n||!p){alert('Enter Name & Phone');return;}let msg=`*MSEL MENTE Registration*%0AName:${n}%0APhone:${p}%0ALoc:${l}%0ARequesting Access`;window.open(`https://wa.me/2347011620564?text=${msg}`,'_blank');alert('Sent to Admin!');}
+if(localStorage.getItem('msel')==='yes'){document.getElementById('authView').classList.add('hidden');document.getElementById('shopView').classList.remove('hidden');}
+</script>
+</body>
+</html>
