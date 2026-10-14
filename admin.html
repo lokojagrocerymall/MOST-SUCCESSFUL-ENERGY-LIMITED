@@ -42,7 +42,8 @@ button{width:100%;padding:12px;border-radius:10px;border:0;background:#22c55e;co
 <p style="margin-top:12px;font-size:14px">Or Upload Video File</p>
 <input type="file" id="vidFile" accept="video/*">
 <input type="text" id="vidTitle" placeholder="Video Title">
-<button onclick="addVideoFile()">Upload Video File</button>
+<button id="vidBtn" onclick="addVideoFile()">Upload Video File</button>
+<small id="vidStatus" style="display:block;margin-top:8px;color:#94a3b8"></small>
 </div>
 
 <div class="box">
@@ -81,7 +82,6 @@ function render(){
 }
 render();
 
-// FIXED: Compress + Batch Upload 9 at once
 function compressImage(file){
  return new Promise(resolve=>{
   let r=new FileReader();
@@ -132,12 +132,48 @@ function addYT(){
  document.getElementById('ytLink').value='';document.getElementById('ytTitle').value='';
 }
 
+// FIXED ONLY THIS FUNCTION - NOW BUTTON RESPONDS
 function addVideoFile(){
- let file=document.getElementById('vidFile').files[0];
- let title=document.getElementById('vidTitle').value||'MSEL Video';
+ let fileInput=document.getElementById('vidFile');
+ let file=fileInput.files[0];
+ let title=document.getElementById('vidTitle').value.trim()||'MSEL Video';
+ let btn=document.getElementById('vidBtn');
+ let status=document.getElementById('vidStatus');
  if(!file){alert('Choose video file');return;}
+ if(file.size > 8 * 1024 * 1024){
+  alert('Video too big! '+(file.size/1024/1024).toFixed(1)+'MB. Local videos must be under 8MB. Please upload this video to YouTube and use the YouTube link above — it will play fine and never fill storage.');
+  status.innerText='Too big! Use YouTube link method.';
+  status.style.color='#f87171';
+  return;
+ }
+ btn.innerText='Uploading... please wait...';
+ btn.disabled=true;
+ status.innerText='Reading file...';
  let r=new FileReader();
- r.onload=e=>{gallery.push({type:'video',src:e.target.result,title:title});save();alert('Video file added!');};
+ r.onload=e=>{
+  try{
+   gallery.push({type:'video',src:e.target.result,title:title});
+   localStorage.setItem('msel_gallery',JSON.stringify(gallery));
+   render();
+   alert('Video file added successfully!');
+   document.getElementById('vidFile').value='';
+   document.getElementById('vidTitle').value='';
+   status.innerText='Video added!';
+   status.style.color='#22c55e';
+  }catch(err){
+   gallery.pop();
+   alert('Storage full! Delete some old items or use YouTube link instead. '+err.message);
+   status.innerText='Storage full. Use YouTube.';
+   status.style.color='#f87171';
+  }
+  btn.innerText='Upload Video File';
+  btn.disabled=false;
+ };
+ r.onerror=()=>{
+  alert('Failed to read video');
+  btn.innerText='Upload Video File';
+  btn.disabled=false;
+ };
  r.readAsDataURL(file);
 }
 
