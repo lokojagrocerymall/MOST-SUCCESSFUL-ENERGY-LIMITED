@@ -111,27 +111,60 @@ nav a:last-child{color:#ff0000!important;font-weight:900}
 <div id="contactPage" class="page-modal"><div class="page-head"><button class="back-arrow" onclick="closeAll()">←</button><div class="page-title">Contact Us</div></div><div class="page-body" style="background:#0e0e0e;color:#fff;text-align:center"><h2 style="font-size:30px">Contact Us Today</h2><br><p>📍 <b>14, Adedotun Dina Crescent, Mende Maryland, Lagos</b></p><br><p>📞 <b>07011620564, 08104441545</b></p><br><p>✉️ mostsuccessfulenergy@gmail.com</p><br><br><a href="https://wa.me/2347011620564" class="btn">Chat on WhatsApp</a></div></div>
 
 <script>
+// FIXED ONLY THIS PART - NOW SUPPORTS NEW VIDEO FORMAT (video_blob)
+function openDB(){
+ return new Promise((res,rej)=>{
+  let req=indexedDB.open('mselDB',1);
+  req.onupgradeneeded=e=>{ e.target.result.createObjectStore('videos',{keyPath:'id'}); };
+  req.onsuccess=e=>res(e.target.result);
+  req.onerror=e=>rej(e);
+ });
+}
+function getVideoBlobUrl(id){
+ return new Promise(async (res)=>{
+  try{
+   let db=await openDB();
+   let tx=db.transaction('videos','readonly');
+   let req=tx.objectStore('videos').get(id);
+   req.onsuccess=()=>{ if(req.result && req.result.blob) res(URL.createObjectURL(req.result.blob)); else res(''); };
+   req.onerror=()=>res('');
+  }catch{ res(''); }
+ });
+}
 function toggleMenu(){document.getElementById('navMenu').classList.toggle('show')}
 function openPage(id){closeAll();document.getElementById(id).style.display='block';window.scrollTo(0,0);document.body.style.overflow='hidden';}
 function closeAll(){document.querySelectorAll('.page-modal').forEach(m=>m.style.display='none');document.body.style.overflow='auto';window.scrollTo(0,0);}
-let g=JSON.parse(localStorage.getItem('msel_gallery')||'[]');
-let floatingTrack=document.getElementById('floatingTrack');
-let fullGrid=document.getElementById('fullGalleryGrid');
-if(g.length){
- let fullHTML=''; g.forEach(item=>{
-  if(item.type==='image') fullHTML+=`<div class="gallery-item"><img src="${item.src}"><p>${item.title}</p></div>`;
-  else if(item.type==='youtube') fullHTML+=`<div class="gallery-item"><iframe src="${item.embed}" frameborder="0" allowfullscreen></iframe><p>${item.title}</p></div>`;
-  else if(item.type==='video') fullHTML+=`<div class="gallery-item"><video src="${item.src}" controls></video><p>${item.title}</p></div>`;
- });
+
+(async function loadGallery(){
+ let g=JSON.parse(localStorage.getItem('msel_gallery')||'[]');
+ let floatingTrack=document.getElementById('floatingTrack');
+ let fullGrid=document.getElementById('fullGalleryGrid');
+ if(!g.length){
+  floatingTrack.innerHTML='<div style="padding:100px;color:#22c55e;width:100%">No projects yet - Upload in Admin</div>';
+  fullGrid.innerHTML='<p style="color:#fff;opacity:.6">No images yet.</p>';
+  return;
+ }
+ let fullHTML=''; let previewImages=[];
+ for(let item of g){
+  if(item.type==='image'){
+   fullHTML+=`<div class="gallery-item"><img src="${item.src}"><p>${item.title}</p></div>`;
+   previewImages.push(item);
+  } else if(item.type==='youtube'){
+   fullHTML+=`<div class="gallery-item"><iframe src="${item.embed}" frameborder="0" allowfullscreen></iframe><p>${item.title}</p></div>`;
+  } else if(item.type==='video'){
+   fullHTML+=`<div class="gallery-item"><video src="${item.src}" controls></video><p>${item.title}</p></div>`;
+  } else if(item.type==='video_blob'){
+   let url=await getVideoBlobUrl(item.vidId);
+   if(url) fullHTML+=`<div class="gallery-item"><video src="${url}" controls></video><p>${item.title}</p></div>`;
+   else fullHTML+=`<div class="gallery-item"><div style="background:#000;color:#fff;padding:80px 0">🎥 Video</div><p>${item.title}</p></div>`;
+  }
+ }
  fullGrid.innerHTML=fullHTML;
- let previewItems=g.filter(i=>i.type==='image').slice(0,6);
- if(!previewItems.length) previewItems=g.slice(0,6);
- let trackHTML=''; for(let k=0;k<2;k++){ previewItems.forEach(it=>{ if(it.type==='image') trackHTML+=`<img src="${it.src}">`; }); }
- floatingTrack.innerHTML=trackHTML;
-} else {
- floatingTrack.innerHTML='<div style="padding:100px;color:#22c55e;width:100%">No projects yet - Upload in Admin</div>';
- fullGrid.innerHTML='<p style="color:#fff;opacity:.6">No images yet.</p>';
-}
+ let trackHTML='';
+ let imgs=previewImages.slice(0,6);
+ for(let k=0;k<2;k++){ imgs.forEach(it=>{ trackHTML+=`<img src="${it.src}">`; }); }
+ floatingTrack.innerHTML=trackHTML || '<div style="padding:60px;color:#22c55e;width:100%">Add pictures in Admin</div>';
+})();
 </script>
 </body>
 </html>
