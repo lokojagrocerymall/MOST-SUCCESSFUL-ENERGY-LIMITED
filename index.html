@@ -120,7 +120,7 @@ footer{background:#000;color:#888;padding:18px;text-align:center;font-size:12px}
 <p style="opacity:.7;margin-top:8px">Real projects from Lagos, Port Harcourt, Delta - Biodigester & Biofill Construction + Biogas Burning Demos</p>
 <div id="publicGallery" class="gallery-grid"></div>
 <br>
-<a href="#gallery" class="btn" style="background:#22c55e;color:#fff;font-weight:900;font-size:17px;letter-spacing:0.5px">Images & Videos Gallery</a>
+<button onclick="openGallery()" class="btn" style="background:#22c55e;color:#fff;font-weight:900;font-size:17px;letter-spacing:0.5px;border:0;cursor:pointer">Images & Videos Gallery</button>
 </section>
 
 <section class="contact" id="contact">
@@ -133,6 +133,16 @@ footer{background:#000;color:#888;padding:18px;text-align:center;font-size:12px}
 <footer>© 2026 MOST SUCCESSFUL ENERGY LIMITED - All Rights Reserved.</footer>
 <script>
 function toggleMenu(){document.getElementById('navMenu').classList.toggle('show')}
+function openGallery(){
+ let pub=document.getElementById('publicGallery');
+ pub.scrollIntoView({behavior:'smooth',block:'start'});
+ pub.style.outline='3px solid #22c55e';
+ setTimeout(()=>pub.style.outline='none',1500);
+ if(pub.innerHTML.trim()===''){
+  let g=JSON.parse(localStorage.getItem('msel_gallery')||'[]');
+  if(!g.length){alert('No images yet on this phone. Upload in Admin Panel on same phone/browser, then refresh Homepage. Your 9 images are saved in localStorage.');}
+ }
+}
 let g=JSON.parse(localStorage.getItem('msel_gallery')||'[]');
 let pub=document.getElementById('publicGallery');
 if(g.length){
