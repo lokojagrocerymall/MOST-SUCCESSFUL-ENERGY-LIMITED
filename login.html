@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MSEL - Smart Login</title>
+<link rel="icon" href="logo.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:linear-gradient(135deg,#00924C,#0f172a);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:15px}
+.card{background:#fff;border-radius:20px;padding:35px;max-width:420px;width:100%;box-shadow:0 20px 40px rgba(0,0,0,0.3);text-align:center}
+.logo{width:120px;margin-bottom:15px}h2{color:#00924C;margin-bottom:6px}p{color:#666;font-size:13px;margin-bottom:20px}
+input{width:100%;padding:15px;border-radius:12px;border:2px solid #e5e7eb;font-size:16px;margin-top:10px;text-align:center;font-weight:bold}
+button{width:100%;padding:15px;border-radius:12px;border:0;background:#00924C;color:#fff;font-weight:800;font-size:16px;margin-top:15px;cursor:pointer}
+.info{background:#f0fdf4;border:1px dashed #00924C;border-radius:10px;padding:12px;margin-top:18px;text-align:left;font-size:12px}
+</style>
+</head>
+<body>
+<div class="card">
+<img src="logo.png" class="logo"><h2>🔐 MSEL Smart Login</h2><p>One login for Admin & Engineers</p>
+<input id="codeInput" type="password" placeholder="Enter Access Code">
+<div id="error" style="color:#ef4444;font-size:12px;margin-top:10px;display:none">Wrong code!</div>
+<button onclick="smartLogin()">Login Now →</button>
+<div class="info"><b>👑 Admin:</b> MSELADMIN2026, MSEL2024<br><b>👷 Engineers:</b> MSEL-ENGINEER, MENTE2026, MSEL2026 or your personal code<br>System auto-detects your role</div>
+<a href="index.html" style="display:block;margin-top:15px;color:#00924C;text-decoration:none;font-weight:bold">← Back to Homepage</a>
+</div>
+<script>
+const adminCodes=['MSELADMIN2026','MSEL2024','07011620564','ADMIN2026'];
+function smartLogin(){
+ let code=document.getElementById('codeInput').value.trim().toUpperCase();
+ if(adminCodes.includes(code)||code.includes('ADMIN')){localStorage.setItem('msel_admin','yes');localStorage.setItem('msel_role','admin');window.location.href='admin.html';}
+ else if(code.length>=4){localStorage.setItem('msel_engineer','yes');localStorage.setItem('msel_role','engineer');window.location.href='engineers.html';}
+ else{document.getElementById('error').style.display='block';}
+}
+</script>
+</body>
+</html>
