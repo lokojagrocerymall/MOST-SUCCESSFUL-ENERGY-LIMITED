@@ -1,28 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MSEL Admin Panel</title>
+<link rel="icon" href="logo.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#0f172a;color:#fff;padding:10px}
+.top{background:#00924C;border-radius:14px;padding:14px;display:flex;justify-content:space-between;align-items:center}
+.top h2{font-size:18px;line-height:1.2}
+.top a{background:#fff;color:#00924C;padding:8px 16px;border-radius:20px;text-decoration:none;font-weight:800;font-size:13px}
+.box{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:16px;margin-top:12px}
+.box h3{font-size:16px;margin-bottom:10px}
+input{width:100%;padding:12px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:#fff;margin-top:8px}
+button{width:100%;padding:12px;border-radius:10px;border:0;background:#22c55e;color:#0f172a;font-weight:800;margin-top:10px;cursor:pointer}
+.btn-orange{background:#f97316;color:#fff}
+.preview{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-top:10px}
+.preview div{background:#0f172a;border-radius:10px;overflow:hidden;border:1px solid #334155;padding-bottom:6px;text-align:center;font-size:11px}
+.preview img{width:100%;height:90px;object-fit:cover}
+</style>
+</head>
+<body>
+
+<div class="top">
+<h2>🔐 MSEL ADMIN PANEL<br><small style="font-weight:400;font-size:12px;opacity:.9">Pictures & Videos Upload</small></h2>
+<a href="index.html">🏠 Homepage</a>
+</div>
+
+<div class="box">
+<h3>📸 Upload Pictures</h3>
+<input type="file" id="picFiles" multiple accept="image/*">
+<input type="text" id="picTitle" placeholder="Title e.g. Maryland Project">
+<button onclick="addPictures()">Add Pictures</button>
+</div>
+
+<div class="box">
+<h3>🎥 Add YouTube Video</h3>
+<input type="text" id="ytLink" placeholder="YouTube Link">
+<input type="text" id="ytTitle" placeholder="Video Title">
+<button class="btn-orange" onclick="addYT()">Add YouTube Video</button>
+<p style="margin-top:12px;font-size:14px">Or Upload Video File</p>
+<input type="file" id="vidFile" accept="video/*">
+<input type="text" id="vidTitle" placeholder="Video Title">
+<button onclick="addVideoFile()">Upload Video File</button>
+</div>
+
+<div class="box">
+<h3>📦 Add New Material (WhatsApp catalog)</h3>
+<input type="text" id="prodName" placeholder="Product Name">
+<input type="text" id="prodPrice" placeholder="Price e.g. 250000">
+<input type="text" id="prodDesc" placeholder="Description">
+<button onclick="addProduct()">Add to Engineers Shop</button>
+</div>
+
+<div class="box">
+<h3>🖼️ Current Gallery Preview - <span id="count">0 items</span></h3>
+<div id="preview" class="preview"></div>
+<button onclick="clearGallery()" style="background:#ef4444;color:#fff;margin-top:12px">🗑️ Clear All Gallery</button>
+</div>
+
+<button onclick="logout()" style="background:#ef4444;color:#fff;margin:12px 0">Logout</button>
+<a href="index.html" style="display:block;text-align:center;background:#fff;color:#00924C;padding:12px;border-radius:10px;text-decoration:none;font-weight:800">🏠 Go to Homepage</a>
+
 <script>
+let gallery = JSON.parse(localStorage.getItem('msel_gallery')||'[]');
+let products = JSON.parse(localStorage.getItem('msel_products')||'[]');
+
+function save(){localStorage.setItem('msel_gallery',JSON.stringify(gallery));render();}
+
+function render(){
+ let p=document.getElementById('preview');
+ document.getElementById('count').innerText=gallery.length+' items';
+ if(!gallery.length){p.innerHTML='<p style="opacity:.6">No items - upload 9 images now</p>';return;}
+ let h='';
+ gallery.forEach((it,i)=>{
+  if(it.type==='image') h+=`<div><img src="${it.src}"><br>${it.title}<br><a style="color:#ef4444" onclick="delItem(${i})">Delete</a></div>`;
+  else h+=`<div><div style="background:#000;padding:30px 0">🎥</div><br>${it.title}<br><a style="color:#ef4444" onclick="delItem(${i})">Delete</a></div>`;
+ });
+ p.innerHTML=h;
+}
+render();
+
 function addPictures(){
  let files=document.getElementById('picFiles').files;
  let title=document.getElementById('picTitle').value||'MSEL Project';
- if(!files.length){alert('Choose pictures');return;}
- let count=0;
+ if(!files.length){alert('Choose pictures first');return;}
  Array.from(files).forEach(file=>{
   let r=new FileReader();
   r.onload=e=>{
-   let img=new Image();
-   img.onload=()=>{
-    let canvas=document.createElement('canvas');
-    let max=600; let w=img.width; let h=img.height;
-    if(w>max){h=h*max/w; w=max;}
-    if(h>max){w=w*max/h; h=max;}
-    canvas.width=w; canvas.height=h;
-    canvas.getContext('2d').drawImage(img,0,0,w,h);
-    let compressed=canvas.toDataURL('image/jpeg',0.5);
-    gallery.push({type:'image',src:compressed,title:title});
-    localStorage.setItem('msel_gallery',JSON.stringify(gallery));
-    count++; if(count==files.length){render(); alert(count+' compressed images added! Now they will fit!');}
-   };
-   img.src=e.target.result;
+   gallery.push({type:'image',src:e.target.result,title:title});
+   save();
   };
   r.readAsDataURL(file);
  });
+ setTimeout(()=>{alert(files.length+' pictures added! Now go to Homepage → Images & Videos Gallery will show them!'); document.getElementById('picFiles').value=''; document.getElementById('picTitle').value='';},800);
 }
+
+function addYT(){
+ let link=document.getElementById('ytLink').value;
+ let title=document.getElementById('ytTitle').value||'MSEL Video';
+ if(!link){alert('Paste YouTube link');return;}
+ let embed=link.replace('watch?v=','embed/').split('&')[0];
+ gallery.push({type:'youtube',embed:embed,title:title});
+ save(); alert('YouTube video added!');
+ document.getElementById('ytLink').value='';document.getElementById('ytTitle').value='';
+}
+
+function addVideoFile(){
+ let file=document.getElementById('vidFile').files[0];
+ let title=document.getElementById('vidTitle').value||'MSEL Video';
+ if(!file){alert('Choose video file');return;}
+ let r=new FileReader();
+ r.onload=e=>{gallery.push({type:'video',src:e.target.result,title:title});save();alert('Video file added!');};
+ r.readAsDataURL(file);
+}
+
+function addProduct(){
+ let n=document.getElementById('prodName').value;
+ let pr=document.getElementById('prodPrice').value;
+ let d=document.getElementById('prodDesc').value;
+ if(!n||!pr){alert('Enter name & price');return;}
+ products.push({name:n,price:pr,desc:d,badge:'NEW'});
+ localStorage.setItem('msel_products',JSON.stringify(products));
+ alert(n+' added to Engineers Shop!');
+ document.getElementById('prodName').value='';document.getElementById('prodPrice').value='';document.getElementById('prodDesc').value='';
+}
+
+function delItem(i){gallery.splice(i,1);save();}
+function clearGallery(){if(confirm('Clear all?')){gallery=[];save();}}
+function logout(){localStorage.removeItem('msel_admin');localStorage.removeItem('msel_role');window.location.href='login.html';}
 </script>
+</body>
+</html>
