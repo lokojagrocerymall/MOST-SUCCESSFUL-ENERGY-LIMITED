@@ -2,59 +2,87 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MSEL MENTE - Engineers Portal</title>
+<title>MSEL MENTE - Engineers Shop</title>
 <link rel="icon" href="logo.png">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-body{background:#0f172a;color:#fff}
-.container{max-width:1000px;margin:0 auto;padding:15px}
-.header{text-align:center;padding:25px;background:#00924C;border-radius:14px;margin-bottom:20px}
-.card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:20px;margin-bottom:18px}
-input{width:100%;padding:13px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:#fff;margin-top:10px}
-button{width:100%;padding:14px;border-radius:10px;border:0;font-weight:800;cursor:pointer;margin-top:12px}
-.btn-green{background:#22c55e;color:#0f172a}
-.btn-orange{background:#E67E22;color:#fff}
-.btn-outline{background:transparent;border:1px solid #22c55e;color:#22c55e}
-.hidden{display:none}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:15px}
-.product{background:#0f172a;border:1px solid #334155;border-radius:12px;padding:16px}
-.price{color:#22c55e;font-weight:900;font-size:18px}
-.badge{background:#22c55e22;color:#22c55e;padding:4px 10px;border-radius:20px;font-size:11px;display:inline-block;margin-bottom:6px}
-.account{background:#22c55e;color:#0f172a;padding:18px;border-radius:12px;text-align:center;font-weight:bold}
+body{background:#0f172a;color:#fff;padding:12px}
+.header{background:#00924C;border-radius:14px;padding:16px;display:flex;justify-content:space-between;align-items:center}
+.header img{height:40px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:15px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:14px;text-align:center;position:relative}
+.card img{width:100%;height:110px;object-fit:contain;background:#fff;border-radius:10px;padding:8px}
+.badge{position:absolute;top:8px;left:8px;background:#22c55e;color:#0f172a;font-size:10px;padding:4px 8px;border-radius:20px;font-weight:800}
+.price{color:#22c55e;font-weight:900;margin-top:6px;font-size:18px}
+.btn{width:100%;padding:10px;border-radius:10px;border:0;background:#22c55e;color:#0f172a;font-weight:800;margin-top:8px;cursor:pointer}
+.btn-wa{background:#25D366;color:#fff}
+.top-info{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:12px;margin:12px 0;font-size:12px;line-height:1.6}
 </style>
 </head>
 <body>
-<div class="container">
-<div class="header"><h1>🔒 MSEL MENTORSHIP</h1><h2>MSEL MENTE - Engineers Portal</h2><p>Private Materials Shop for Certified Engineers Only</p></div>
-<div id="authView">
-<div class="card" style="text-align:center"><h2>Private Shop Locked 🔒</h2><p style="opacity:.7;font-size:14px">Price list ONLY for engineers trained by MSEL. Public must book construction. Engineers login to see cost.</p></div>
-<div class="card"><h3>Login - I am MSEL Engineer</h3><input id="code" placeholder="Enter Code: MSELMENTE"><button class="btn-green" onclick="login()">Unlock Shop →</button><p style="font-size:11px;opacity:.5;text-align:center;margin-top:8px">Code is in MSEL MENTORSHIP WhatsApp Group</p></div>
-<div class="card"><h3>New Engineer? Register</h3><input id="rname" placeholder="Full Name"><input id="rphone" placeholder="WhatsApp No"><input id="rloc" placeholder="Location"><button class="btn-outline" onclick="reg()">Send Registration to Admin</button></div>
+<div class="header">
+<div style="display:flex;align-items:center;gap:10px"><img src="logo.png" alt="MSEL"><div><b>MSEL MENTE</b><br><small style="opacity:.8">Engineers Private Shop</small></div></div>
+<a href="index.html" style="background:#fff;color:#00924C;padding:8px 14px;border-radius:20px;text-decoration:none;font-weight:800;font-size:12px">Home</a>
 </div>
-<div id="shopView" class="hidden">
-<div class="account">✅ ACCESS GRANTED - Welcome Engineer!<br><br>Most Successful Energy Limited<br>ACCESS BANK - 1817568677<br>Shop: wa.me/c/2347011620564<br><br><a href="https://wa.me/c/2347011620564" target="_blank" style="background:#0f172a;color:#22c55e;padding:10px 18px;border-radius:8px;text-decoration:none;">Open WhatsApp Catalog →</a></div>
-<div class="card"><h2>🔥 9 Materials Ready</h2>
-<div class="grid">
-<div class="product"><span class="badge">PUMP</span><h4>Electric Biogas Pump</h4><p>Electric, pumps biogas to burner</p><div class="price">₦70,000</div><a href="https://wa.me/p/28005537468141500/2347011620564"><button class="btn-orange" style="padding:8px">Order</button></a></div>
-<div class="product"><span class="badge">PUMP+SOLAR</span><h4>Biogas Solar Pump</h4><p>Complete with solar panel</p><div class="price">₦165,000</div><button class="btn-orange" style="padding:8px">Order</button></div>
-<div class="product"><span class="badge">STORAGE</span><h4>500L Storage Bag</h4><p>High density</p><div class="price">₦30,000</div><button class="btn-green" style="padding:8px">Order</button></div>
-<div class="product"><span class="badge">STORAGE</span><h4>1,000L Storage Bag</h4><p>High density</p><div class="price">₦49,500</div><button class="btn-green" style="padding:8px">Order</button></div>
-<div class="product"><span class="badge">BIG</span><h4>5,000L Storage Bag</h4><p>Industrial bag</p><div class="price">₦120,000</div><button class="btn-green" style="padding:8px">Order</button></div>
-<div class="product"><span class="badge">STOVE</span><h4>Double Burner Stove</h4><p>High Quality</p><div class="price">₦35,000</div><button class="btn-green" style="padding:8px">Order</button></div>
-<div class="product"><span class="badge">STOVE</span><h4>Single Burner Stove</h4><p>High Quality</p><div class="price">₦28,500</div><button class="btn-green" style="padding:8px">Order</button></div>
-<div class="product"><span class="badge">SCRUBBER</span><h4>Desulphurizer - China</h4><p>Removes H2S</p><div class="price">₦75,000</div><button class="btn-green" style="padding:8px">Order</button></div>
-<div class="product"><span class="badge">SCRUBBER</span><h4>Biogas Scrubber</h4><p>Removes CO2</p><div class="price">₦45,000</div><button class="btn-green" style="padding:8px">Order</button></div>
+
+<div class="top-info">
+✅ <b>Welcome Engineer!</b> All materials at cost price.<br>
+📦 New products added by Admin appear here automatically!<br>
+💬 Tap <b>Order on WhatsApp</b> to order.
 </div>
-<br><div class="account" style="background:#0f172a;border:1px dashed #22c55e;color:#fff"><b>How to Order:</b><br>1. Sum total<br>2. Transfer to: Most Successful Energy Limited - 1817568677 - ACCESS BANK<br>3. Send proof + list to WhatsApp Shop<br>4. We ship!</div>
-<button class="btn-outline" onclick="logout()">Logout</button>
+
+<h3 style="margin:12px 0 0 4px">🛒 Materials In Stock</h3>
+<div id="shopGrid" class="grid"></div>
+
+<div style="text-align:center;margin:20px 0">
+<a href="https://wa.me/2347011620564?text=Hi%20MSEL,%20I%20want%20to%20order%20materials" style="background:#25D366;color:#fff;padding:14px 28px;border-radius:30px;text-decoration:none;font-weight:800;display:inline-block">💬 Order All on WhatsApp</a>
+<br><br>
+<button onclick="logout()" style="background:#ef4444;color:#fff;padding:10px 20px;border-radius:20px;border:0;font-weight:800">Logout</button>
 </div>
-</div>
-</div>
+
 <script>
-function login(){let v=document.getElementById('code').value.trim().toUpperCase().replace(/\s/g,'');if(v==='MSELMENTE'||v==='MSELMENTORSHIP'||v==='MSEL2024'){localStorage.setItem('msel','yes');document.getElementById('authView').classList.add('hidden');document.getElementById('shopView').classList.remove('hidden');}else{alert('Wrong Code! Ask Admin in MSEL MENTORSHIP group.');}}
-function logout(){localStorage.removeItem('msel');location.reload();}
-function reg(){let n=document.getElementById('rname').value,p=document.getElementById('rphone').value,l=document.getElementById('rloc').value;if(!n||!p){alert('Enter Name & Phone');return;}let msg=`*MSEL MENTE Registration*%0AName:${n}%0APhone:${p}%0ALoc:${l}%0ARequesting Access`;window.open(`https://wa.me/2347011620564?text=${msg}`,'_blank');alert('Sent to Admin!');}
-if(localStorage.getItem('msel')==='yes'){document.getElementById('authView').classList.add('hidden');document.getElementById('shopView').classList.remove('hidden');}
+// Check login
+if(localStorage.getItem('msel_role')!=='engineer' && localStorage.getItem('msel_role')!=='admin' && localStorage.getItem('msel_engineer')!=='yes' && localStorage.getItem('msel_admin')!=='yes'){
+ // allow for now, but you can enforce login.html redirect
+ // window.location.href='login.html';
+}
+
+let defaultProducts=[
+ {name:"10,000L Storage Bag",price:"250000",desc:"Big industrial bag for biogas storage",badge:"BIG STORAGE"},
+ {name:"Biodigester Bag 1M³",price:"85000",desc:"High density digester bag",badge:"HOT"},
+ {name:"Bio-Enzyme (Bacteria)",price:"15000",desc:"Bacteria for fast decomposition",badge:"NEW"},
+ {name:"PVC Pipes & Fittings Kit",price:"35000",desc:"Complete PVC kit",badge:"KIT"},
+ {name:"Air Vent & Cover",price:"8000",desc:"Odorless vent system",badge:"VENT"},
+ {name:"1M³ Digester Complete Kit",price:"180000",desc:"Everything for 1M³ system",badge:"COMPLETE"},
+ {name:"Sealant & Additives",price:"12000",desc:"Waterproof sealant",badge:"SEAL"},
+ {name:"WC Connector",price:"6000",desc:"Toilet to digester connector",badge:"WC"},
+];
+
+let adminProducts = JSON.parse(localStorage.getItem('msel_products')||'[]');
+let allProducts = [...defaultProducts, ...adminProducts];
+
+let grid=document.getElementById('shopGrid');
+let html='';
+allProducts.forEach(p=>{
+ html+=`
+ <div class="card">
+ <span class="badge">${p.badge||'NEW'}</span>
+ <img src="logo.png" alt="${p.name}">
+ <div style="font-weight:800;font-size:13px;margin-top:8px;min-height:32px">${p.name}</div>
+ <div style="font-size:11px;opacity:.6;margin-top:4px;min-height:28px">${p.desc||'MSEL Material'}</div>
+ <div class="price">₦${p.price}</div>
+ <button class="btn" onclick="order('${p.name}')">Order Now</button>
+ <button class="btn btn-wa" onclick="order('${p.name}')">WhatsApp</button>
+ </div>
+ `;
+});
+grid.innerHTML=html;
+
+function order(name){
+ let msg=`Hi MSEL, I want to order ${name}. I am an MSEL MENTE engineer. My code is ${localStorage.getItem('msel_eng_code')||''}`;
+ window.open(`https://wa.me/2347011620564?text=${encodeURIComponent(msg)}`,'_blank');
+}
+function logout(){localStorage.removeItem('msel_role');localStorage.removeItem('msel_engineer');localStorage.removeItem('msel_admin');localStorage.removeItem('msel_eng_code');window.location.href='login.html';}
 </script>
 </body>
 </html>
