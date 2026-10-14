@@ -22,6 +22,8 @@ button:disabled{opacity:.5}
 .preview div{background:#0f172a;border-radius:10px;overflow:hidden;border:1px solid #334155;padding-bottom:6px;text-align:center;font-size:11px}
 .preview img,.preview video{width:100%;height:90px;object-fit:cover}
 .mini-badge{display:inline-block;background:#22c55e;color:#000;font-size:9px;padding:2px 6px;border-radius:10px;font-weight:800;margin-bottom:3px}
+.img-previews{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.img-previews img{width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid #22c55e}
 </style>
 </head>
 <body>
@@ -52,11 +54,11 @@ button:disabled{opacity:.5}
 </div>
 
 <div class="box" style="border:1.5px solid #22c55e">
-<h3>📦 Add / Edit Material</h3>
+<h3>📦 Add / Edit Material - MULTIPLE IMAGES</h3>
 <input type="hidden" id="editIndex" value="-1">
-<input type="text" id="prodName" placeholder="Product Name">
-<input type="text" id="prodPrice" placeholder="Price e.g. 250000">
-<textarea id="prodDesc" placeholder="Description"></textarea>
+<input type="text" id="prodName" placeholder="Product Name e.g. Biogas Solar Pump">
+<input type="text" id="prodPrice" placeholder="Price e.g. 165,000">
+<textarea id="prodDesc" placeholder="Description e.g. Comes with solar panel. Complete system"></textarea>
 <select id="prodBadge">
 <option value="NEW">NEW</option>
 <option value="BIG STORAGE">BIG STORAGE</option>
@@ -66,7 +68,13 @@ button:disabled{opacity:.5}
 <option value="WC">WC</option>
 <option value="SALE">SALE</option>
 </select>
-<input type="file" id="prodImage" accept="image/*">
+
+<!-- NEW: MULTIPLE IMAGES SPACE -->
+<label style="display:block;margin-top:10px;font-size:13px;color:#22c55e;font-weight:800">📸 Product Images (up to 5 images):</label>
+<input type="file" id="prodImage" multiple accept="image/*" onchange="previewProdImages(this)">
+<div id="prodImgPreview" class="img-previews"></div>
+<small style="color:#94a3b8;font-size:11px">Select multiple images at once. First image = main image.</small>
+
 <button id="prodBtn" onclick="addProduct()">Add to Shop</button>
 <button onclick="clearProdForm()" style="background:#334155;color:#fff">Clear Form</button>
 <small id="prodStatus" style="display:block;margin-top:6px;color:#94a3b8"></small>
@@ -106,9 +114,10 @@ if(products.length===0){
 }
 function save(){localStorage.setItem('msel_gallery',JSON.stringify(gallery));render();}
 function saveProducts(){localStorage.setItem('msel_products',JSON.stringify(products));renderProducts();}
+
 async function uploadToSupabase(file){
-  const name = Date.now()+'_'+file.name.replace(/\s+/g,'_');
-  const {error} = await supabaseClient.storage.from(BUCKET).upload(name, file);
+  const name = Date.now()+'_'+Math.random().toString(36).slice(2,6)+'_'+file.name.replace(/\s+/g,'_');
+  const {error} = await supabaseClient.storage.from(BUCKET).upload(name, file, {upsert:true});
   if(error) throw error;
   const {data} = supabaseClient.storage.from(BUCKET).getPublicUrl(name);
   return data.publicUrl;
@@ -133,31 +142,54 @@ function renderProducts(){
  let h='';
  for(let i=0;i<products.length;i++){
   let it=products[i];
-  let img = it.img || 'logo.png';
-  h+=`<div><img src="${img}"><span class="mini-badge">${it.badge||'NEW'}</span><br><b style="font-size:11px">${it.name}</b><br><span style="color:#22c55e;font-weight:800">₦${it.price}</span><br><a style="color:#38bdf8;margin-right:6px" onclick="editProduct(${i})">Edit</a><a style="color:#ef4444" onclick="delProduct(${i})">Delete</a></div>`;
+  let mainImg = it.img || (it.imgs && it.imgs[0]) || 'logo.png';
+  let extraCount = it.imgs? it.imgs.length : 1;
+  h+=`<div><img src="${mainImg}"><span class="mini-badge">${it.badge||'NEW'} ${extraCount>1?'('+extraCount+' imgs)':''}</span><br><b style="font-size:11px">${it.name}</b><br><span style="color:#22c55e;font-weight:800">₦${it.price}</span><br><a style="color:#38bdf8;margin-right:6px" onclick="editProduct(${i})">Edit</a><a style="color:#ef4444" onclick="delProduct(${i})">Delete</a></div>`;
  }
  p.innerHTML=h;
 }
 render(); renderProducts();
+
 function compressImage(file){
- return new Promise((resolve,reject)=>{
+ return new Promise((resolve)=>{
+  if(file.size < 1500000){ resolve(file); return; }
   let r=new FileReader();
   r.onload=e=>{
    let img=new Image();
    img.onload=()=>{
-    let c=document.createElement('canvas');
-    let max=1000; let w=img.width,h=img.height;
-    if(w>h){if(w>max){h=h*max/w;w=max;}}else{if(h>max){w=w*max/h;h=max;}}
-    c.width=w;c.height=h;
-    c.getContext('2d').drawImage(img,0,0,w,h);
-    c.toBlob(b=>resolve(b), 'image/jpeg', 0.7);
+    try{
+     let c=document.createElement('canvas');
+     let max=1000; let w=img.width,h=img.height;
+     if(w>h){if(w>max){h=h*max/w;w=max;}}else{if(h>max){w=w*max/h;h=max;}}
+     c.width=w;c.height=h;
+     c.getContext('2d').drawImage(img,0,0,w,h);
+     c.toBlob(b=>{ if(b) resolve(b); else resolve(file); }, 'image/jpeg', 0.7);
+    }catch{ resolve(file); }
    };
-   img.onerror=()=>reject('Image corrupt');
+   img.onerror=()=>{ resolve(file); };
    img.src=e.target.result;
   };
+  r.onerror=()=>{ resolve(file); };
   r.readAsDataURL(file);
  });
 }
+
+// NEW: Preview multiple images
+function previewProdImages(input){
+  let preview = document.getElementById('prodImgPreview');
+  preview.innerHTML='';
+  if(!input.files) return;
+  for(let f of input.files){
+    let r=new FileReader();
+    r.onload=e=>{
+      let img=document.createElement('img');
+      img.src=e.target.result;
+      preview.appendChild(img);
+    };
+    r.readAsDataURL(f);
+  }
+}
+
 async function addPictures(){
  let files=document.getElementById('picFiles').files;
  let title=document.getElementById('picTitle').value.trim()||'Project';
@@ -168,8 +200,9 @@ async function addPictures(){
  try{
   for(let i=0;i<files.length;i++){
    btn.innerText='Uploading '+(i+1)+'/'+files.length+'...';
-   let blob = await compressImage(files[i]);
-   let url = await uploadToSupabase(new File([blob], files[i].name, {type:'image/jpeg'}));
+   let compressed = await compressImage(files[i]);
+   let fileToUpload = compressed instanceof File? compressed : new File([compressed], files[i].name, {type:'image/jpeg'});
+   let url = await uploadToSupabase(fileToUpload);
    gallery.unshift({type:'image',src:url,title:title});
   }
   save();
@@ -185,6 +218,7 @@ function addYT(){
  let embed=link.includes('embed/')?link: link.replace('watch?v=','embed/').split('&')[0];
  gallery.unshift({type:'youtube',embed:embed,title:title});
  save(); document.getElementById('ytLink').value=''; document.getElementById('ytTitle').value='';
+ document.getElementById('vidStatus').innerText='Saved';
 }
 async function addVideoFile(){
  let fileInput=document.getElementById('vidFile');
@@ -209,21 +243,31 @@ async function addProduct(){
  let d=document.getElementById('prodDesc').value.trim();
  let badge=document.getElementById('prodBadge').value;
  let fileInput=document.getElementById('prodImage');
- let file=fileInput.files[0];
+ let files=fileInput.files;
  let idx=parseInt(document.getElementById('editIndex').value);
  let btn=document.getElementById('prodBtn');
  let status=document.getElementById('prodStatus');
  if(!n||!pr){status.innerText='Enter name & price';return;}
  btn.disabled=true; btn.innerText='Saving...';
  try{
-  let imgData='';
-  if(file){ let blob = await compressImage(file); imgData = await uploadToSupabase(new File([blob], file.name, {type:'image/jpeg'})); }
-  else if(idx>-1){ imgData=products[idx].img||''; }
-  let obj={name:n,price:pr,desc:d,badge:badge,img:imgData};
+  let imgUrls=[];
+  if(files && files.length>0){
+    for(let i=0;i<files.length && i<5;i++){
+      status.innerText='Uploading image '+(i+1)+'/'+files.length+'...';
+      let compressed = await compressImage(files[i]);
+      let fileToUpload = compressed instanceof File? compressed : new File([compressed], files[i].name, {type:'image/jpeg'});
+      let url = await uploadToSupabase(fileToUpload);
+      imgUrls.push(url);
+    }
+  } else if(idx>-1){
+    let old = products[idx];
+    imgUrls = old.imgs || (old.img?[old.img]:[]);
+  }
+  let obj={name:n,price:pr,desc:d,badge:badge,img:imgUrls[0]||'',imgs:imgUrls};
   if(idx>-1) products[idx]=obj; else products.unshift(obj);
   saveProducts(); clearProdForm();
   status.innerText='Saved';
- }catch(e){ status.innerText=e.message; }
+ }catch(e){ status.innerText='Error: '+e.message; }
  btn.disabled=false; btn.innerText='Add to Shop';
  document.getElementById('editIndex').value='-1';
 }
@@ -235,10 +279,27 @@ function editProduct(i){
  document.getElementById('prodBadge').value=p.badge||'NEW';
  document.getElementById('editIndex').value=i;
  document.getElementById('prodBtn').innerText='Save Changes';
+ // Show existing images
+ let preview=document.getElementById('prodImgPreview');
+ preview.innerHTML='';
+ let imgs = p.imgs || (p.img?[p.img]:[]);
+ imgs.forEach(src=>{
+   let img=document.createElement('img');
+   img.src=src;
+   preview.appendChild(img);
+ });
  window.scrollTo({top:0,behavior:'smooth'});
 }
 function delProduct(i){ if(confirm('Delete?')){ products.splice(i,1); saveProducts(); } }
-function clearProdForm(){ document.getElementById('prodName').value='';document.getElementById('prodPrice').value='';document.getElementById('prodDesc').value='';document.getElementById('prodImage').value='';document.getElementById('editIndex').value='-1';document.getElementById('prodBtn').innerText='Add to Shop'; }
+function clearProdForm(){
+  document.getElementById('prodName').value='';
+  document.getElementById('prodPrice').value='';
+  document.getElementById('prodDesc').value='';
+  document.getElementById('prodImage').value='';
+  document.getElementById('prodImgPreview').innerHTML='';
+  document.getElementById('editIndex').value='-1';
+  document.getElementById('prodBtn').innerText='Add to Shop';
+}
 async function delItem(i){ gallery.splice(i,1); save(); }
 async function clearGallery(){ if(confirm('Clear gallery?')){ gallery=[]; save(); } }
 function logout(){localStorage.removeItem('msel_admin');localStorage.removeItem('msel_role');window.location.href='login.html';}
