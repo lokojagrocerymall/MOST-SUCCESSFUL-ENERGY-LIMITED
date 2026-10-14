@@ -4,103 +4,106 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MSEL MENTE - Engineers Shop</title>
 <link rel="icon" href="logo.png">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-body{background:#0f172a;color:#fff;padding:12px}
-.header{background:#00924C;border-radius:14px;padding:16px;display:flex;justify-content:space-between;align-items:center}
-.header img{height:40px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:15px}
-.card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:14px;text-align:center;position:relative}
-.card img{width:100%;height:110px;object-fit:contain;background:#fff;border-radius:10px;padding:8px}
-.badge{position:absolute;top:8px;left:8px;background:#22c55e;color:#0f172a;font-size:10px;padding:4px 8px;border-radius:20px;font-weight:800}
-.price{color:#22c55e;font-weight:900;margin-top:6px;font-size:18px}
-.btn{width:100%;padding:10px;border-radius:10px;border:0;background:#22c55e;color:#0f172a;font-weight:800;margin-top:8px;cursor:pointer}
-.btn-wa{background:#25D366;color:#fff}
+body{background:#0f172a;color:#fff}
+.header{background:#00924C;padding:14px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+.header-left{display:flex;align-items:center;gap:10px}
+.header-left img{width:48px;height:36px;object-fit:contain;background:#fff;border-radius:6px;padding:2px}
+.header h2{font-size:14px;line-height:1.1}
+.header h2 span{font-weight:400;font-size:12px;opacity:.9;display:block}
+.header a{background:#fff;color:#00924C;padding:8px 16px;border-radius:20px;text-decoration:none;font-weight:800;font-size:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:14px;overflow:hidden;padding:10px;text-align:center;position:relative}
+.card img{width:100%;height:130px;object-fit:contain;background:#fff;border-radius:10px;padding:4px}
+.badge{position:absolute;top:8px;left:8px;background:#22c55e;color:#000;font-size:10px;padding:4px 8px;border-radius:10px;font-weight:800}
+.badge.HOT{background:#ef4444;color:#fff}
+.badge.BIG\ STORAGE{background:#22c55e}
+.badge.NEW{background:#3b82f6;color:#fff}
+.badge.SALE{background:#f59e0b;color:#000}
+.badge.KIT{background:#8b5cf6;color:#fff}
+.card h3{font-size:13px;margin:8px 0 2px;min-height:32px}
+.card p{font-size:11px;opacity:.7;min-height:28px}
+.price{color:#22c55e;font-weight:800;font-size:16px;margin:6px 0}
+.btn{width:100%;padding:10px;border-radius:10px;border:0;font-weight:800;margin-top:6px;cursor:pointer}
+.btn-green{background:#22c55e;color:#0f172a}
+.btn-wa{background:#22c55e;color:#0f172a;opacity:.9}
+.btn-all{background:#22c55e;color:#0f172a;padding:14px;border-radius:30px;width:90%;margin:16px auto;display:block;font-size:14px}
+.btn-logout{background:#ef4444;color:#fff;padding:10px 20px;border-radius:20px;margin:10px auto;display:block;width:fit-content}
+.empty{grid-column:1/-1;text-align:center;opacity:.6;padding:40px 0}
 </style>
 </head>
 <body>
+
 <div class="header">
-<div style="display:flex;align-items:center;gap:10px"><img src="logo.png" alt="MSEL"><div><b>MSEL MENTE</b><br><small style="opacity:.8">Engineers Private Shop</small></div></div>
-<a href="index.html" style="background:#fff;color:#00924C;padding:8px 14px;border-radius:20px;text-decoration:none;font-weight:800;font-size:12px">Home</a>
+<div class="header-left">
+<img src="logo.png">
+<h2>MSEL MENTE <span>Engineers Private Shop</span></h2>
+</div>
+<a href="index.html">Home</a>
 </div>
 
-<div id="shopGrid" class="grid"><p style="grid-column:1/-1;text-align:center;opacity:.6">Loading materials from Supabase...</p></div>
+<div id="productGrid" class="grid"></div>
 
-<div style="text-align:center;margin:20px 0">
-<a id="orderAllBtn" href="https://wa.me/2347011620564?text=Hi%20MSEL,%20I%20want%20to%20order%20materials" style="background:#25D366;color:#fff;padding:14px 28px;border-radius:30px;text-decoration:none;font-weight:800;display:inline-block">💬 Order All on WhatsApp</a>
-<br><br>
-<button onclick="logout()" style="background:#ef4444;color:#fff;padding:10px 20px;border-radius:20px;border:0;font-weight:800">Logout</button>
-</div>
+<button class="btn-all" onclick="orderAll()">💬 Order All on WhatsApp</button>
+<button class="btn-logout" onclick="logout()">Logout</button>
 
 <script>
-const SUPABASE_URL = 'https://rsnsciisycruhxtvfhwb.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let products = JSON.parse(localStorage.getItem('msel_products')||'[]');
 
-let defaultProducts=[
- {name:"10,000L Storage Bag",price:"250000",desc:"Big industrial bag for biogas storage",badge:"BIG STORAGE",img:""},
- {name:"Biodigester Bag 1M³",price:"85000",desc:"High density digester bag",badge:"HOT",img:""},
- {name:"Bio-Enzyme (Bacteria)",price:"15000",desc:"Bacteria for fast decomposition",badge:"NEW",img:""},
- {name:"PVC Pipes & Fittings Kit",price:"35000",desc:"Complete PVC kit",badge:"KIT",img:""},
- {name:"Air Vent & Cover",price:"8000",desc:"Odorless vent system",badge:"VENT",img:""},
- {name:"1M³ Digester Complete Kit",price:"180000",desc:"Everything for 1M³ system",badge:"COMPLETE",img:""},
- {name:"Sealant & Additives",price:"12000",desc:"Waterproof sealant",badge:"SEAL",img:""},
- {name:"WC Connector",price:"6000",desc:"Toilet to digester connector",badge:"WC",img:""},
-];
-
-async function loadProducts(){
- let allProducts = defaultProducts;
- try{
-   const {data, error} = await supabaseClient.from('msel_products').select('*').order('created_at',{ascending:false});
-   if(!error && data && data.length>0){
-     allProducts = data.map(p=>({
-       name: p.name,
-       price: p.price,
-       desc: p.description || p.desc || 'MSEL Material',
-       badge: p.badge || 'NEW',
-       img: p.img || ''
-     }));
-   } else {
-     let adminProducts = JSON.parse(localStorage.getItem('msel_products')||'[]');
-     if(adminProducts.length>0) allProducts = adminProducts;
-   }
- }catch(e){
-   let adminProducts = JSON.parse(localStorage.getItem('msel_products')||'[]');
-   if(adminProducts.length>0) allProducts = adminProducts;
- }
-
- let grid=document.getElementById('shopGrid');
- let html='';
- allProducts.forEach(p=>{
-  let imgSrc = p.img && p.img.length>10 ? p.img : 'logo.png';
-  let safeName = p.name.replace(/'/g,"\\'");
-  let safePrice = p.price;
-  html+=`
-  <div class="card">
-  <span class="badge">${p.badge||'NEW'}</span>
-  <img src="${imgSrc}" alt="${p.name}" loading="lazy">
-  <div style="font-weight:800;font-size:13px;margin-top:8px;min-height:32px">${p.name}</div>
-  <div style="font-size:11px;opacity:.6;margin-top:4px;min-height:28px">${p.desc||'MSEL Material'}</div>
-  <div class="price">₦${p.price}</div>
-  <button class="btn" onclick="order('${safeName}','${safePrice}')">Order Now</button>
-  <button class="btn btn-wa" onclick="order('${safeName}','${safePrice}')">WhatsApp</button>
-  </div>
-  `;
- });
- grid.innerHTML=html;
-
- let allText = allProducts.map(x=>`- ${x.name} ₦${x.price}`).join('%0A');
- document.getElementById('orderAllBtn').href=`https://wa.me/2347011620564?text=Hi%20MSEL,%20I%20want%20to%20order%20materials:%0A${allText}`;
+function render(){
+  let grid=document.getElementById('productGrid');
+  if(!products || products.length===0){
+    grid.innerHTML='<div class="empty">No products yet<br>Go to Admin to add</div>';
+    return;
+  }
+  // SHOW ALL - NO FILTER, NO DEDUPLICATION, NO HIDING LOGO
+  let html='';
+  products.forEach((p,idx)=>{
+    let img = p.img || (p.imgs && p.imgs[0]) || 'logo.png';
+    let badge = p.badge||'NEW';
+    let name = p.name||'Product';
+    let price = p.price||'0';
+    let desc = p.desc||p.description||'';
+    html+=`
+    <div class="card">
+      <span class="badge ${badge}">${badge}</span>
+      <img src="${img}" onerror="this.src='logo.png'">
+      <h3>${name}</h3>
+      <p>${desc}</p>
+      <div class="price">₦${price}</div>
+      <button class="btn btn-green" onclick="orderOne(${idx})">Order Now</button>
+      <button class="btn btn-wa" onclick="waOne(${idx})">WhatsApp</button>
+    </div>`;
+  });
+  grid.innerHTML=html;
 }
 
-loadProducts();
-
-function order(name,price){
- let msg=`Hi MSEL, I want to order ${name} - ₦${price}. I am an MSEL MENTE engineer. My code is ${localStorage.getItem('msel_eng_code')||''}`;
- window.open(`https://wa.me/2347011620564?text=${encodeURIComponent(msg)}`,'_blank');
+function orderOne(i){
+  let p=products[i];
+  let msg=`Hello MSEL, I want to order: ${p.name} - ₦${p.price}`;
+  window.open(`https://wa.me/2348140000?text=${encodeURIComponent(msg)}`,'_blank');
 }
-function logout(){localStorage.removeItem('msel_role');localStorage.removeItem('msel_engineer');localStorage.removeItem('msel_admin');localStorage.removeItem('msel_eng_code');window.location.href='login.html';}
+function waOne(i){ orderOne(i); }
+function orderAll(){
+  let msg='Hello MSEL, I want to order:\n';
+  products.forEach(p=>{ msg+=`- ${p.name} ₦${p.price}\n`; });
+  window.open(`https://wa.me/2348140000000?text=${encodeURIComponent(msg)}`,'_blank');
+}
+function logout(){ localStorage.removeItem('msel_engineer'); window.location.href='login.html'; }
+
+render();
+
+// Also try to restore from Supabase if local is empty
+(async function(){
+  if(products.length>0) return;
+  try{
+    const SUPABASE_URL='https://rsnsciisycruhxtvfhwb.supabase.co';
+    const SUPABASE_KEY='sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
+    const {createClient}=supabase||{};
+  }catch(e){}
+})();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </body>
 </html>
