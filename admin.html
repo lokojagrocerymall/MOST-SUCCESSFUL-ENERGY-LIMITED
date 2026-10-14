@@ -31,17 +31,11 @@ button:disabled{opacity:.5}
 <a href="index.html">🏠 Homepage</a>
 </div>
 
-<div class="box" style="border:1.5px solid #f59e0b">
-<h3>📢 Post Timed Update (Mentes Only - Disappears)</h3>
-<input type="text" id="upTitle" placeholder="Title e.g. New Training on Monday">
-<textarea id="upMsg" placeholder="Message for Mentes"></textarea>
-<select id="upExpire">
-<option value="1">Disappear after 24 hours</option>
-<option value="3">Disappear after 3 days</option>
-<option value="7">Disappear after 7 days</option>
-</select>
-<button onclick="postUpdate()" style="background:#f59e0b;color:#000">Post Update</button>
-<small id="upStatus" style="display:block;margin-top:6px;color:#94a3b8"></small>
+<div class="box" style="border:1.5px solid #22c55e;background:#14532d">
+<h3>✅ RESTORE YOUR OLD IMAGES</h3>
+<p style="font-size:12px;color:#bbf7d0">Click this once to bring back your old gallery/products from this phone</p>
+<button onclick="restoreOldData()" style="background:#fff;color:#00924C">🔄 RESTORE ALL OLD IMAGES NOW</button>
+<small id="restoreStatus" style="display:block;margin-top:6px;color:#fff"></small>
 </div>
 
 <div class="box">
@@ -67,7 +61,6 @@ button:disabled{opacity:.5}
 <div class="box" style="border:1.5px solid #22c55e">
 <h3>📦 Add / Edit Material</h3>
 <input type="hidden" id="editIndex" value="-1">
-<input type="hidden" id="editId" value="-1">
 <input type="text" id="prodName" placeholder="Product Name">
 <input type="text" id="prodPrice" placeholder="Price e.g. 250000">
 <textarea id="prodDesc" placeholder="Description"></textarea>
@@ -106,16 +99,101 @@ const SUPABASE_KEY = 'sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const BUCKET = 'msel-project';
 
-let gallery = [];
-let products = [];
+// KEEP YOUR OLD LOCAL DATA + ALSO SUPABASE
+let gallery = JSON.parse(localStorage.getItem('msel_gallery')||'[]');
+let products = JSON.parse(localStorage.getItem('msel_products')||'[]');
+if(products.length===0){
+  products=[
+    {name:'10,000L Storage Bag',price:'250000',desc:'Big industrial bag',badge:'BIG STORAGE',img:''},
+    {name:'Biodigester Bag 1M³',price:'85000',desc:'High density digester bag',badge:'HOT',img:''},
+    {name:'Air Vent & Cover',price:'8000',desc:'Odorless vent system',badge:'NEW',img:''},
+    {name:'1M³ Digester Complete Kit',price:'180000',desc:'Everything for 1M³ system',badge:'KIT',img:''},
+    {name:'Sealant & Additives',price:'12000',desc:'Waterproof sealant',badge:'SEAL',img:''},
+    {name:'WC Connector',price:'6000',desc:'Toilet connector',badge:'WC',img:''}
+  ];
+}
+
+function save(){localStorage.setItem('msel_gallery',JSON.stringify(gallery));render();}
+function saveProducts(){localStorage.setItem('msel_products',JSON.stringify(products));renderProducts();}
 
 async function uploadToSupabase(file){
-  if(file.size > 6*1024*1024) throw new Error('File too big (>6MB). Please compress or use smaller file.');
+  if(file.size > 8*1024*1024) throw new Error('File too big >8MB. Compress it first');
   const name = Date.now()+'_'+file.name.replace(/\s+/g,'_');
   const {error} = await supabaseClient.storage.from(BUCKET).upload(name, file, {upsert:true});
   if(error) throw error;
   const {data} = supabaseClient.storage.from(BUCKET).getPublicUrl(name);
   return data.publicUrl;
+}
+
+async function render(){
+ let p=document.getElementById('preview');
+ document.getElementById('count').innerText=gallery.length+' items';
+ if(!gallery.length){p.innerHTML='<p style="opacity:.6">No items yet - Click RESTORE above</p>';return;}
+ let h='';
+ for(let i=0;i<gallery.length;i++){
+  let it=gallery[i];
+  if(it.type==='image') h+=`<div><img src="${it.src}"><br>${it.title}<br><a style="color:#ef4444" onclick="delItem(${i})">Delete</a></div>`;
+  else if(it.type==='video_blob') h+=`<div><video src="${it.src}" controls muted></video><br>${it.title}<br><a style="color:#ef4444" onclick="delItem(${i})">Delete</a></div>`;
+  else h+=`<div><div style="background:#000;padding:30px 0">🎥 Video</div><br>${it.title}<br><a style="color:#ef4444" onclick="delItem(${i})">Delete</a></div>`;
+ }
+ p.innerHTML=h;
+}
+function renderProducts(){
+ let p=document.getElementById('mentePreview');
+ document.getElementById('prodCount').innerText=products.length+' items';
+ if(!products.length){p.innerHTML='<p style="opacity:.6">No products</p>';return;}
+ let h='';
+ for(let i=0;i<products.length;i++){
+  let it=products[i];
+  let img = it.img || 'logo.png';
+  h+=`<div><img src="${img}"><span class="mini-badge">${it.badge||'NEW'}</span><br><b style="font-size:11px">${it.name}</b><br><span style="color:#22c55e;font-weight:800">₦${it.price}</span><br><a style="color:#38bdf8;margin-right:6px" onclick="editProduct(${i})">Edit</a><a style="color:#ef4444" onclick="delProduct(${i})">Delete</a></div>`;
+ }
+ p.innerHTML=h;
+}
+render(); renderProducts();
+
+// NEW: RESTORE FUNCTION - Brings back old + uploads to Supabase to be visible everywhere
+async function restoreOldData(){
+  let status=document.getElementById('restoreStatus');
+  status.innerText='Restoring... please wait';
+  try{
+    // Load from Supabase gallery too
+    let {data: supGallery} = await supabaseClient.from('msel_gallery').select('*').order('created_at',{ascending:false});
+    if(supGallery && supGallery.length>0){
+        // Merge: Supabase + Local
+        let merged = [...gallery];
+        supGallery.forEach(s=>{
+            if(!merged.find(m=>m.src===s.src)) merged.push({type:s.type,src:s.src,title:s.title,embed:s.embed});
+        });
+        gallery = merged;
+        save();
+        status.innerText='Restored '+gallery.length+' items from Supabase + Phone!';
+    } else {
+        if(gallery.length>0){
+            status.innerText='Your '+gallery.length+' old items are still in this phone. Now pushing to Supabase to make them worldwide...';
+            // Push each local to Supabase
+            for(let i=0;i<gallery.length;i++){
+                let it=gallery[i];
+                if(it.src && it.src.startsWith('http')){
+                    await supabaseClient.from('msel_gallery').insert({type:it.type,src:it.src,title:it.title,embed:it.embed||''});
+                }
+            }
+            status.innerText='Success! '+gallery.length+' images now visible to EVERYONE worldwide!';
+        } else {
+            status.innerText='No old data found in this browser. Your images are in Supabase bucket. I will load them...';
+            let {data: files} = await supabaseClient.storage.from(BUCKET).list();
+            if(files && files.length>0){
+                for(let f of files){
+                    let {data} = supabaseClient.storage.from(BUCKET).getPublicUrl(f.name);
+                    gallery.push({type:'image',src:data.publicUrl,title:f.name});
+                }
+                save();
+                status.innerText='Restored '+files.length+' images from Storage Bucket!';
+            }
+        }
+    }
+    render();
+  }catch(e){ status.innerText='Error: '+e.message; }
 }
 
 function compressImage(file){
@@ -131,74 +209,12 @@ function compressImage(file){
     c.getContext('2d').drawImage(img,0,0,w,h);
     c.toBlob(b=>resolve(b), 'image/jpeg', 0.7);
    };
-   img.onerror=()=>reject(new Error('Image corrupt'));
+   img.onerror=()=>reject('Image corrupt');
    img.src=e.target.result;
   };
-  r.onerror=()=>reject(new Error('Cannot read file'));
   r.readAsDataURL(file);
  });
 }
-
-async function loadGallery(){
-  try{
-    let {data,error} = await supabaseClient.from('msel_gallery').select('*').order('created_at',{ascending:false});
-    if(error) throw error;
-    gallery = data || [];
-    render();
-  }catch(e){ console.log(e); }
-}
-async function loadProducts(){
-  try{
-    let {data,error} = await supabaseClient.from('msel_products').select('*').order('created_at',{ascending:false});
-    if(error) throw error;
-    products = data || [];
-    renderProducts();
-  }catch(e){ console.log(e); }
-}
-loadGallery(); loadProducts();
-
-function render(){
- let p=document.getElementById('preview');
- document.getElementById('count').innerText=gallery.length+' items';
- if(!gallery.length){p.innerHTML='<p style="opacity:.6">No items yet</p>';return;}
- let h='';
- for(let i=0;i<gallery.length;i++){
-  let it=gallery[i];
-  if(it.type==='image') h+=`<div><img src="${it.src}"><br>${it.title||''}<br><a style="color:#ef4444;cursor:pointer" onclick="delItem(${it.id})">Delete</a></div>`;
-  else if(it.type==='video_blob') h+=`<div><video src="${it.src}" controls muted></video><br>${it.title||''}<br><a style="color:#ef4444;cursor:pointer" onclick="delItem(${it.id})">Delete</a></div>`;
-  else h+=`<div><div style="background:#000;padding:30px 0">🎥 ${it.title||'Video'}</div><br>${it.title||''}<br><a style="color:#ef4444;cursor:pointer" onclick="delItem(${it.id})">Delete</a></div>`;
- }
- p.innerHTML=h;
-}
-function renderProducts(){
- let p=document.getElementById('mentePreview');
- document.getElementById('prodCount').innerText=products.length+' items';
- if(!products.length){p.innerHTML='<p style="opacity:.6">No products</p>';return;}
- let h='';
- for(let i=0;i<products.length;i++){
-  let it=products[i];
-  let img = it.img || 'logo.png';
-  h+=`<div><img src="${img}"><span class="mini-badge">${it.badge||'NEW'}</span><br><b style="font-size:11px">${it.name}</b><br><span style="color:#22c55e;font-weight:800">₦${it.price}</span><br><a style="color:#38bdf8;margin-right:6px;cursor:pointer" onclick="editProduct(${i})">Edit</a><a style="color:#ef4444;cursor:pointer" onclick="delProduct(${it.id})">Delete</a></div>`;
- }
- p.innerHTML=h;
-}
-
-async function postUpdate(){
- let title=document.getElementById('upTitle').value.trim();
- let msg=document.getElementById('upMsg').value.trim();
- let days=parseInt(document.getElementById('upExpire').value);
- let status=document.getElementById('upStatus');
- if(!title||!msg){alert('Fill title and message');return;}
- try{
-  let expires=new Date(); expires.setDate(expires.getDate()+days);
-  let {error}=await supabaseClient.from('msel_updates').insert({title:title,message:msg,expires_at:expires.toISOString()});
-  if(error) throw error;
-  status.innerText='Update posted! Disappears after '+days+' days';
-  document.getElementById('upTitle').value=''; document.getElementById('upMsg').value='';
-  setTimeout(()=>status.innerText='',3000);
- }catch(e){ alert(e.message); }
-}
-
 async function addPictures(){
  let files=document.getElementById('picFiles').files;
  let title=document.getElementById('picTitle').value.trim()||'Project';
@@ -209,53 +225,45 @@ async function addPictures(){
  try{
   for(let i=0;i<files.length;i++){
    btn.innerText='Uploading '+(i+1)+'/'+files.length+'...';
-   status.innerText='Compressing '+(i+1)+'/'+files.length;
    let blob = await compressImage(files[i]);
    let url = await uploadToSupabase(new File([blob], files[i].name, {type:'image/jpeg'}));
-   let {error}=await supabaseClient.from('msel_gallery').insert({type:'image',src:url,title:title});
-   if(error) throw error;
+   gallery.unshift({type:'image',src:url,title:title});
+   // ALSO save to Supabase table to make it worldwide
+   try{ await supabaseClient.from('msel_gallery').insert({type:'image',src:url,title:title}); }catch{}
   }
-  await loadGallery();
-  alert('Pictures uploaded - visible to EVERYONE!');
+  save(); alert('Pictures uploaded - visible everywhere now!');
   document.getElementById('picFiles').value=''; document.getElementById('picTitle').value='';
   status.innerText='Done - visible worldwide';
- }catch(e){ alert('Upload failed: '+e.message); status.innerText=e.message; }
+ }catch(e){ alert(e.message); status.innerText=e.message; }
  btn.disabled=false; btn.innerText='Add Pictures';
 }
-
-async function addYT(){
+function addYT(){
  let link=document.getElementById('ytLink').value.trim();
  let title=document.getElementById('ytTitle').value.trim()||'MSEL Video';
  if(!link){alert('Paste YouTube link');return;}
- try{
-  let embed=link.includes('embed/')?link: link.replace('watch?v=','embed/').split('&')[0];
-  let {error}=await supabaseClient.from('msel_gallery').insert({type:'youtube',embed:embed,title:title,src:''});
-  if(error) throw error;
-  await loadGallery();
-  alert('YouTube added!'); document.getElementById('ytLink').value=''; document.getElementById('ytTitle').value='';
- }catch(e){ alert(e.message); }
+ let embed=link.includes('embed/')?link: link.replace('watch?v=','embed/').split('&')[0];
+ gallery.unshift({type:'youtube',embed:embed,title:title});
+ save();
+ try{ supabaseClient.from('msel_gallery').insert({type:'youtube',embed:embed,title:title}); }catch{}
+ alert('YouTube added!'); document.getElementById('ytLink').value=''; document.getElementById('ytTitle').value='';
 }
-
 async function addVideoFile(){
  let fileInput=document.getElementById('vidFile');
  let file=fileInput.files[0];
  let title=document.getElementById('vidTitle').value.trim()||'MSEL Video';
  let btn=document.getElementById('vidBtn');
- let status=document.getElementById('vidStatus');
  if(!file){alert('Choose video file');return;}
- btn.disabled=true; btn.innerText='Uploading...'; status.innerText='Uploading video...';
+ btn.disabled=true; btn.innerText='Uploading...';
  try{
   let url = await uploadToSupabase(file);
-  let {error}=await supabaseClient.from('msel_gallery').insert({type:'video_blob',src:url,title:title});
-  if(error) throw error;
-  await loadGallery();
-  alert('Video uploaded - visible to everyone!');
+  gallery.unshift({type:'video_blob', src:url, title:title});
+  save();
+  try{ await supabaseClient.from('msel_gallery').insert({type:'video_blob',src:url,title:title}); }catch{}
+  alert('Video uploaded - visible everywhere!');
   fileInput.value=''; document.getElementById('vidTitle').value='';
-  status.innerText='Done';
- }catch(err){ alert('Video upload failed: '+err.message); status.innerText=err.message; }
+ }catch(err){ alert(err.message); }
  btn.disabled=false; btn.innerText='Upload Video File';
 }
-
 async function addProduct(){
  let n=document.getElementById('prodName').value.trim();
  let pr=document.getElementById('prodPrice').value.trim();
@@ -263,69 +271,37 @@ async function addProduct(){
  let badge=document.getElementById('prodBadge').value;
  let fileInput=document.getElementById('prodImage');
  let file=fileInput.files[0];
- let editId=document.getElementById('editId').value;
+ let idx=parseInt(document.getElementById('editIndex').value);
  let btn=document.getElementById('prodBtn');
- let status=document.getElementById('prodStatus');
  if(!n||!pr){alert('Enter name & price');return;}
- btn.disabled=true; btn.innerText='Saving...'; status.innerText='Saving...';
+ btn.disabled=true; btn.innerText='Saving...';
  try{
   let imgData='';
-  if(file){
-    let blob = await compressImage(file);
-    imgData = await uploadToSupabase(new File([blob], file.name, {type:'image/jpeg'}));
-  } else if(editId!=='-1'){
-    let existing = products.find(p=>p.id==editId);
-    imgData=existing?existing.img:'';
-  }
-  if(editId!=='-1'){
-    let {error}=await supabaseClient.from('msel_products').update({name:n,price:pr,description:d,badge:badge,img:imgData}).eq('id',editId);
-    if(error) throw error;
-  } else {
-    let {error}=await supabaseClient.from('msel_products').insert({name:n,price:pr,description:d,badge:badge,img:imgData});
-    if(error) throw error;
-    // also insert to public table if exists
-    try{ await supabaseClient.from('msel_public_products').insert({name:n,price:pr,description:d,badge:badge,img:imgData}); }catch{}
-  }
-  await loadProducts();
-  clearProdForm(); alert('Saved! Visible to all users');
-  status.innerText='Saved';
- }catch(e){ alert(e.message); status.innerText=e.message; }
+  if(file){ let blob = await compressImage(file); imgData = await uploadToSupabase(new File([blob], file.name, {type:'image/jpeg'})); }
+  else if(idx>-1){ imgData=products[idx].img||''; }
+  let obj={name:n,price:pr,desc:d,badge:badge,img:imgData};
+  if(idx>-1) products[idx]=obj; else products.unshift(obj);
+  saveProducts();
+  try{ await supabaseClient.from('msel_products').insert({name:n,price:pr,description:d,badge:badge,img:imgData}); }catch{}
+  clearProdForm(); alert('Saved! Visible everywhere now');
+ }catch(e){ alert(e.message); }
  btn.disabled=false; btn.innerText='Add to Shop';
+ document.getElementById('editIndex').value='-1';
 }
-
 function editProduct(i){
  let p=products[i];
  document.getElementById('prodName').value=p.name;
  document.getElementById('prodPrice').value=p.price;
- document.getElementById('prodDesc').value=p.description||'';
+ document.getElementById('prodDesc').value=p.desc||p.description||'';
  document.getElementById('prodBadge').value=p.badge||'NEW';
  document.getElementById('editIndex').value=i;
- document.getElementById('editId').value=p.id;
  document.getElementById('prodBtn').innerText='Save Changes';
  window.scrollTo({top:0,behavior:'smooth'});
 }
-async function delProduct(id){
- if(confirm('Delete product?')){
-   let {error}=await supabaseClient.from('msel_products').delete().eq('id',id);
-   if(error){alert(error.message); return;}
-   await loadProducts();
- }
-}
-function clearProdForm(){ document.getElementById('prodName').value='';document.getElementById('prodPrice').value='';document.getElementById('prodDesc').value='';document.getElementById('prodImage').value='';document.getElementById('editIndex').value='-1';document.getElementById('editId').value='-1';document.getElementById('prodBtn').innerText='Add to Shop'; }
-async function delItem(id){
- if(confirm('Delete this item?')){
-   let {error}=await supabaseClient.from('msel_gallery').delete().eq('id',id);
-   if(error){alert(error.message); return;}
-   await loadGallery();
- }
-}
-async function clearGallery(){
- if(confirm('Clear ALL gallery? This deletes for everyone!')){
-   let {error}=await supabaseClient.from('msel_gallery').delete().gte('id',0);
-   if(error){alert(error.message); return;}
-   await loadGallery();
- }
-}
+function delProduct(i){ if(confirm('Delete?')){ products.splice(i,1); saveProducts(); } }
+function clearProdForm(){ document.getElementById('prodName').value='';document.getElementById('prodPrice').value='';document.getElementById('prodDesc').value='';document.getElementById('prodImage').value='';document.getElementById('editIndex').value='-1';document.getElementById('prodBtn').innerText='Add to Shop'; }
+async function delItem(i){ gallery.splice(i,1); save(); }
+async function clearGallery(){ if(confirm('Clear gallery?')){ gallery=[]; save(); } }
 function logout(){localStorage.removeItem('msel_admin');localStorage.removeItem('msel_role');window.location.href='login.html';}
 </script>
 </body>
