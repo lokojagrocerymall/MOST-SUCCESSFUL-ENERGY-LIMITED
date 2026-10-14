@@ -102,7 +102,6 @@ const BUCKET = 'msel-project';
 let gallery = JSON.parse(localStorage.getItem('msel_gallery')||'[]');
 let products = JSON.parse(localStorage.getItem('msel_products')||'[]');
 
-// --- RESTORED: 8 PRODUCTS INCLUDING YOUR BIOGAS SOLAR PUMP ---
 const DEFAULT_PRODUCTS = [
   {name:'Biogas Solar Pump',price:'165000',desc:'Comes with solar panel. Complete system. Pump water with biogas',badge:'SALE',img:'',imgs:[]},
   {name:'Solar Water Pump Kit',price:'195000',desc:'Solar powered water pump with panel and controller',badge:'NEW',img:'',imgs:[]},
@@ -188,7 +187,6 @@ function compressImage(file){
  });
 }
 
-// FIXED: Multiple images preview now works
 function previewProdImages(input){
   let preview = document.getElementById('prodImgPreview');
   preview.innerHTML='';
@@ -205,7 +203,6 @@ function previewProdImages(input){
   });
 }
 
-// FIXED: Multiple upload now loops all files
 async function addPictures(){
  let files=document.getElementById('picFiles').files;
  let title=document.getElementById('picTitle').value.trim()||'Project';
@@ -255,7 +252,7 @@ async function addVideoFile(){
  btn.disabled=false; btn.innerText='Upload Video File';
 }
 
-// FIXED UPDATE ONLY - Products no longer disappear when editing
+// --- ONLY UPDATE FIXED ---
 async function addProduct(){
  let n=document.getElementById('prodName').value.trim();
  let pr=document.getElementById('prodPrice').value.trim();
@@ -269,8 +266,8 @@ async function addProduct(){
  if(!n||!pr){status.innerText='Enter name & price';return;}
  btn.disabled=true; btn.innerText='Saving...';
  try{
-  let imgUrls=[];
   let oldData = idx>-1? products[idx] : null;
+  let imgUrls = [];
 
   if(files && files.length>0){
     let list = Array.from(files);
@@ -282,21 +279,26 @@ async function addProduct(){
       imgUrls.push(url);
     }
   }
-  // KEEP OLD IMAGES IF NO NEW IMAGES SELECTED - FIXES DISAPPEARING
+
+  // UPDATE FIX: if editing and no new images, keep old images 100%
   if(imgUrls.length===0 && oldData){
-    imgUrls = oldData.imgs && oldData.imgs.length>0? oldData.imgs : (oldData.img? [oldData.img] : []);
+    if(oldData.imgs && oldData.imgs.length>0){ imgUrls = [...oldData.imgs]; }
+    else if(oldData.img){ imgUrls = [oldData.img]; }
   }
 
-  let mainImg = imgUrls[0] || (oldData? (oldData.img || '') : '');
+  let mainImg = imgUrls.length>0? imgUrls[0] : (oldData? (oldData.img || (oldData.imgs?oldData.imgs[0]:'')) : '');
+
   let obj={name:n,price:pr,desc:d,badge:badge,img:mainImg,imgs:imgUrls};
 
-  if(idx>-1) products[idx]=obj; else products.unshift(obj);
+  if(idx>-1){ products[idx]=obj; } else { products.unshift(obj); }
+
   saveProducts(); clearProdForm();
   status.innerText='Saved';
  }catch(e){ status.innerText='Error: '+e.message; }
  btn.disabled=false; btn.innerText='Add to Shop';
  document.getElementById('editIndex').value='-1';
 }
+
 function editProduct(i){
  let p=products[i];
  document.getElementById('prodName').value=p.name;
@@ -330,7 +332,6 @@ async function delItem(i){ gallery.splice(i,1); save(); }
 async function clearGallery(){ if(confirm('Clear gallery?')){ gallery=[]; save(); } }
 function logout(){localStorage.removeItem('msel_admin');localStorage.removeItem('msel_role');window.location.href='login.html';}
 
-// --- RESTORE GALLERY FROM BUCKET ---
 (async function restoreGallery(){
  try{
   const {data: files} = await supabaseClient.storage.from(BUCKET).list('', {limit:100, sortBy:{column:'created_at', order:'desc'}});
