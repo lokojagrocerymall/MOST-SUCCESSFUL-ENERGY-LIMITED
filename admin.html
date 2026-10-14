@@ -118,7 +118,6 @@ if(products.length===0){
   products = DEFAULT_PRODUCTS;
   localStorage.setItem('msel_products', JSON.stringify(products));
 } else if(products.length===6){
-  // You had 6, restore to 8 by adding the 2 missing on top
   let hasPump = products.some(p=>p.name.toLowerCase().includes('solar pump'));
   if(!hasPump){
     products.unshift(DEFAULT_PRODUCTS[1]);
@@ -189,11 +188,13 @@ function compressImage(file){
  });
 }
 
+// FIXED: Multiple images preview now works
 function previewProdImages(input){
   let preview = document.getElementById('prodImgPreview');
   preview.innerHTML='';
-  if(!input.files) return;
-  for(let f of input.files){
+  if(!input.files || input.files.length===0) return;
+  let files = Array.from(input.files);
+  files.forEach(f=>{
     let r=new FileReader();
     r.onload=e=>{
       let img=document.createElement('img');
@@ -201,27 +202,29 @@ function previewProdImages(input){
       preview.appendChild(img);
     };
     r.readAsDataURL(f);
-  }
+  });
 }
 
+// FIXED: Multiple upload now loops all files
 async function addPictures(){
  let files=document.getElementById('picFiles').files;
  let title=document.getElementById('picTitle').value.trim()||'Project';
  let btn=document.getElementById('picBtn');
  let status=document.getElementById('picStatus');
- if(!files.length){status.innerText='Choose pictures first';return;}
+ if(!files || files.length===0){status.innerText='Choose pictures first';return;}
  btn.disabled=true;
  try{
-  for(let i=0;i<files.length;i++){
-   btn.innerText='Uploading '+(i+1)+'/'+files.length+'...';
-   let compressed = await compressImage(files[i]);
-   let fileToUpload = compressed instanceof File? compressed : new File([compressed], files[i].name, {type:'image/jpeg'});
+  let list = Array.from(files);
+  for(let i=0;i<list.length;i++){
+   btn.innerText='Uploading '+(i+1)+'/'+list.length+'...';
+   let compressed = await compressImage(list[i]);
+   let fileToUpload = compressed instanceof File? compressed : new File([compressed], list[i].name, {type:'image/jpeg'});
    let url = await uploadToSupabase(fileToUpload);
    gallery.unshift({type:'image',src:url,title:title});
   }
   save();
   document.getElementById('picFiles').value=''; document.getElementById('picTitle').value='';
-  status.innerText='Saved';
+  status.innerText='Saved '+list.length+' images';
  }catch(e){ status.innerText='Error: '+e.message; }
  btn.disabled=false; btn.innerText='Add Pictures';
 }
@@ -251,6 +254,8 @@ async function addVideoFile(){
  }catch(err){ status.innerText=err.message; }
  btn.disabled=false; btn.innerText='Upload Video File';
 }
+
+// FIXED UPDATE ONLY - Products no longer disappear when editing
 async function addProduct(){
  let n=document.getElementById('prodName').value.trim();
  let pr=document.getElementById('prodPrice').value.trim();
@@ -265,19 +270,26 @@ async function addProduct(){
  btn.disabled=true; btn.innerText='Saving...';
  try{
   let imgUrls=[];
+  let oldData = idx>-1? products[idx] : null;
+
   if(files && files.length>0){
-    for(let i=0;i<files.length && i<5;i++){
-      status.innerText='Uploading image '+(i+1)+'/'+files.length+'...';
-      let compressed = await compressImage(files[i]);
-      let fileToUpload = compressed instanceof File? compressed : new File([compressed], files[i].name, {type:'image/jpeg'});
+    let list = Array.from(files);
+    for(let i=0;i<list.length && i<5;i++){
+      status.innerText='Uploading image '+(i+1)+'/'+list.length+'...';
+      let compressed = await compressImage(list[i]);
+      let fileToUpload = compressed instanceof File? compressed : new File([compressed], list[i].name, {type:'image/jpeg'});
       let url = await uploadToSupabase(fileToUpload);
       imgUrls.push(url);
     }
-  } else if(idx>-1){
-    let old = products[idx];
-    imgUrls = old.imgs || (old.img?[old.img]:[]);
   }
-  let obj={name:n,price:pr,desc:d,badge:badge,img:imgUrls[0]||'',imgs:imgUrls};
+  // KEEP OLD IMAGES IF NO NEW IMAGES SELECTED - FIXES DISAPPEARING
+  if(imgUrls.length===0 && oldData){
+    imgUrls = oldData.imgs && oldData.imgs.length>0? oldData.imgs : (oldData.img? [oldData.img] : []);
+  }
+
+  let mainImg = imgUrls[0] || (oldData? (oldData.img || '') : '');
+  let obj={name:n,price:pr,desc:d,badge:badge,img:mainImg,imgs:imgUrls};
+
   if(idx>-1) products[idx]=obj; else products.unshift(obj);
   saveProducts(); clearProdForm();
   status.innerText='Saved';
@@ -295,8 +307,9 @@ function editProduct(i){
  document.getElementById('prodBtn').innerText='Save Changes';
  let preview=document.getElementById('prodImgPreview');
  preview.innerHTML='';
- let imgs = p.imgs || (p.img?[p.img]:[]);
+ let imgs = p.imgs && p.imgs.length>0? p.imgs : (p.img?[p.img]:[]);
  imgs.forEach(src=>{
+   if(!src) return;
    let img=document.createElement('img');
    img.src=src;
    preview.appendChild(img);
