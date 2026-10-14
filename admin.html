@@ -62,6 +62,8 @@ button:disabled{opacity:.5}
 <option value="BIG STORAGE">BIG STORAGE</option>
 <option value="HOT">HOT</option>
 <option value="KIT">KIT</option>
+<option value="SEAL">SEAL</option>
+<option value="WC">WC</option>
 <option value="SALE">SALE</option>
 </select>
 <input type="file" id="prodImage" accept="image/*">
@@ -88,6 +90,18 @@ button:disabled{opacity:.5}
 <script>
 let gallery = JSON.parse(localStorage.getItem('msel_gallery')||'[]');
 let products = JSON.parse(localStorage.getItem('msel_products')||'[]');
+// --- FIX: Preload existing catalog products from screenshot 2 & 3 ---
+if(products.length===0){
+  products=[
+    {name:'10,000L Storage Bag',price:'250000',desc:'Big industrial bag for biogas storage',badge:'BIG STORAGE',img:''},
+    {name:'Biodigester Bag 1M³',price:'85000',desc:'High density digester bag',badge:'HOT',img:''},
+    {name:'Air Vent & Cover',price:'8000',desc:'Odorless vent system',badge:'NEW',img:''},
+    {name:'1M³ Digester Complete Kit',price:'180000',desc:'Everything for 1M³ system',badge:'KIT',img:''},
+    {name:'Sealant & Additives',price:'12000',desc:'Waterproof sealant',badge:'SEAL',img:''},
+    {name:'WC Connector',price:'6000',desc:'Toilet to digester connector',badge:'WC',img:''}
+  ];
+  localStorage.setItem('msel_products',JSON.stringify(products));
+}
 
 function save(){localStorage.setItem('msel_gallery',JSON.stringify(gallery));render();}
 function saveProducts(){localStorage.setItem('msel_products',JSON.stringify(products));renderProducts();}
@@ -131,7 +145,6 @@ function renderProducts(){
 }
 render(); renderProducts();
 
-// INDEXEDDB FOR VIDEO - NO MORE BASE64 CRASH
 function openDB(){
  return new Promise((res,rej)=>{
   let req=indexedDB.open('mselDB',1);
@@ -251,7 +264,6 @@ async function addVideoFile(){
  btn.disabled=false; btn.innerText='Upload Video File';
 }
 
-// NEW UPGRADED PRODUCT LOGIC - WITH IMAGE + EDIT
 async function addProduct(){
  let n=document.getElementById('prodName').value.trim();
  let pr=document.getElementById('prodPrice').value.trim();
