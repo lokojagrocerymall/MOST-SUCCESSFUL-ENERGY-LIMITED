@@ -12,13 +12,15 @@ body{background:#0f172a;color:#fff;padding:10px}
 .top a{background:#fff;color:#00924C;padding:8px 16px;border-radius:20px;text-decoration:none;font-weight:800;font-size:13px}
 .box{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:16px;margin-top:12px}
 .box h3{font-size:16px;margin-bottom:10px}
-input{width:100%;padding:12px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:#fff;margin-top:8px}
+input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:#fff;margin-top:8px;outline:none}
+textarea{resize:vertical;min-height:60px}
 button{width:100%;padding:12px;border-radius:10px;border:0;background:#22c55e;color:#0f172a;font-weight:800;margin-top:10px;cursor:pointer}
 button:disabled{opacity:.5}
 .btn-orange{background:#f97316;color:#fff}
 .preview{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-top:10px}
 .preview div{background:#0f172a;border-radius:10px;overflow:hidden;border:1px solid #334155;padding-bottom:6px;text-align:center;font-size:11px}
 .preview img,.preview video{width:100%;height:90px;object-fit:cover}
+.mini-badge{display:inline-block;background:#22c55e;color:#000;font-size:9px;padding:2px 6px;border-radius:10px;font-weight:800;margin-bottom:3px}
 </style>
 </head>
 <body>
@@ -48,12 +50,30 @@ button:disabled{opacity:.5}
 <small id="vidStatus" style="display:block;margin-top:6px;color:#94a3b8"></small>
 </div>
 
-<div class="box">
-<h3>📦 Add New Material (WhatsApp catalog)</h3>
-<input type="text" id="prodName" placeholder="Product Name">
+<!-- UPGRADED MSEL MENTE SECTION - SAME BOX, MORE POWER -->
+<div class="box" style="border:1.5px solid #22c55e">
+<h3>📦 Add / Edit Material (MSEL MENTE)</h3>
+<input type="hidden" id="editIndex" value="-1">
+<input type="text" id="prodName" placeholder="Product Name e.g. 10,000L Storage Bag">
 <input type="text" id="prodPrice" placeholder="Price e.g. 250000">
-<input type="text" id="prodDesc" placeholder="Description">
-<button onclick="addProduct()">Add to Engineers Shop</button>
+<textarea id="prodDesc" placeholder="Description e.g. Big industrial bag for biogas storage"></textarea>
+<select id="prodBadge">
+<option value="NEW">NEW</option>
+<option value="BIG STORAGE">BIG STORAGE</option>
+<option value="HOT">HOT</option>
+<option value="KIT">KIT</option>
+<option value="SALE">SALE</option>
+</select>
+<input type="file" id="prodImage" accept="image/*">
+<small style="display:block;margin-top:6px;color:#94a3b8;font-size:11px">Product image - will be compressed automatically</small>
+<button id="prodBtn" onclick="addProduct()">Add to Engineers Shop</button>
+<button onclick="clearProdForm()" style="background:#334155;color:#fff">Clear Form</button>
+<small id="prodStatus" style="display:block;margin-top:6px;color:#94a3b8"></small>
+</div>
+
+<div class="box">
+<h3>🛒 Current MENTE Products - <span id="prodCount">0 items</span></h3>
+<div id="mentePreview" class="preview"></div>
 </div>
 
 <div class="box">
@@ -70,6 +90,8 @@ let gallery = JSON.parse(localStorage.getItem('msel_gallery')||'[]');
 let products = JSON.parse(localStorage.getItem('msel_products')||'[]');
 
 function save(){localStorage.setItem('msel_gallery',JSON.stringify(gallery));render();}
+function saveProducts(){localStorage.setItem('msel_products',JSON.stringify(products));renderProducts();}
+
 async function render(){
  let p=document.getElementById('preview');
  document.getElementById('count').innerText=gallery.length+' items';
@@ -86,7 +108,28 @@ async function render(){
  }
  p.innerHTML=h;
 }
-render();
+function renderProducts(){
+ let p=document.getElementById('mentePreview');
+ let c=document.getElementById('prodCount');
+ c.innerText=products.length+' items';
+ if(!products.length){p.innerHTML='<p style="opacity:.6">No products yet - add first product above</p>';return;}
+ let h='';
+ for(let i=0;i<products.length;i++){
+  let it=products[i];
+  let img = it.img || 'logo.png';
+  h+=`<div>
+    <img src="${img}">
+    <span class="mini-badge">${it.badge||'NEW'}</span><br>
+    <b style="font-size:11px">${it.name}</b><br>
+    <span style="color:#22c55e;font-weight:800">₦${it.price}</span><br>
+    <small style="opacity:.7">${(it.desc||'').substring(0,30)}</small><br>
+    <a style="color:#38bdf8;margin-right:6px" onclick="editProduct(${i})">Edit</a>
+    <a style="color:#ef4444" onclick="delProduct(${i})">Delete</a>
+  </div>`;
+ }
+ p.innerHTML=h;
+}
+render(); renderProducts();
 
 // INDEXEDDB FOR VIDEO - NO MORE BASE64 CRASH
 function openDB(){
@@ -182,7 +225,6 @@ function addYT(){
  try{ save(); alert('YouTube added!'); document.getElementById('ytLink').value=''; document.getElementById('ytTitle').value=''; }catch(e){ gallery.pop(); alert('Storage full! Clear gallery'); }
 }
 
-// NEW VIDEO UPLOAD - NO BASE64, NO CRASH
 async function addVideoFile(){
  let fileInput=document.getElementById('vidFile');
  let file=fileInput.files[0];
@@ -209,15 +251,60 @@ async function addVideoFile(){
  btn.disabled=false; btn.innerText='Upload Video File';
 }
 
-function addProduct(){
- let n=document.getElementById('prodName').value;
- let pr=document.getElementById('prodPrice').value;
- let d=document.getElementById('prodDesc').value;
+// NEW UPGRADED PRODUCT LOGIC - WITH IMAGE + EDIT
+async function addProduct(){
+ let n=document.getElementById('prodName').value.trim();
+ let pr=document.getElementById('prodPrice').value.trim();
+ let d=document.getElementById('prodDesc').value.trim();
+ let badge=document.getElementById('prodBadge').value;
+ let fileInput=document.getElementById('prodImage');
+ let file=fileInput.files[0];
+ let idx=parseInt(document.getElementById('editIndex').value);
+ let btn=document.getElementById('prodBtn');
+ let status=document.getElementById('prodStatus');
  if(!n||!pr){alert('Enter name & price');return;}
- products.push({name:n,price:pr,desc:d,badge:'NEW'});
- localStorage.setItem('msel_products',JSON.stringify(products));
- alert(n+' added!'); document.getElementById('prodName').value='';document.getElementById('prodPrice').value='';document.getElementById('prodDesc').value='';
+ btn.disabled=true; btn.innerText='Saving...';
+ try{
+  let imgData='';
+  if(file){ imgData=await compressImage(file); }
+  else if(idx>-1){ imgData=products[idx].img||''; }
+
+  let obj={name:n,price:pr,desc:d,badge:badge,img:imgData};
+
+  if(idx>-1){
+   products[idx]=obj;
+   status.innerText='Product updated ✓';
+  } else {
+   products.push(obj);
+   status.innerText='Product added ✓';
+  }
+  saveProducts();
+  clearProdForm();
+  alert('Success! Product saved - will show on MSEL MENTE page');
+  status.style.color='#22c55e';
+ }catch(e){ alert('Image error: '+e); status.innerText='Failed'; }
+ btn.disabled=false; btn.innerText='Add to Engineers Shop';
+ document.getElementById('editIndex').value='-1';
 }
+function editProduct(i){
+ let p=products[i];
+ document.getElementById('prodName').value=p.name;
+ document.getElementById('prodPrice').value=p.price;
+ document.getElementById('prodDesc').value=p.desc||'';
+ document.getElementById('prodBadge').value=p.badge||'NEW';
+ document.getElementById('editIndex').value=i;
+ document.getElementById('prodBtn').innerText='💾 Save Changes';
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+function delProduct(i){
+ if(confirm('Delete '+products[i].name+'?')){
+  products.splice(i,1); saveProducts();
+ }
+}
+function clearProdForm(){
+ document.getElementById('prodName').value='';document.getElementById('prodPrice').value='';document.getElementById('prodDesc').value='';document.getElementById('prodImage').value='';document.getElementById('editIndex').value='-1';document.getElementById('prodBtn').innerText='Add to Engineers Shop';
+}
+
 async function delItem(i){
  let it=gallery[i];
  if(it.type==='video_blob' && it.vidId) await deleteVideoBlob(it.vidId);
@@ -225,7 +312,6 @@ async function delItem(i){
 }
 async function clearGallery(){
  if(confirm('Clear all?')){
-  // clear videos from IndexedDB too
   let db=await openDB();
   let tx=db.transaction('videos','readwrite');
   tx.objectStore('videos').clear();
