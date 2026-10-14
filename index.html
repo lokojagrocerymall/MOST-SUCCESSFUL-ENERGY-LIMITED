@@ -19,14 +19,13 @@ nav a:last-child{color:#ff0000!important;font-weight:900}
 .hero-text h1 span{color:#FFC72C}
 .btn{background:#E67E22;color:#fff;padding:14px 28px;border-radius:8px;font-weight:bold;text-decoration:none;display:inline-block;cursor:pointer;border:0}
 .hero-box{flex:1;min-width:280px;background:#fff;border-radius:14px;padding:20px;color:#222;text-align:center}
-.home-section{padding:50px 5%;}
-.home-section h2{text-align:center;color:#00924C;font-size:30px;margin-bottom:8px}
-.home-section .sub{text-align:center;color:#666;margin-bottom:25px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
-.card{border:1px solid #e9e9e9;border-radius:14px;padding:24px;box-shadow:0 5px 20px rgba(0,0,0,0.06);background:#fff;cursor:pointer;transition:.2s}
-.card:hover{transform:translateY(-4px);border-color:#00924C;box-shadow:0 8px 25px rgba(0,0,0,0.12)}
-.card h3{color:#00924C;margin-bottom:10px}
-.click-hint{text-align:center;margin-top:20px}
+.home-topic{padding:25px 5%;}
+.topic-card{background:#fff;border:2px solid #00924C;border-radius:14px;padding:28px;text-align:center;cursor:pointer;box-shadow:0 5px 18px rgba(0,0,0,0.07);transition:.2s}
+.topic-card:hover{transform:translateY(-3px);background:#00924C;color:#fff}
+.topic-card h2{color:#00924C;font-size:28px}
+.topic-card:hover h2{color:#fff}
+.topic-card.green{background:#f0fdf4;border-color:#00924C}
+.topic-card.orange{border-color:#E67E22}
 .gallery-section{padding:60px 5%;background:#0f172a;color:#fff;text-align:center}
 .floating-wrap{position:relative;margin:25px auto 0;max-width:900px;overflow:hidden;border-radius:18px;border:2px solid #22c55e;height:340px;cursor:pointer;background:#1e293b}
 .floating-track{display:flex;animation:floatSlide 18s linear infinite;width:max-content}
@@ -37,13 +36,15 @@ nav a:last-child{color:#ff0000!important;font-weight:900}
 .back-arrow{background:none;border:none;color:#fff;font-size:32px;font-weight:900;cursor:pointer;padding:0 12px 0 0}
 .page-title{flex:1;text-align:center;font-size:18px;font-weight:800}
 .page-body{padding:30px 5%}
+.card{border:1px solid #e9e9e9;border-radius:14px;padding:24px;box-shadow:0 5px 20px rgba(0,0,0,0.06);background:#fff;margin-bottom:20px}
+.card h3{color:#00924C;margin-bottom:10px}
 .gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-top:15px}
 .gallery-item{background:#1e293b;border-radius:12px;overflow:hidden;border:1px solid #334155}
 .gallery-item img,.gallery-item iframe,.gallery-item video{width:100%;height:220px;object-fit:cover}
 .gallery-item p{padding:10px;font-size:13px;color:#fff;text-align:center}
 .mat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px;margin-top:20px}
 .mat{background:#f9f9f9;border-radius:10px;padding:18px;font-weight:bold;border:1px dashed #00924C;color:#333}
-@media(max-width:768px){.hero{padding:30px 5%}.hero-text h1{font-size:28px}.btn{width:100%;text-align:center}.floating-wrap{height:260px}.floating-track img{width:280px;height:260px}}
+@media(max-width:768px){.hero{padding:30px 5%}.hero-text h1{font-size:28px}.btn{width:100%;text-align:center}.floating-wrap{height:260px}.floating-track img{width:280px;height:260px}.topic-card h2{font-size:24px}}
 </style>
 </head>
 <body>
@@ -75,57 +76,21 @@ nav a:last-child{color:#ff0000!important;font-weight:900}
 </div>
 </section>
 
-<!-- WHAT WE DO ON HOMEPAGE - CLICKABLE -->
-<section class="home-section" style="background:#fff">
-<h2>What We Do</h2>
-<p class="sub">Tap any card to explore full details</p>
-<div class="grid">
-<div class="card" onclick="openPage('servicesPage')"><h3>1. Construction of Biogas System</h3><p>Construction of Biodigester integrated with Biofill — converts human waste, animal dungs and kitchen waste to Biogas. For industries, homes, schools, estates etc.</p></div>
-<div class="card" onclick="openPage('servicesPage')"><h3>2. Biofill System Construction</h3><p>Modern biofil toilet digester for Maryland, Ikeja, Lagos. Compact, no soakaway needed. Works in waterlogged areas.</p></div>
-<div class="card" onclick="openPage('servicesPage')"><h3>3. Materials Sales</h3><p>Sales of Biodigester & Biofill materials: Digester bags, enzymes, PVC, sealants, vents, kits. Nationwide delivery.</p></div>
-<div class="card" onclick="openPage('servicesPage')"><h3>4. Practical Physical and Online Training</h3><p>We train engineers on biodigester & biofill construction both physically on site and online via Telegram.</p></div>
-</div>
-<div class="click-hint"><button onclick="openPage('servicesPage')" class="btn" style="background:#00924C">View All Services →</button></div>
-</section>
+<!-- ONLY TOPICS - CLICKABLE LIKE GALLERY -->
+<div class="home-topic"><div class="topic-card" onclick="openPage('servicesPage')"><h2>What We Do</h2></div></div>
+<div class="home-topic" style="background:#f0fdf4"><div class="topic-card green" onclick="openPage('trainingPage')"><h2>MSEL Mentorship Training</h2></div></div>
+<div class="home-topic"><div class="topic-card" onclick="openPage('materialsPage')"><h2>Construction Materials</h2></div></div>
 
-<!-- TRAINING PREVIEW ON HOMEPAGE -->
-<section class="home-section" style="background:#f0fdf4">
-<h2>MSEL Mentorship Training</h2>
-<p class="sub">We Train Engineers Both Online & Physically — 100% Practical — Tap to explore</p>
-<div class="grid">
-<div class="card" onclick="openPage('trainingPage')" style="border-left:5px solid #00924C"><h3>💻 Online Practical Training</h3><p>Live biodigester demos, Telegram classes, Certificate, MSEL MENTE access, Lifetime support.</p></div>
-<div class="card" onclick="openPage('trainingPage')" style="border-left:5px solid #E67E22"><h3>👷 Physical Practical Training</h3><p>Hands-on site build, Real house projects, Biogas piping, Available in Lagos, PH, Delta etc.</p></div>
-</div>
-<div class="click-hint"><button onclick="openPage('trainingPage')" class="btn">Explore Training →</button></div>
-</section>
-
-<!-- MATERIALS PREVIEW -->
-<section class="home-section" style="background:#fff">
-<h2>Construction Materials</h2>
-<p class="sub">Tap to order — We supply engineers & builders nationwide</p>
-<div class="mat-grid">
-<div class="mat" onclick="openPage('materialsPage')">🔹 Biodigester Bags</div>
-<div class="mat" onclick="openPage('materialsPage')">🔹 Bio-Enzyme</div>
-<div class="mat" onclick="openPage('materialsPage')">🔹 PVC Pipes & Fittings</div>
-<div class="mat" onclick="openPage('materialsPage')">🔹 Complete Biofill Kit</div>
-</div>
-<div class="click-hint"><button onclick="openPage('materialsPage')" class="btn" style="background:#00924C">View All Materials →</button></div>
-</section>
-
-<!-- GALLERY PREVIEW -->
 <section class="gallery-section">
 <h2 style="color:#22c55e;font-size:32px">Our Works - Pictures & Videos</h2>
 <p style="opacity:.7;margin-top:8px">Real projects from Lagos, Port Harcourt, Delta — Tap to view</p>
-<div class="floating-wrap" onclick="openPage('galleryPage')">
-<div id="floatingTrack" class="floating-track"></div>
-</div>
-<br>
-<button onclick="openPage('galleryPage')" class="btn" style="background:#22c55e;color:#000;font-weight:900;font-size:17px">Images & Videos Gallery</button>
+<div class="floating-wrap" onclick="openPage('galleryPage')"><div id="floatingTrack" class="floating-track"></div></div>
+<br><button onclick="openPage('galleryPage')" class="btn" style="background:#22c55e;color:#000;font-weight:900;font-size:17px">Images & Videos Gallery</button>
 </section>
 
 <footer style="background:#000;color:#888;padding:18px;text-align:center;font-size:12px">© 2026 MOST SUCCESSFUL ENERGY LIMITED</footer>
 
-<!-- FULL PAGES -->
+<!-- FULL PAGES WITH DETAILS -->
 <div id="servicesPage" class="page-modal">
 <div class="page-head"><button class="back-arrow" onclick="closeAll()">←</button><div class="page-title">What We Do - Services</div></div>
 <div class="page-body">
@@ -137,7 +102,7 @@ nav a:last-child{color:#ff0000!important;font-weight:900}
 </div>
 </div>
 
-<div id="trainingPage" class="page-modal"><div class="page-head"><button class="back-arrow" onclick="closeAll()">←</button><div class="page-title">MSEL Mentorship Training</div></div><div class="page-body" style="background:#f0fdf4"><h2 style="text-align:center;color:#00924C;font-size:30px">MSEL Mentorship Training</h2><p style="text-align:center;color:#666;margin-top:8px">We Train Engineers Both Online & Physically — 100% Practical</p><br><div class="card" style="border-left:5px solid #00924C"><h3>💻 Online Practical Training</h3><p style="line-height:1.8">✅ Live biodigester construction demos<br>✅ Biofill & biogas installation practicals<br>✅ Training held on Telegram<br>✅ Access to MSEL MENTE private shop<br>✅ Certificate + Mentorship<br>✅ Lifetime support group</p><br><a href="https://wa.me/2347011620564" class="btn" style="font-size:14px">Register for Online Training</a></div><div class="card" style="border-left:5px solid #E67E22"><h3>👷 Physical Practical Training</h3><p style="line-height:1.8">✅ Hands-on site construction training<br>✅ Real house biodigester & biofill build<br>✅ Biogas piping & stove connection<br>✅ Available in Lagos, Port Harcourt, Delta & Other States<br>✅ Certificate + MSEL MENTE access<br>✅ Become certified installer</p><br><a href="https://wa.me/2347011620564" class="btn" style="background:#00924C;font-size:14px">Register for Physical Training</a></div></div></div>
+<div id="trainingPage" class="page-modal"><div class="page-head"><button class="back-arrow" onclick="closeAll()">←</button><div class="page-title">MSEL Mentorship Training</div></div><div class="page-body" style="background:#f0fdf4"><h2 style="text-align:center;color:#00924C;font-size:30px">MSEL Mentorship Training</h2><p style="text-align:center;color:#666;margin-top:8px">We Train Engineers Both Online & Physically — 100% Practical</p><br><div class="card" style="border-left:5px solid #00924C"><h3>💻 Online Practical Training</h3><p style="line-height:1.8">✅ Live biodigester construction demos<br>✅ Biofill & biogas installation practicals<br>✅ Training held on Telegram<br>✅ Access to MSEL MENTE private shop<br>✅ Certificate + Mentorship<br>✅ Lifetime support group</p><br><a href="https://wa.me/2347011620564" class="btn">Register for Online Training</a></div><div class="card" style="border-left:5px solid #E67E22"><h3>👷 Physical Practical Training</h3><p style="line-height:1.8">✅ Hands-on site construction training<br>✅ Real house biodigester & biofill build<br>✅ Biogas piping & stove connection<br>✅ Available in Lagos, Port Harcourt, Delta & Other States<br>✅ Certificate + MSEL MENTE access<br>✅ Become certified installer</p><br><a href="https://wa.me/2347011620564" class="btn" style="background:#00924C">Register for Physical Training</a></div></div></div>
 
 <div id="materialsPage" class="page-modal"><div class="page-head"><button class="back-arrow" onclick="closeAll()">←</button><div class="page-title">Construction Materials</div></div><div class="page-body"><h2 style="text-align:center;color:#00924C;font-size:30px">Construction Materials For Sale</h2><div class="mat-grid"><div class="mat">🔹 Biodigester Bags</div><div class="mat">🔹 Bio-Enzyme</div><div class="mat">🔹 PVC Pipes & Fittings</div><div class="mat">🔹 Air Vents & Covers</div><div class="mat">🔹 1M³ Digester Kit</div><div class="mat">🔹 Sealant & Additives</div><div class="mat">🔹 WC & Plumbing</div><div class="mat">🔹 Complete Biofill Kit</div></div><br><a href="https://wa.me/2347011620564" class="btn" style="background:#00924C">Order Materials on WhatsApp</a></div></div>
 
