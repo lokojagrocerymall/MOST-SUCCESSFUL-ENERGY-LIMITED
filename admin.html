@@ -14,10 +14,11 @@ body{background:#0f172a;color:#fff;padding:10px}
 .box h3{font-size:16px;margin-bottom:10px}
 input{width:100%;padding:12px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:#fff;margin-top:8px}
 button{width:100%;padding:12px;border-radius:10px;border:0;background:#22c55e;color:#0f172a;font-weight:800;margin-top:10px;cursor:pointer}
+button:disabled{opacity:.5}
 .btn-orange{background:#f97316;color:#fff}
 .preview{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-top:10px}
 .preview div{background:#0f172a;border-radius:10px;overflow:hidden;border:1px solid #334155;padding-bottom:6px;text-align:center;font-size:11px}
-.preview img{width:100%;height:90px;object-fit:cover}
+.preview img,.preview video{width:100%;height:90px;object-fit:cover}
 </style>
 </head>
 <body>
@@ -31,7 +32,8 @@ button{width:100%;padding:12px;border-radius:10px;border:0;background:#22c55e;co
 <h3>📸 Upload Pictures</h3>
 <input type="file" id="picFiles" multiple accept="image/*">
 <input type="text" id="picTitle" placeholder="Title e.g. Maryland Project">
-<button onclick="addPictures()">Add Pictures</button>
+<button id="picBtn" onclick="addPictures()">Add Pictures</button>
+<small id="picStatus" style="display:block;margin-top:6px;color:#94a3b8"></small>
 </div>
 
 <div class="box">
@@ -39,11 +41,11 @@ button{width:100%;padding:12px;border-radius:10px;border:0;background:#22c55e;co
 <input type="text" id="ytLink" placeholder="YouTube Link">
 <input type="text" id="ytTitle" placeholder="Video Title">
 <button class="btn-orange" onclick="addYT()">Add YouTube Video</button>
-<p style="margin-top:12px;font-size:14px">Or Upload Video File</p>
+<p style="margin-top:12px;font-size:14px">Or Upload Video File (Now works even for 50MB!)</p>
 <input type="file" id="vidFile" accept="video/*">
 <input type="text" id="vidTitle" placeholder="Video Title">
 <button id="vidBtn" onclick="addVideoFile()">Upload Video File</button>
-<small id="vidStatus" style="display:block;margin-top:8px;color:#94a3b8"></small>
+<small id="vidStatus" style="display:block;margin-top:6px;color:#94a3b8"></small>
 </div>
 
 <div class="box">
@@ -68,113 +70,143 @@ let gallery = JSON.parse(localStorage.getItem('msel_gallery')||'[]');
 let products = JSON.parse(localStorage.getItem('msel_products')||'[]');
 
 function save(){localStorage.setItem('msel_gallery',JSON.stringify(gallery));render();}
-
-function render(){
+async function render(){
  let p=document.getElementById('preview');
  document.getElementById('count').innerText=gallery.length+' items';
- if(!gallery.length){p.innerHTML='<p style="opacity:.6">No items - upload 9 images now</p>';return;}
+ if(!gallery.length){p.innerHTML='<p style="opacity:.6">No items - upload now</p>';return;}
  let h='';
- gallery.forEach((it,i)=>{
+ for(let i=0;i<gallery.length;i++){
+  let it=gallery[i];
   if(it.type==='image') h+=`<div><img src="${it.src}"><br>${it.title}<br><a style="color:#ef4444" onclick="delItem(${i})">Delete</a></div>`;
-  else h+=`<div><div style="background:#000;padding:30px 0">🎥</div><br>${it.title}<br><a style="color:#ef4444" onclick="delItem(${i})">Delete</a></div>`;
- });
+  else if(it.type==='video_blob'){
+   let blobUrl=await getVideoBlobUrl(it.vidId);
+   h+=`<div><video src="${blobUrl}" muted></video><br>${it.title}<br><a style="color:#ef4444" onclick="delItem(${i})">Delete</a></div>`;
+  }
+  else h+=`<div><div style="background:#000;padding:30px 0">🎥 ${it.type}</div><br>${it.title}<br><a style="color:#ef4444" onclick="delItem(${i})">Delete</a></div>`;
+ }
  p.innerHTML=h;
 }
 render();
 
+// INDEXEDDB FOR VIDEO - NO MORE BASE64 CRASH
+function openDB(){
+ return new Promise((res,rej)=>{
+  let req=indexedDB.open('mselDB',1);
+  req.onupgradeneeded=e=>{ e.target.result.createObjectStore('videos',{keyPath:'id'}); };
+  req.onsuccess=e=>res(e.target.result);
+  req.onerror=e=>rej(e);
+ });
+}
+function saveVideoBlob(id, file){
+ return new Promise(async (res,rej)=>{
+  let db=await openDB();
+  let tx=db.transaction('videos','readwrite');
+  tx.objectStore('videos').put({id:id, blob:file});
+  tx.oncomplete=()=>res();
+  tx.onerror=()=>rej();
+ });
+}
+function getVideoBlobUrl(id){
+ return new Promise(async (res)=>{
+  try{
+   let db=await openDB();
+   let tx=db.transaction('videos','readonly');
+   let req=tx.objectStore('videos').get(id);
+   req.onsuccess=()=>{ if(req.result) res(URL.createObjectURL(req.result.blob)); else res(''); };
+  }catch{ res(''); }
+ });
+}
+function deleteVideoBlob(id){
+ return new Promise(async (res)=>{
+  let db=await openDB();
+  let tx=db.transaction('videos','readwrite');
+  tx.objectStore('videos').delete(id);
+  tx.oncomplete=()=>res();
+ });
+}
+
 function compressImage(file){
- return new Promise(resolve=>{
+ return new Promise((resolve,reject)=>{
   let r=new FileReader();
   r.onload=e=>{
    let img=new Image();
    img.onload=()=>{
-    let c=document.createElement('canvas');
-    let max=600; let w=img.width,h=img.height;
-    if(w>h){if(w>max){h=h*max/w;w=max;}}else{if(h>max){w=w*max/h;h=max;}}
-    c.width=w;c.height=h;
-    c.getContext('2d').drawImage(img,0,0,w,h);
-    resolve(c.toDataURL('image/jpeg',0.5));
+    try{
+     let c=document.createElement('canvas');
+     let max=700; let w=img.width,h=img.height;
+     if(w>h){if(w>max){h=h*max/w;w=max;}}else{if(h>max){w=w*max/h;h=max;}}
+     c.width=w;c.height=h;
+     c.getContext('2d').drawImage(img,0,0,w,h);
+     resolve(c.toDataURL('image/jpeg',0.5));
+    }catch(err){reject(err);}
    };
+   img.onerror=()=>reject('Image corrupt');
    img.src=e.target.result;
   };
+  r.onerror=()=>reject('Failed');
   r.readAsDataURL(file);
  });
 }
 
 async function addPictures(){
  let files=document.getElementById('picFiles').files;
- let title=document.getElementById('picTitle').value||'MSEL Project';
+ let title=document.getElementById('picTitle').value.trim()||'Certified training';
+ let btn=document.getElementById('picBtn');
+ let status=document.getElementById('picStatus');
  if(!files.length){alert('Choose pictures first');return;}
- let newItems=[];
- for(let i=0;i<files.length;i++){
-  let compressed=await compressImage(files[i]);
-  newItems.push({type:'image',src:compressed,title:title});
- }
- gallery=gallery.concat(newItems);
+ btn.disabled=true;
+ status.innerText='Compressing...';
  try{
-  localStorage.setItem('msel_gallery',JSON.stringify(gallery));
-  render();
-  alert(newItems.length+' pictures added at once! Go to Homepage → Images & Videos Gallery will show them!');
+  let newItems=[];
+  for(let i=0;i<files.length;i++){
+   btn.innerText='Compressing '+(i+1)+'/'+files.length;
+   let compressed=await compressImage(files[i]);
+   newItems.push({type:'image',src:compressed,title:title});
+  }
+  let temp=gallery.concat(newItems);
+  localStorage.setItem('msel_gallery',JSON.stringify(temp));
+  gallery=temp; render();
+  alert(newItems.length+' pictures added!');
   document.getElementById('picFiles').value=''; document.getElementById('picTitle').value='';
- }catch(e){
-  alert('Storage full! Clear gallery and upload 5 at a time. '+e.message);
-  gallery=gallery.slice(0,gallery.length-newItems.length);
- }
+  status.innerText=newItems.length+' added ✓'; status.style.color='#22c55e';
+ }catch(e){ alert('Error: '+e+' - Try clear gallery and add 3 at a time'); status.innerText='Failed'; }
+ btn.disabled=false; btn.innerText='Add Pictures';
 }
 
 function addYT(){
- let link=document.getElementById('ytLink').value;
- let title=document.getElementById('ytTitle').value||'MSEL Video';
+ let link=document.getElementById('ytLink').value.trim();
+ let title=document.getElementById('ytTitle').value.trim()||'MSEL Video';
  if(!link){alert('Paste YouTube link');return;}
- let embed=link.replace('watch?v=','embed/').split('&')[0];
+ let embed=link.includes('embed/')?link: link.replace('watch?v=','embed/').split('&')[0];
  gallery.push({type:'youtube',embed:embed,title:title});
- save(); alert('YouTube video added!');
- document.getElementById('ytLink').value='';document.getElementById('ytTitle').value='';
+ try{ save(); alert('YouTube added!'); document.getElementById('ytLink').value=''; document.getElementById('ytTitle').value=''; }catch(e){ gallery.pop(); alert('Storage full! Clear gallery'); }
 }
 
-// FIXED ONLY THIS FUNCTION - NOW BUTTON RESPONDS
-function addVideoFile(){
+// NEW VIDEO UPLOAD - NO BASE64, NO CRASH
+async function addVideoFile(){
  let fileInput=document.getElementById('vidFile');
  let file=fileInput.files[0];
- let title=document.getElementById('vidTitle').value.trim()||'MSEL Video';
+ let title=document.getElementById('vidTitle').value.trim()||'Review shared by those who attended our just concluded training';
  let btn=document.getElementById('vidBtn');
  let status=document.getElementById('vidStatus');
  if(!file){alert('Choose video file');return;}
- if(file.size > 8 * 1024 * 1024){
-  alert('Video too big! '+(file.size/1024/1024).toFixed(1)+'MB. Local videos must be under 8MB. Please upload this video to YouTube and use the YouTube link above — it will play fine and never fill storage.');
-  status.innerText='Too big! Use YouTube link method.';
-  status.style.color='#f87171';
-  return;
- }
- btn.innerText='Uploading... please wait...';
  btn.disabled=true;
- status.innerText='Reading file...';
- let r=new FileReader();
- r.onload=e=>{
-  try{
-   gallery.push({type:'video',src:e.target.result,title:title});
-   localStorage.setItem('msel_gallery',JSON.stringify(gallery));
-   render();
-   alert('Video file added successfully!');
-   document.getElementById('vidFile').value='';
-   document.getElementById('vidTitle').value='';
-   status.innerText='Video added!';
-   status.style.color='#22c55e';
-  }catch(err){
-   gallery.pop();
-   alert('Storage full! Delete some old items or use YouTube link instead. '+err.message);
-   status.innerText='Storage full. Use YouTube.';
-   status.style.color='#f87171';
-  }
-  btn.innerText='Upload Video File';
-  btn.disabled=false;
- };
- r.onerror=()=>{
-  alert('Failed to read video');
-  btn.innerText='Upload Video File';
-  btn.disabled=false;
- };
- r.readAsDataURL(file);
+ btn.innerText='Uploading... please wait...';
+ status.innerText='Saving video file (no base64)...';
+ try{
+  let vidId=Date.now();
+  await saveVideoBlob(vidId, file);
+  gallery.push({type:'video_blob', vidId:vidId, title:title});
+  localStorage.setItem('msel_gallery',JSON.stringify(gallery));
+  render();
+  alert('Video uploaded! Size: '+(file.size/1024/1024).toFixed(2)+'MB - Success!');
+  fileInput.value=''; document.getElementById('vidTitle').value='';
+  status.innerText='Video saved ✓'; status.style.color='#22c55e';
+ }catch(err){
+  alert('Failed to save video: '+err.message+' - Your browser may not support IndexedDB');
+  status.innerText='Failed - try Chrome'; status.style.color='#f87171';
+ }
+ btn.disabled=false; btn.innerText='Upload Video File';
 }
 
 function addProduct(){
@@ -184,12 +216,22 @@ function addProduct(){
  if(!n||!pr){alert('Enter name & price');return;}
  products.push({name:n,price:pr,desc:d,badge:'NEW'});
  localStorage.setItem('msel_products',JSON.stringify(products));
- alert(n+' added to Engineers Shop!');
- document.getElementById('prodName').value='';document.getElementById('prodPrice').value='';document.getElementById('prodDesc').value='';
+ alert(n+' added!'); document.getElementById('prodName').value='';document.getElementById('prodPrice').value='';document.getElementById('prodDesc').value='';
 }
-
-function delItem(i){gallery.splice(i,1);save();}
-function clearGallery(){if(confirm('Clear all?')){gallery=[];save();}}
+async function delItem(i){
+ let it=gallery[i];
+ if(it.type==='video_blob' && it.vidId) await deleteVideoBlob(it.vidId);
+ gallery.splice(i,1); save();
+}
+async function clearGallery(){
+ if(confirm('Clear all?')){
+  // clear videos from IndexedDB too
+  let db=await openDB();
+  let tx=db.transaction('videos','readwrite');
+  tx.objectStore('videos').clear();
+  gallery=[]; save(); alert('All cleared! You can now upload that 1000134556.mp4');
+ }
+}
 function logout(){localStorage.removeItem('msel_admin');localStorage.removeItem('msel_role');window.location.href='login.html';}
 </script>
 </body>
