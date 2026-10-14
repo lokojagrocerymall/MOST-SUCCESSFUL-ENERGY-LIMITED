@@ -6,12 +6,14 @@
 <link rel="icon" href="logo.png">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-header{background:#fff;padding:12px 5%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,0.1);position:sticky;top:0;z-index:10}
-header img{height:58px}
-nav a{margin-left:14px;text-decoration:none;color:#00924C;font-weight:bold;font-size:13px}
+header{background:#fff;padding:10px 5%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,0.1);position:sticky;top:0;z-index:20}
+header img{height:52px}
+nav{display:flex;align-items:center;gap:14px}
+nav a{text-decoration:none;color:#00924C;font-weight:bold;font-size:14px}
+.hamburger{display:none;font-size:24px;background:none;border:none;color:#00924C;cursor:pointer;font-weight:bold}
 .hero{background:linear-gradient(90deg,#00924C 0%,#006b36 100%);color:#fff;padding:70px 5%;display:flex;flex-wrap:wrap;gap:30px;align-items:center}
 .hero-text{flex:1;min-width:300px}
-.hero-text h1{font-size:40px;line-height:1.15;margin-bottom:15px}
+.hero-text h1{font-size:38px;line-height:1.15;margin-bottom:15px}
 .hero-text h1 span{color:#FFC72C}
 .btn{background:#E67E22;color:#fff;padding:14px 28px;border-radius:8px;font-weight:bold;text-decoration:none;display:inline-block}
 .btn-lock{background:#0f172a;color:#22c55e;padding:14px 28px;border-radius:8px;font-weight:bold;text-decoration:none;display:inline-block;border:2px solid #22c55e;margin-left:10px}
@@ -27,13 +29,27 @@ nav a{margin-left:14px;text-decoration:none;color:#00924C;font-weight:bold;font-
 .mat{background:#f9f9f9;border-radius:10px;padding:18px;font-weight:bold;border:1px dashed #00924C;color:#333}
 .contact{padding:60px 5%;background:#0e0e0e;color:#fff;text-align:center}
 footer{background:#000;color:#888;padding:18px;text-align:center;font-size:12px}
+
+/* MOBILE FIX */
+@media(max-width:768px){
+  .hamburger{display:block}
+  nav{position:absolute;top:72px;left:0;right:0;background:#fff;flex-direction:column;gap:0;display:none;box-shadow:0 5px 15px rgba(0,0,0,0.15);border-top:1px solid #eee}
+  nav.show{display:flex}
+  nav a{padding:16px 5%;width:100%;border-bottom:1px solid #f0f0f0;font-size:15px}
+  nav a:hover{background:#f0fdf4}
+  .hero{padding:30px 5%}
+  .hero-text h1{font-size:28px}
+  .btn,.btn-lock{padding:12px 18px;font-size:14px;display:block;width:100%;text-align:center;margin:8px 0 0 0}
+}
 </style>
 </head>
 <body>
 <header>
 <img src="logo.png" alt="MSEL Logo">
-<nav><a href="index.html">Home</a><a href="#services">Services</a><a href="#training">Training</a><a href="#materials">Materials</a><a href="#contact">Contact</a></nav>
+<button class="hamburger" onclick="toggleMenu()">☰</button>
+<nav id="navMenu"><a href="index.html" onclick="toggleMenu()">Home</a><a href="#services" onclick="toggleMenu()">Services</a><a href="#training" onclick="toggleMenu()">Training</a><a href="#materials" onclick="toggleMenu()">Materials</a><a href="#contact" onclick="toggleMenu()">Contact</a></nav>
 </header>
+
 <section class="hero">
 <div class="hero-text">
 <h1>No More Soakaway! <br><span>Biodigester & Biofill Experts</span></h1>
@@ -47,12 +63,13 @@ footer{background:#000;color:#888;padding:18px;text-align:center;font-size:12px}
 <p style="font-size:15px;margin-top:10px;text-align:left">✅ No Smell, No Flies<br>✅ No Evacuation for 15+ Years<br>✅ Works on Waterlogged Soil<br>✅ Saves Space & Cost<br>✅ Eco-Friendly Biogas System<br>✅ Fast 2-3 Days Installation</p>
 </div>
 </section>
+
 <section class="services" id="services">
 <h2>What We Do</h2>
 <div class="grid">
 <div class="card"><h3>1. 1M³ Sewage Biogas System</h3><p>Construction of 1M³ digester integrated with Biofill — converts human waste to biogas & clean water.</p></div>
-<div class="card"><h3>2. Biofill System Construction</h3><p>Modern biofil toilet digester for Maryland, Ikeja, and all Lagos. Compact, no soakaway needed.</p></div>
-<div class="card"><h3>3. Materials Sales</h3><p>Sales of Biodigester & Biofill materials: Digester bags, enzymes, PVC, sealants, vents, complete kits.</p></div>
+<div class="card"><h3>2. Biofill System Construction</h3><p>Modern biofil toilet digester for Maryland, Ikeja, Lagos. Compact, no soakaway needed.</p></div>
+<div class="card"><h3>3. Materials Sales</h3><p>Sales of Biodigester & Biofill materials: Digester bags, enzymes, PVC, sealants, vents, kits.</p></div>
 </div>
 </section>
 
@@ -103,5 +120,8 @@ footer{background:#000;color:#888;padding:18px;text-align:center;font-size:12px}
 <a href="https://wa.me/2347011620564" class="btn">Chat on WhatsApp - 07011620564</a>
 </section>
 <footer>© 2026 MOST SUCCESSFUL ENERGY LIMITED - All Rights Reserved.</footer>
+<script>
+function toggleMenu(){document.getElementById('navMenu').classList.toggle('show')}
+</script>
 </body>
 </html>
