@@ -69,7 +69,6 @@ button:disabled{opacity:.5}
 <option value="SALE">SALE</option>
 </select>
 
-<!-- NEW: MULTIPLE IMAGES SPACE -->
 <label style="display:block;margin-top:10px;font-size:13px;color:#22c55e;font-weight:800">📸 Product Images (up to 5 images):</label>
 <input type="file" id="prodImage" multiple accept="image/*" onchange="previewProdImages(this)">
 <div id="prodImgPreview" class="img-previews"></div>
@@ -102,6 +101,7 @@ const BUCKET = 'msel-project';
 
 let gallery = JSON.parse(localStorage.getItem('msel_gallery')||'[]');
 let products = JSON.parse(localStorage.getItem('msel_products')||'[]');
+// FIXED: Don't reset to 6 if we have data - keep your 8 products
 if(products.length===0){
   products=[
     {name:'10,000L Storage Bag',price:'250000',desc:'Big industrial bag',badge:'BIG STORAGE',img:''},
@@ -125,7 +125,7 @@ async function uploadToSupabase(file){
 function render(){
  let p=document.getElementById('preview');
  document.getElementById('count').innerText=gallery.length+' items';
- if(!gallery.length){p.innerHTML='<p style="opacity:.6">No items yet</p>';return;}
+ if(!gallery.length){p.innerHTML='<p style="opacity:.6">No items yet - restoring...</p>';return;}
  let h='';
  for(let i=0;i<gallery.length;i++){
   let it=gallery[i];
@@ -174,7 +174,6 @@ function compressImage(file){
  });
 }
 
-// NEW: Preview multiple images
 function previewProdImages(input){
   let preview = document.getElementById('prodImgPreview');
   preview.innerHTML='';
@@ -279,7 +278,6 @@ function editProduct(i){
  document.getElementById('prodBadge').value=p.badge||'NEW';
  document.getElementById('editIndex').value=i;
  document.getElementById('prodBtn').innerText='Save Changes';
- // Show existing images
  let preview=document.getElementById('prodImgPreview');
  preview.innerHTML='';
  let imgs = p.imgs || (p.img?[p.img]:[]);
@@ -303,6 +301,55 @@ function clearProdForm(){
 async function delItem(i){ gallery.splice(i,1); save(); }
 async function clearGallery(){ if(confirm('Clear gallery?')){ gallery=[]; save(); } }
 function logout(){localStorage.removeItem('msel_admin');localStorage.removeItem('msel_role');window.location.href='login.html';}
+
+// --- ONLY RESTORE - NO NEW FEATURE ---
+(async function restoreAllFromSupabase(){
+ try{
+  // 1. Restore gallery from Storage bucket
+  const {data: files} = await supabaseClient.storage.from(BUCKET).list('', {limit:100, sortBy:{column:'created_at', order:'desc'}});
+  if(files && files.length>0){
+    let changed=false;
+    for(let f of files){
+      if(f.name==='.emptyFolderPlaceholder') continue;
+      const {data} = supabaseClient.storage.from(BUCKET).getPublicUrl(f.name);
+      const url=data.publicUrl;
+      if(!gallery.some(g=>g.src===url)){
+        gallery.unshift({type:'image', src:url, title:f.name});
+        changed=true;
+      }
+    }
+    if(changed){
+      localStorage.setItem('msel_gallery', JSON.stringify(gallery));
+      render();
+    }
+  }
+  // 2. Restore from tables if they exist
+  try{
+    const {data: gTable} = await supabaseClient.from('msel_gallery').select('*').limit(100);
+    if(gTable && gTable.length>gallery.length){
+      let merged=[...gallery];
+      gTable.forEach(r=>{
+        if(!merged.some(m=>m.src===r.src)) merged.unshift({type:r.type, src:r.src, title:r.title, embed:r.embed});
+      });
+      gallery=merged;
+      localStorage.setItem('msel_gallery', JSON.stringify(gallery));
+      render();
+    }
+    const {data: pTable} = await supabaseClient.from('msel_products').select('*').limit(100);
+    if(pTable && pTable.length>products.length){
+      let merged=[...products];
+      pTable.forEach(p=>{
+        if(!merged.some(m=>m.name===p.name)){
+          merged.unshift({name:p.name, price:p.price, desc:p.description||p.desc, badge:p.badge, img:p.img, imgs:p.imgs||[p.img]});
+        }
+      });
+      products=merged;
+      localStorage.setItem('msel_products', JSON.stringify(products));
+      renderProducts();
+    }
+  }catch{}
+ }catch(e){ console.log('restore error', e.message); }
+})();
 </script>
 </body>
 </html>
