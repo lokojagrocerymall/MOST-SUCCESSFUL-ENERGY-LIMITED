@@ -7,30 +7,45 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
 body{background:linear-gradient(135deg,#00924C,#0f172a);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:15px}
-.card{background:#fff;border-radius:20px;padding:35px;max-width:420px;width:100%;box-shadow:0 20px 40px rgba(0,0,0,0.3);text-align:center}
-.logo{width:120px;margin-bottom:15px}h2{color:#00924C;margin-bottom:6px}p{color:#666;font-size:13px;margin-bottom:20px}
-input{width:100%;padding:15px;border-radius:12px;border:2px solid #e5e7eb;font-size:16px;margin-top:10px;text-align:center;font-weight:bold}
-button{width:100%;padding:15px;border-radius:12px;border:0;background:#00924C;color:#fff;font-weight:800;font-size:16px;margin-top:15px;cursor:pointer}
-.info{background:#f0fdf4;border:1px dashed #00924C;border-radius:10px;padding:12px;margin-top:18px;text-align:left;font-size:12px}
+.card{background:#fff;border-radius:20px;padding:35px;max-width:400px;width:100%;box-shadow:0 20px 40px rgba(0,0,0,0.3);text-align:center}
+.logo{width:120px;margin-bottom:12px}
+h2{color:#00924C;margin-bottom:20px;font-size:24px}
+.input-wrap{position:relative;width:100%;margin-top:10px}
+.input-wrap input{width:100%;padding:15px 45px 15px 15px;border-radius:12px;border:2px solid #000;font-size:16px;text-align:center;font-weight:bold}
+.input-wrap input:focus{border-color:#00924C;outline:none}
+.eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:20px;user-select:none}
+button{width:100%;padding:15px;border-radius:12px;border:0;background:#00924C;color:#fff;font-weight:800;font-size:16px;margin-top:18px;cursor:pointer}
+.back{display:block;margin-top:18px;color:#00924C;text-decoration:none;font-size:14px;font-weight:bold}
+.error{color:#ef4444;font-size:12px;margin-top:10px;display:none}
 </style>
 </head>
 <body>
 <div class="card">
-<img src="logo.png" class="logo"><h2>🔐 MSEL Smart Login</h2><p>One login for Admin & Engineers</p>
+<img src="logo.png" class="logo" alt="MSEL">
+<h2>🔒 MSEL Smart Login</h2>
+<div class="input-wrap">
 <input id="codeInput" type="password" placeholder="Enter Access Code">
-<div id="error" style="color:#ef4444;font-size:12px;margin-top:10px;display:none">Wrong code!</div>
+<span class="eye" onclick="toggleEye()" id="eyeIcon">👁️</span>
+</div>
+<div id="error" class="error">❌ Wrong code!</div>
 <button onclick="smartLogin()">Login Now →</button>
-<div class="info"><b>👑 Admin:</b> MSELADMIN2026, MSEL2024<br><b>👷 Engineers:</b> MSEL-ENGINEER, MENTE2026, MSEL2026 or your personal code<br>System auto-detects your role</div>
-<a href="index.html" style="display:block;margin-top:15px;color:#00924C;text-decoration:none;font-weight:bold">← Back to Homepage</a>
+<a href="index.html" class="back">← Back to Homepage</a>
 </div>
 <script>
 const adminCodes=['MSELADMIN2026','MSEL2024','07011620564','ADMIN2026'];
+function toggleEye(){
+ let i=document.getElementById('codeInput');
+ let e=document.getElementById('eyeIcon');
+ if(i.type==='password'){i.type='text';e.textContent='🙈';}
+ else{i.type='password';e.textContent='👁️';}
+}
 function smartLogin(){
  let code=document.getElementById('codeInput').value.trim().toUpperCase();
+ if(!code){document.getElementById('error').style.display='block';return;}
  if(adminCodes.includes(code)||code.includes('ADMIN')){localStorage.setItem('msel_admin','yes');localStorage.setItem('msel_role','admin');window.location.href='admin.html';}
- else if(code.length>=4){localStorage.setItem('msel_engineer','yes');localStorage.setItem('msel_role','engineer');window.location.href='engineers.html';}
- else{document.getElementById('error').style.display='block';}
+ else{localStorage.setItem('msel_engineer','yes');localStorage.setItem('msel_role','engineer');localStorage.setItem('msel_eng_code',code);window.location.href='engineers.html';}
 }
+document.getElementById('codeInput').addEventListener('keypress',e=>{if(e.key==='Enter')smartLogin();});
 </script>
 </body>
 </html>
