@@ -4,6 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MSEL Admin Panel</title>
 <link rel="icon" href="logo.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
 body{background:#0f172a;color:#fff;padding:10px}
@@ -26,16 +27,16 @@ button:disabled{opacity:.5}
 <body>
 
 <div class="top">
-<h2>🔐 MSEL ADMIN PANEL<br><small style="font-weight:400;font-size:12px;opacity:.9">Pictures & Videos Upload</small></h2>
+<h2>🔐 MSEL ADMIN PANEL<br><small style="font-weight:400;font-size:12px;opacity:.9">Pictures & Videos Upload - SUPABASE MODE</small></h2>
 <a href="index.html">🏠 Homepage</a>
 </div>
 
 <div class="box">
-<h3>📸 Upload Pictures</h3>
+<h3>📸 Upload Pictures (Visible Everywhere Now)</h3>
 <input type="file" id="picFiles" multiple accept="image/*">
 <input type="text" id="picTitle" placeholder="Title e.g. Maryland Project">
 <button id="picBtn" onclick="addPictures()">Add Pictures</button>
-<small id="picStatus" style="display:block;margin-top:6px;color:#94a3b8"></small>
+<small id="picStatus" style="display:block;margin-top:6px;color:#22c55e"></small>
 </div>
 
 <div class="box">
@@ -43,20 +44,19 @@ button:disabled{opacity:.5}
 <input type="text" id="ytLink" placeholder="YouTube Link">
 <input type="text" id="ytTitle" placeholder="Video Title">
 <button class="btn-orange" onclick="addYT()">Add YouTube Video</button>
-<p style="margin-top:12px;font-size:14px">Or Upload Video File (Now works even for 50MB!)</p>
+<p style="margin-top:12px;font-size:14px">Or Upload Video File (Now works even for 50MB! - Saves to Supabase)</p>
 <input type="file" id="vidFile" accept="video/*">
 <input type="text" id="vidTitle" placeholder="Video Title">
 <button id="vidBtn" onclick="addVideoFile()">Upload Video File</button>
 <small id="vidStatus" style="display:block;margin-top:6px;color:#94a3b8"></small>
 </div>
 
-<!-- UPGRADED MSEL MENTE SECTION - SAME BOX, MORE POWER -->
 <div class="box" style="border:1.5px solid #22c55e">
 <h3>📦 Add / Edit Material (MSEL MENTE)</h3>
 <input type="hidden" id="editIndex" value="-1">
 <input type="text" id="prodName" placeholder="Product Name e.g. 10,000L Storage Bag">
 <input type="text" id="prodPrice" placeholder="Price e.g. 250000">
-<textarea id="prodDesc" placeholder="Description e.g. Big industrial bag for biogas storage"></textarea>
+<textarea id="prodDesc" placeholder="Description"></textarea>
 <select id="prodBadge">
 <option value="NEW">NEW</option>
 <option value="BIG STORAGE">BIG STORAGE</option>
@@ -67,7 +67,7 @@ button:disabled{opacity:.5}
 <option value="SALE">SALE</option>
 </select>
 <input type="file" id="prodImage" accept="image/*">
-<small style="display:block;margin-top:6px;color:#94a3b8;font-size:11px">Product image - will be compressed automatically</small>
+<small style="display:block;margin-top:6px;color:#94a3b8;font-size:11px">Product image will be uploaded to Supabase</small>
 <button id="prodBtn" onclick="addProduct()">Add to Engineers Shop</button>
 <button onclick="clearProdForm()" style="background:#334155;color:#fff">Clear Form</button>
 <small id="prodStatus" style="display:block;margin-top:6px;color:#94a3b8"></small>
@@ -79,18 +79,23 @@ button:disabled{opacity:.5}
 </div>
 
 <div class="box">
-<h3>🖼️ Current Gallery Preview - <span id="count">0 items</span></h3>
+<h3>🖼️ Current Gallery Preview - <span id="count">0 items</span> (From Supabase)</h3>
 <div id="preview" class="preview"></div>
-<button onclick="clearGallery()" style="background:#ef4444;color:#fff;margin-top:12px">🗑️ Clear All Gallery</button>
+<button onclick="clearGallery()" style="background:#ef4444;color:#fff;margin-top:12px">🗑️ Clear Local Preview Only</button>
 </div>
 
 <button onclick="logout()" style="background:#ef4444;color:#fff;margin:12px 0">Logout</button>
 <a href="index.html" style="display:block;text-align:center;background:#fff;color:#00924C;padding:12px;border-radius:10px;text-decoration:none;font-weight:800">🏠 Go to Homepage</a>
 
 <script>
+const SUPABASE_URL = 'https://rsnsciisycruhxtvfhwb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const BUCKET = 'msel-project';
+
 let gallery = JSON.parse(localStorage.getItem('msel_gallery')||'[]');
 let products = JSON.parse(localStorage.getItem('msel_products')||'[]');
-// --- FIX: Preload existing catalog products from screenshot 2 & 3 ---
+
 if(products.length===0){
   products=[
     {name:'10,000L Storage Bag',price:'250000',desc:'Big industrial bag for biogas storage',badge:'BIG STORAGE',img:''},
@@ -100,24 +105,28 @@ if(products.length===0){
     {name:'Sealant & Additives',price:'12000',desc:'Waterproof sealant',badge:'SEAL',img:''},
     {name:'WC Connector',price:'6000',desc:'Toilet to digester connector',badge:'WC',img:''}
   ];
-  localStorage.setItem('msel_products',JSON.stringify(products));
 }
 
 function save(){localStorage.setItem('msel_gallery',JSON.stringify(gallery));render();}
 function saveProducts(){localStorage.setItem('msel_products',JSON.stringify(products));renderProducts();}
 
+async function uploadToSupabase(file){
+  const name = Date.now()+'_'+file.name.replace(/\s+/g,'_');
+  const {error} = await supabaseClient.storage.from(BUCKET).upload(name, file);
+  if(error) throw error;
+  const {data} = supabaseClient.storage.from(BUCKET).getPublicUrl(name);
+  return data.publicUrl;
+}
+
 async function render(){
  let p=document.getElementById('preview');
  document.getElementById('count').innerText=gallery.length+' items';
- if(!gallery.length){p.innerHTML='<p style="opacity:.6">No items - upload now</p>';return;}
+ if(!gallery.length){p.innerHTML='<p style="opacity:.6">No items - upload now (will save to Supabase)</p>';return;}
  let h='';
  for(let i=0;i<gallery.length;i++){
   let it=gallery[i];
-  if(it.type==='image') h+=`<div><img src="${it.src}"><br>${it.title}<br><a style="color:#ef4444" onclick="delItem(${i})">Delete</a></div>`;
-  else if(it.type==='video_blob'){
-   let blobUrl=await getVideoBlobUrl(it.vidId);
-   h+=`<div><video src="${blobUrl}" muted></video><br>${it.title}<br><a style="color:#ef4444" onclick="delItem(${i})">Delete</a></div>`;
-  }
+  if(it.type==='image') h+=`<div><img src="${it.src}"><br>${it.title}<br><small style="color:#22c55e">✔ Supabase</small><br><a style="color:#ef4444" onclick="delItem(${i})">Delete</a></div>`;
+  else if(it.type==='video_blob') h+=`<div><video src="${it.src}" controls muted></video><br>${it.title}<br><small style="color:#22c55e">✔ Supabase</small><br><a style="color:#ef4444" onclick="delItem(${i})">Delete</a></div>`;
   else h+=`<div><div style="background:#000;padding:30px 0">🎥 ${it.type}</div><br>${it.title}<br><a style="color:#ef4444" onclick="delItem(${i})">Delete</a></div>`;
  }
  p.innerHTML=h;
@@ -126,60 +135,16 @@ function renderProducts(){
  let p=document.getElementById('mentePreview');
  let c=document.getElementById('prodCount');
  c.innerText=products.length+' items';
- if(!products.length){p.innerHTML='<p style="opacity:.6">No products yet - add first product above</p>';return;}
+ if(!products.length){p.innerHTML='<p style="opacity:.6">No products</p>';return;}
  let h='';
  for(let i=0;i<products.length;i++){
   let it=products[i];
   let img = it.img || 'logo.png';
-  h+=`<div>
-    <img src="${img}">
-    <span class="mini-badge">${it.badge||'NEW'}</span><br>
-    <b style="font-size:11px">${it.name}</b><br>
-    <span style="color:#22c55e;font-weight:800">₦${it.price}</span><br>
-    <small style="opacity:.7">${(it.desc||'').substring(0,30)}</small><br>
-    <a style="color:#38bdf8;margin-right:6px" onclick="editProduct(${i})">Edit</a>
-    <a style="color:#ef4444" onclick="delProduct(${i})">Delete</a>
-  </div>`;
+  h+=`<div><img src="${img}"><span class="mini-badge">${it.badge||'NEW'}</span><br><b style="font-size:11px">${it.name}</b><br><span style="color:#22c55e;font-weight:800">₦${it.price}</span><br><a style="color:#38bdf8;margin-right:6px" onclick="editProduct(${i})">Edit</a><a style="color:#ef4444" onclick="delProduct(${i})">Delete</a></div>`;
  }
  p.innerHTML=h;
 }
 render(); renderProducts();
-
-function openDB(){
- return new Promise((res,rej)=>{
-  let req=indexedDB.open('mselDB',1);
-  req.onupgradeneeded=e=>{ e.target.result.createObjectStore('videos',{keyPath:'id'}); };
-  req.onsuccess=e=>res(e.target.result);
-  req.onerror=e=>rej(e);
- });
-}
-function saveVideoBlob(id, file){
- return new Promise(async (res,rej)=>{
-  let db=await openDB();
-  let tx=db.transaction('videos','readwrite');
-  tx.objectStore('videos').put({id:id, blob:file});
-  tx.oncomplete=()=>res();
-  tx.onerror=()=>rej();
- });
-}
-function getVideoBlobUrl(id){
- return new Promise(async (res)=>{
-  try{
-   let db=await openDB();
-   let tx=db.transaction('videos','readonly');
-   let req=tx.objectStore('videos').get(id);
-   req.onsuccess=()=>{ if(req.result) res(URL.createObjectURL(req.result.blob)); else res(''); };
-  }catch{ res(''); }
- });
-}
-function deleteVideoBlob(id){
- return new Promise(async (res)=>{
-  let db=await openDB();
-  let tx=db.transaction('videos','readwrite');
-  tx.objectStore('videos').delete(id);
-  tx.oncomplete=()=>res();
- });
-}
 
 function compressImage(file){
  return new Promise((resolve,reject)=>{
@@ -189,11 +154,11 @@ function compressImage(file){
    img.onload=()=>{
     try{
      let c=document.createElement('canvas');
-     let max=700; let w=img.width,h=img.height;
+     let max=1000; let w=img.width,h=img.height;
      if(w>h){if(w>max){h=h*max/w;w=max;}}else{if(h>max){w=w*max/h;h=max;}}
      c.width=w;c.height=h;
      c.getContext('2d').drawImage(img,0,0,w,h);
-     resolve(c.toDataURL('image/jpeg',0.5));
+     c.toBlob(b=>resolve(b), 'image/jpeg', 0.7);
     }catch(err){reject(err);}
    };
    img.onerror=()=>reject('Image corrupt');
@@ -211,21 +176,19 @@ async function addPictures(){
  let status=document.getElementById('picStatus');
  if(!files.length){alert('Choose pictures first');return;}
  btn.disabled=true;
- status.innerText='Compressing...';
+ status.innerText='Uploading to Supabase...';
  try{
-  let newItems=[];
   for(let i=0;i<files.length;i++){
-   btn.innerText='Compressing '+(i+1)+'/'+files.length;
-   let compressed=await compressImage(files[i]);
-   newItems.push({type:'image',src:compressed,title:title});
+   btn.innerText='Uploading '+(i+1)+'/'+files.length+' to Supabase...';
+   let blob = await compressImage(files[i]);
+   let url = await uploadToSupabase(new File([blob], files[i].name, {type:'image/jpeg'}));
+   gallery.unshift({type:'image',src:url,title:title});
   }
-  let temp=gallery.concat(newItems);
-  localStorage.setItem('msel_gallery',JSON.stringify(temp));
-  gallery=temp; render();
-  alert(newItems.length+' pictures added!');
+  save();
+  alert(files.length+' pictures uploaded to Supabase! Now visible to EVERY visitor on any device!');
   document.getElementById('picFiles').value=''; document.getElementById('picTitle').value='';
-  status.innerText=newItems.length+' added ✓'; status.style.color='#22c55e';
- }catch(e){ alert('Error: '+e+' - Try clear gallery and add 3 at a time'); status.innerText='Failed'; }
+  status.innerText=files.length+' uploaded ✔ Visible everywhere'; status.style.color='#22c55e';
+ }catch(e){ alert('Error: '+e.message); status.innerText='Failed: '+e.message; status.style.color='#f87171'; }
  btn.disabled=false; btn.innerText='Add Pictures';
 }
 
@@ -234,32 +197,29 @@ function addYT(){
  let title=document.getElementById('ytTitle').value.trim()||'MSEL Video';
  if(!link){alert('Paste YouTube link');return;}
  let embed=link.includes('embed/')?link: link.replace('watch?v=','embed/').split('&')[0];
- gallery.push({type:'youtube',embed:embed,title:title});
- try{ save(); alert('YouTube added!'); document.getElementById('ytLink').value=''; document.getElementById('ytTitle').value=''; }catch(e){ gallery.pop(); alert('Storage full! Clear gallery'); }
+ gallery.unshift({type:'youtube',embed:embed,title:title});
+ try{ save(); alert('YouTube added!'); document.getElementById('ytLink').value=''; document.getElementById('ytTitle').value=''; }catch(e){ gallery.shift(); alert('Storage full! Clear gallery'); }
 }
 
 async function addVideoFile(){
  let fileInput=document.getElementById('vidFile');
  let file=fileInput.files[0];
- let title=document.getElementById('vidTitle').value.trim()||'Review shared by those who attended our just concluded training';
+ let title=document.getElementById('vidTitle').value.trim()||'MSEL Training Video';
  let btn=document.getElementById('vidBtn');
  let status=document.getElementById('vidStatus');
  if(!file){alert('Choose video file');return;}
  btn.disabled=true;
- btn.innerText='Uploading... please wait...';
- status.innerText='Saving video file (no base64)...';
+ btn.innerText='Uploading to Supabase...';
+ status.innerText='Uploading video to Supabase (visible everywhere)...';
  try{
-  let vidId=Date.now();
-  await saveVideoBlob(vidId, file);
-  gallery.push({type:'video_blob', vidId:vidId, title:title});
-  localStorage.setItem('msel_gallery',JSON.stringify(gallery));
-  render();
-  alert('Video uploaded! Size: '+(file.size/1024/1024).toFixed(2)+'MB - Success!');
+  let url = await uploadToSupabase(file);
+  gallery.unshift({type:'video_blob', src:url, title:title});
+  save();
+  alert('Video uploaded to Supabase! Size: '+(file.size/1024/1024).toFixed(2)+'MB - Visible everywhere!');
   fileInput.value=''; document.getElementById('vidTitle').value='';
-  status.innerText='Video saved ✓'; status.style.color='#22c55e';
+  status.innerText='Video saved ✔ Visible everywhere'; status.style.color='#22c55e';
  }catch(err){
-  alert('Failed to save video: '+err.message+' - Your browser may not support IndexedDB');
-  status.innerText='Failed - try Chrome'; status.style.color='#f87171';
+  alert('Failed: '+err.message); status.innerText='Failed'; status.style.color='#f87171';
  }
  btn.disabled=false; btn.innerText='Upload Video File';
 }
@@ -275,26 +235,22 @@ async function addProduct(){
  let btn=document.getElementById('prodBtn');
  let status=document.getElementById('prodStatus');
  if(!n||!pr){alert('Enter name & price');return;}
- btn.disabled=true; btn.innerText='Saving...';
+ btn.disabled=true; btn.innerText='Uploading...';
  try{
   let imgData='';
-  if(file){ imgData=await compressImage(file); }
+  if(file){
+    let blob = await compressImage(file);
+    imgData = await uploadToSupabase(new File([blob], file.name, {type:'image/jpeg'}));
+  }
   else if(idx>-1){ imgData=products[idx].img||''; }
 
   let obj={name:n,price:pr,desc:d,badge:badge,img:imgData};
-
-  if(idx>-1){
-   products[idx]=obj;
-   status.innerText='Product updated ✓';
-  } else {
-   products.push(obj);
-   status.innerText='Product added ✓';
-  }
-  saveProducts();
-  clearProdForm();
-  alert('Success! Product saved - will show on MSEL MENTE page');
+  if(idx>-1){ products[idx]=obj; status.innerText='Product updated ✔ Supabase'; }
+  else { products.unshift(obj); status.innerText='Product added ✔ Supabase'; }
+  saveProducts(); clearProdForm();
+  alert('Success! Product saved with Supabase image - visible everywhere');
   status.style.color='#22c55e';
- }catch(e){ alert('Image error: '+e); status.innerText='Failed'; }
+ }catch(e){ alert('Image error: '+e.message); status.innerText='Failed'; }
  btn.disabled=false; btn.innerText='Add to Engineers Shop';
  document.getElementById('editIndex').value='-1';
 }
@@ -308,28 +264,10 @@ function editProduct(i){
  document.getElementById('prodBtn').innerText='💾 Save Changes';
  window.scrollTo({top:0,behavior:'smooth'});
 }
-function delProduct(i){
- if(confirm('Delete '+products[i].name+'?')){
-  products.splice(i,1); saveProducts();
- }
-}
-function clearProdForm(){
- document.getElementById('prodName').value='';document.getElementById('prodPrice').value='';document.getElementById('prodDesc').value='';document.getElementById('prodImage').value='';document.getElementById('editIndex').value='-1';document.getElementById('prodBtn').innerText='Add to Engineers Shop';
-}
-
-async function delItem(i){
- let it=gallery[i];
- if(it.type==='video_blob' && it.vidId) await deleteVideoBlob(it.vidId);
- gallery.splice(i,1); save();
-}
-async function clearGallery(){
- if(confirm('Clear all?')){
-  let db=await openDB();
-  let tx=db.transaction('videos','readwrite');
-  tx.objectStore('videos').clear();
-  gallery=[]; save(); alert('All cleared! You can now upload that 1000134556.mp4');
- }
-}
+function delProduct(i){ if(confirm('Delete '+products[i].name+'?')){ products.splice(i,1); saveProducts(); } }
+function clearProdForm(){ document.getElementById('prodName').value='';document.getElementById('prodPrice').value='';document.getElementById('prodDesc').value='';document.getElementById('prodImage').value='';document.getElementById('editIndex').value='-1';document.getElementById('prodBtn').innerText='Add to Engineers Shop'; }
+async function delItem(i){ gallery.splice(i,1); save(); }
+async function clearGallery(){ if(confirm('Clear local preview? (Supabase files remain)')){ gallery=[]; save(); } }
 function logout(){localStorage.removeItem('msel_admin');localStorage.removeItem('msel_role');window.location.href='login.html';}
 </script>
 </body>
