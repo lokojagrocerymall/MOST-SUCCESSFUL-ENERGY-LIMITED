@@ -49,7 +49,7 @@ footer{background:#000;color:#888;padding:18px;text-align:center;font-size:12px}
 <header>
 <img src="logo.png" alt="MSEL Logo">
 <button class="hamburger" onclick="toggleMenu()">☰</button>
-<nav id="navMenu"><a href="index.html" onclick="toggleMenu()">Home</a><a href="#services" onclick="toggleMenu()">Services</a><a href="#training" onclick="toggleMenu()">Training</a><a href="#materials" onclick="toggleMenu()">Materials</a><a href="#gallery" onclick="toggleMenu()">Gallery</a><a href="#contact" onclick="toggleMenu()">Contact</a></nav>
+<nav id="navMenu"><a href="index.html" onclick="toggleMenu()">Home</a><a href="#services" onclick="toggleMenu()">Services</a><a href="#training" onclick="toggleMenu()">Training</a><a href="#materials" onclick="toggleMenu()">Materials</a><a href="#gallery" onclick="toggleMenu()">Gallery</a><a href="#contact" onclick="toggleMenu()">Contact</a><a href="login.html" style="background:#00924C;color:#fff;padding:8px 16px;border-radius:20px" onclick="toggleMenu()">🔐 Login</a></nav>
 </header>
 
 <section class="hero">
@@ -57,7 +57,7 @@ footer{background:#000;color:#888;padding:18px;text-align:center;font-size:12px}
 <h1>No More Soakaway! <br><span>Biodigester & Biofill Experts</span></h1>
 <p><b>MOST SUCCESSFUL ENERGY LIMITED</b> — 1M³ Sewage Biogas System with Biofill. No evacuation for 15+ years!</p>
 <a href="#contact" class="btn">Book Construction Now</a>
-<a href="engineers.html" class="btn-lock">🔒 Engineers Login</a>
+<a href="login.html" class="btn-lock">🔐 Smart Login</a>
 </div>
 <div class="hero-box">
 <img src="logo.png" style="width:100%;max-width:320px;margin-bottom:15px">
@@ -118,11 +118,9 @@ footer{background:#000;color:#888;padding:18px;text-align:center;font-size:12px}
 <section class="gallery-section" id="gallery">
 <h2 style="color:#22c55e;font-size:32px">Our Works - Pictures & Videos</h2>
 <p style="opacity:.7;margin-top:8px">Real projects from Lagos, Port Harcourt, Delta - Biodigester & Biofill Construction + Biogas Burning Demos</p>
-<div id="publicGallery" class="gallery-grid">
-<p style="opacity:.5">Loading gallery...</p>
-</div>
+<div id="publicGallery" class="gallery-grid"></div>
 <br>
-<a href="https://wa.me/2347011620564?text=Hi%20MSEL%2C%20I%20want%20to%20see%20more%20project%20pictures" class="btn" style="background:#22c55e;color:#0f172a">View More on WhatsApp</a>
+<a href="#gallery" class="btn" style="background:#22c55e;color:#0f172a">📸🖼️ View Images & Videos Catalog</a>
 </section>
 
 <section class="contact" id="contact">
@@ -132,7 +130,7 @@ footer{background:#000;color:#888;padding:18px;text-align:center;font-size:12px}
 <p>✉️ Email: mostsuccessfulenergy@gmail.com</p><br>
 <a href="https://wa.me/2347011620564" class="btn">Chat on WhatsApp - 07011620564</a>
 </section>
-<footer>© 2026 MOST SUCCESSFUL ENERGY LIMITED - All Rights Reserved. | <a href="admin.html" style="color:#333;text-decoration:none">Admin</a></footer>
+<footer>© 2026 MOST SUCCESSFUL ENERGY LIMITED - All Rights Reserved.</footer>
 <script>
 function toggleMenu(){document.getElementById('navMenu').classList.toggle('show')}
 let g=JSON.parse(localStorage.getItem('msel_gallery')||'[]');
@@ -146,7 +144,7 @@ if(g.length){
  });
  pub.innerHTML=h;
 } else {
- pub.innerHTML='<p style="opacity:.7">No pictures yet. Admin will upload project pictures & biogas videos soon. Check back or WhatsApp us!<br><br>📸 Projects include: Biodigester construction, Biofill tanks, Biogas stove burning demos, Training sessions</p>';
+ pub.innerHTML='';
 }
 </script>
 </body>
