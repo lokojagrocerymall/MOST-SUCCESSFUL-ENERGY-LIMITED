@@ -101,17 +101,32 @@ const BUCKET = 'msel-project';
 
 let gallery = JSON.parse(localStorage.getItem('msel_gallery')||'[]');
 let products = JSON.parse(localStorage.getItem('msel_products')||'[]');
-// FIXED: Don't reset to 6 if we have data - keep your 8 products
+
+// --- RESTORED: 8 PRODUCTS INCLUDING YOUR BIOGAS SOLAR PUMP ---
+const DEFAULT_PRODUCTS = [
+  {name:'Biogas Solar Pump',price:'165000',desc:'Comes with solar panel. Complete system. Pump water with biogas',badge:'SALE',img:'',imgs:[]},
+  {name:'Solar Water Pump Kit',price:'195000',desc:'Solar powered water pump with panel and controller',badge:'NEW',img:'',imgs:[]},
+  {name:'10,000L Storage Bag',price:'250000',desc:'Big industrial bag',badge:'BIG STORAGE',img:''},
+  {name:'Biodigester Bag 1M³',price:'85000',desc:'High density digester bag',badge:'HOT',img:''},
+  {name:'Air Vent & Cover',price:'8000',desc:'Odorless vent system',badge:'NEW',img:''},
+  {name:'1M³ Digester Complete Kit',price:'180000',desc:'Everything for 1M³ system',badge:'KIT',img:''},
+  {name:'Sealant & Additives',price:'12000',desc:'Waterproof sealant',badge:'SEAL',img:''},
+  {name:'WC Connector',price:'6000',desc:'Toilet connector',badge:'WC',img:''}
+];
+
 if(products.length===0){
-  products=[
-    {name:'10,000L Storage Bag',price:'250000',desc:'Big industrial bag',badge:'BIG STORAGE',img:''},
-    {name:'Biodigester Bag 1M³',price:'85000',desc:'High density digester bag',badge:'HOT',img:''},
-    {name:'Air Vent & Cover',price:'8000',desc:'Odorless vent system',badge:'NEW',img:''},
-    {name:'1M³ Digester Complete Kit',price:'180000',desc:'Everything for 1M³ system',badge:'KIT',img:''},
-    {name:'Sealant & Additives',price:'12000',desc:'Waterproof sealant',badge:'SEAL',img:''},
-    {name:'WC Connector',price:'6000',desc:'Toilet connector',badge:'WC',img:''}
-  ];
+  products = DEFAULT_PRODUCTS;
+  localStorage.setItem('msel_products', JSON.stringify(products));
+} else if(products.length===6){
+  // You had 6, restore to 8 by adding the 2 missing on top
+  let hasPump = products.some(p=>p.name.toLowerCase().includes('solar pump'));
+  if(!hasPump){
+    products.unshift(DEFAULT_PRODUCTS[1]);
+    products.unshift(DEFAULT_PRODUCTS[0]);
+    localStorage.setItem('msel_products', JSON.stringify(products));
+  }
 }
+
 function save(){localStorage.setItem('msel_gallery',JSON.stringify(gallery));render();}
 function saveProducts(){localStorage.setItem('msel_products',JSON.stringify(products));renderProducts();}
 
@@ -125,7 +140,7 @@ async function uploadToSupabase(file){
 function render(){
  let p=document.getElementById('preview');
  document.getElementById('count').innerText=gallery.length+' items';
- if(!gallery.length){p.innerHTML='<p style="opacity:.6">No items yet - restoring...</p>';return;}
+ if(!gallery.length){p.innerHTML='<p style="opacity:.6">No items yet</p>';return;}
  let h='';
  for(let i=0;i<gallery.length;i++){
   let it=gallery[i];
@@ -302,10 +317,9 @@ async function delItem(i){ gallery.splice(i,1); save(); }
 async function clearGallery(){ if(confirm('Clear gallery?')){ gallery=[]; save(); } }
 function logout(){localStorage.removeItem('msel_admin');localStorage.removeItem('msel_role');window.location.href='login.html';}
 
-// --- ONLY RESTORE - NO NEW FEATURE ---
-(async function restoreAllFromSupabase(){
+// --- RESTORE GALLERY FROM BUCKET ---
+(async function restoreGallery(){
  try{
-  // 1. Restore gallery from Storage bucket
   const {data: files} = await supabaseClient.storage.from(BUCKET).list('', {limit:100, sortBy:{column:'created_at', order:'desc'}});
   if(files && files.length>0){
     let changed=false;
@@ -323,32 +337,7 @@ function logout(){localStorage.removeItem('msel_admin');localStorage.removeItem(
       render();
     }
   }
-  // 2. Restore from tables if they exist
-  try{
-    const {data: gTable} = await supabaseClient.from('msel_gallery').select('*').limit(100);
-    if(gTable && gTable.length>gallery.length){
-      let merged=[...gallery];
-      gTable.forEach(r=>{
-        if(!merged.some(m=>m.src===r.src)) merged.unshift({type:r.type, src:r.src, title:r.title, embed:r.embed});
-      });
-      gallery=merged;
-      localStorage.setItem('msel_gallery', JSON.stringify(gallery));
-      render();
-    }
-    const {data: pTable} = await supabaseClient.from('msel_products').select('*').limit(100);
-    if(pTable && pTable.length>products.length){
-      let merged=[...products];
-      pTable.forEach(p=>{
-        if(!merged.some(m=>m.name===p.name)){
-          merged.unshift({name:p.name, price:p.price, desc:p.description||p.desc, badge:p.badge, img:p.img, imgs:p.imgs||[p.img]});
-        }
-      });
-      products=merged;
-      localStorage.setItem('msel_products', JSON.stringify(products));
-      renderProducts();
-    }
-  }catch{}
- }catch(e){ console.log('restore error', e.message); }
+ }catch(e){}
 })();
 </script>
 </body>
