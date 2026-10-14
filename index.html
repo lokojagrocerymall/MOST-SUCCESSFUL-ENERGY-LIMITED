@@ -27,11 +27,27 @@ nav a{text-decoration:none;color:#00924C;font-weight:bold;font-size:14px}
 .materials{padding:60px 5%;background:#fff;text-align:center}
 .mat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px;margin-top:30px}
 .mat{background:#f9f9f9;border-radius:10px;padding:18px;font-weight:bold;border:1px dashed #00924C;color:#333}
+
+/* GALLERY - NEW DESIGN */
 .gallery-section{padding:60px 5%;background:#0f172a;color:#fff;text-align:center}
-.gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-top:25px}
-.gallery-item{background:#1e293b;border-radius:12px;overflow:hidden;border:1px solid #334155}
+.floating-wrap{position:relative;margin:25px auto 0;max-width:900px;overflow:hidden;border-radius:18px;border:2px solid #22c55e;height:340px;cursor:pointer;background:#1e293b}
+.floating-track{display:flex;animation:floatSlide 18s linear infinite;width:max-content}
+.floating-track img{width:400px;height:340px;object-fit:cover;flex-shrink:0;border-right:2px solid #0f172a}
+@keyframes floatSlide{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.floating-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7),transparent);display:flex;align-items:flex-end;justify-content:center;padding:15px;pointer-events:none}
+.floating-overlay span{background:#22c55e;color:#000;padding:8px 18px;border-radius:20px;font-weight:900;font-size:13px}
+
+/* FULL GALLERY MODAL */
+#galleryModal{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.92);overflow-y:auto;padding:20px 5%}
+.modal-head{display:flex;justify-content:space-between;align-items:center;color:#fff;margin-bottom:15px}
+.modal-head h2{color:#22c55e}
+.close-modal{background:#ef4444;color:#fff;border:0;padding:10px 18px;border-radius:8px;font-weight:bold;cursor:pointer}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
+.gallery-item{background:#1e293b;border-radius:12px;overflow:hidden;border:1px solid #334155;cursor:pointer;transition:0.2s}
+.gallery-item:hover{transform:scale(1.03);border-color:#22c55e}
 .gallery-item img,.gallery-item iframe,.gallery-item video{width:100%;height:220px;object-fit:cover}
-.gallery-item p{padding:10px;font-size:13px}
+.gallery-item p{padding:10px;font-size:13px;color:#fff;text-align:center}
+
 .contact{padding:60px 5%;background:#0e0e0e;color:#fff;text-align:center}
 footer{background:#000;color:#888;padding:18px;text-align:center;font-size:12px}
 @media(max-width:768px){
@@ -42,6 +58,7 @@ footer{background:#000;color:#888;padding:18px;text-align:center;font-size:12px}
   .hero{padding:30px 5%}
   .hero-text h1{font-size:28px}
   .btn,.btn-lock{padding:12px 18px;font-size:14px;display:block;width:100%;text-align:center;margin:8px 0 0 0}
+  .floating-wrap{height:260px}.floating-track img{width:280px;height:260px}
 }
 </style>
 </head>
@@ -81,30 +98,15 @@ footer{background:#000;color:#888;padding:18px;text-align:center;font-size:12px}
 <div class="grid">
 <div class="card" style="border-left:5px solid #00924C">
 <h3>💻 Online Practical Training</h3>
-<p style="margin-top:10px;line-height:1.8">
-✅ Live biodigester construction demos<br>
-✅ Biofill & biogas installation practicals<br>
-✅ Training held on Telegram<br>
-✅ Access to MSEL MENTE private shop<br>
-✅ Certificate + Mentorship<br>
-✅ Lifetime support group<br>
-</p><br>
+<p style="margin-top:10px;line-height:1.8">✅ Live biodigester construction demos<br>✅ Biofill & biogas installation practicals<br>✅ Training held on Telegram<br>✅ Access to MSEL MENTE private shop<br>✅ Certificate + Mentorship<br>✅ Lifetime support group<br></p><br>
 <a href="https://wa.me/2347011620564?text=Hi%20MSEL%2C%20I%20want%20to%20register%20for%20ONLINE%20practical%20training%20on%20Telegram" class="btn" style="font-size:14px">Register for Online Training</a>
 </div>
 <div class="card" style="border-left:5px solid #E67E22">
 <h3>👷 Physical Practical Training</h3>
-<p style="margin-top:10px;line-height:1.8">
-✅ Hands-on site construction training<br>
-✅ Real house biodigester & biofill build<br>
-✅ Biogas piping & stove connection<br>
-✅ Available in Lagos, Port Harcourt, Delta & Other States<br>
-✅ Certificate + MSEL MENTE access<br>
-✅ Become certified installer<br>
-</p><br>
+<p style="margin-top:10px;line-height:1.8">✅ Hands-on site construction training<br>✅ Real house biodigester & biofill build<br>✅ Biogas piping & stove connection<br>✅ Available in Lagos, Port Harcourt, Delta & Other States<br>✅ Certificate + MSEL MENTE access<br>✅ Become certified installer<br></p><br>
 <a href="https://wa.me/2347011620564?text=Hi%20MSEL%2C%20I%20want%20to%20register%20for%20PHYSICAL%20practical%20training" class="btn" style="background:#00924C;font-size:14px">Register for Physical Training</a>
 </div>
 </div>
-<p style="text-align:center;margin-top:25px;font-weight:bold;color:#0f172a">✅ Both Trainings Include: MSEL MENTE Shop Access (Materials at Cost) + Certificate + Lifetime Mentorship</p>
 </section>
 
 <section class="materials" id="materials">
@@ -117,11 +119,27 @@ footer{background:#000;color:#888;padding:18px;text-align:center;font-size:12px}
 
 <section class="gallery-section" id="gallery">
 <h2 style="color:#22c55e;font-size:32px">Our Works - Pictures & Videos</h2>
-<p style="opacity:.7;margin-top:8px">Real projects from Lagos, Port Harcourt, Delta - Biodigester & Biofill Construction + Biogas Burning Demos</p>
-<div id="publicGallery" class="gallery-grid"></div>
+<p style="opacity:.7;margin-top:8px">Real projects from Lagos, Port Harcourt, Delta - Tap to view full gallery</p>
+
+<!-- FLOATING ANIMATING PREVIEW ON HOMEPAGE -->
+<div class="floating-wrap" onclick="openGallery()">
+<div id="floatingTrack" class="floating-track"></div>
+<div class="floating-overlay"><span>👁️ Tap to View Full Gallery - Floating Preview</span></div>
+</div>
+
 <br>
-<button onclick="openGallery()" class="btn" style="background:#22c55e;color:#fff;font-weight:900;font-size:17px;letter-spacing:0.5px;border:0;cursor:pointer">Images & Videos Gallery</button>
+<button onclick="openGallery()" class="btn" style="background:#22c55e;color:#000;font-weight:900;font-size:17px;border:0;cursor:pointer">Images & Videos Gallery</button>
 </section>
+
+<!-- HIDDEN FULL GALLERY MODAL -->
+<div id="galleryModal">
+<div class="modal-head">
+<h2>📸 MSEL Full Gallery - Pictures & Videos</h2>
+<button class="close-modal" onclick="closeGallery()">✕ Close</button>
+</div>
+<div id="fullGalleryGrid" class="gallery-grid"></div>
+<br><button class="close-modal" style="width:100%;padding:14px" onclick="closeGallery()">Close Gallery</button>
+</div>
 
 <section class="contact" id="contact">
 <h2>Contact Us Today</h2><br>
@@ -131,26 +149,40 @@ footer{background:#000;color:#888;padding:18px;text-align:center;font-size:12px}
 <a href="https://wa.me/2347011620564" class="btn">Chat on WhatsApp - 07011620564</a>
 </section>
 <footer>© 2026 MOST SUCCESSFUL ENERGY LIMITED - All Rights Reserved.</footer>
+
 <script>
 function toggleMenu(){document.getElementById('navMenu').classList.toggle('show')}
-function openGallery(){
- let pub=document.getElementById('publicGallery');
- pub.scrollIntoView({behavior:'smooth',block:'start'});
- pub.style.outline='3px solid #22c55e';
- setTimeout(()=>pub.style.outline='none',1500);
-}
+function openGallery(){document.getElementById('galleryModal').style.display='block';document.body.style.overflow='hidden';}
+function closeGallery(){document.getElementById('galleryModal').style.display='none';document.body.style.overflow='auto';}
+
 let g=JSON.parse(localStorage.getItem('msel_gallery')||'[]');
-let pub=document.getElementById('publicGallery');
+let floatingTrack=document.getElementById('floatingTrack');
+let fullGrid=document.getElementById('fullGalleryGrid');
+
 if(g.length){
- let h='';
+ // Build full gallery
+ let fullHTML='';
  g.forEach(item=>{
-  if(item.type==='image') h+=`<div class="gallery-item"><img src="${item.src}"><p>${item.title}</p></div>`;
-  else if(item.type==='youtube') h+=`<div class="gallery-item"><iframe src="${item.embed}" frameborder="0" allowfullscreen></iframe><p>${item.title}</p></div>`;
-  else if(item.type==='video') h+=`<div class="gallery-item"><video src="${item.src}" controls></video><p>${item.title}</p></div>`;
+  if(item.type==='image') fullHTML+=`<div class="gallery-item"><img src="${item.src}"><p>${item.title}</p></div>`;
+  else if(item.type==='youtube') fullHTML+=`<div class="gallery-item"><iframe src="${item.embed}" frameborder="0" allowfullscreen></iframe><p>${item.title}</p></div>`;
+  else if(item.type==='video') fullHTML+=`<div class="gallery-item"><video src="${item.src}" controls></video><p>${item.title}</p></div>`;
  });
- pub.innerHTML=h;
+ fullGrid.innerHTML=fullHTML;
+
+ // Build floating preview - take first 6 images, duplicate for smooth loop
+ let previewItems=g.filter(i=>i.type==='image').slice(0,6);
+ if(previewItems.length===0) previewItems=g.slice(0,6);
+ let trackHTML='';
+ // duplicate twice for infinite float
+ for(let k=0;k<2;k++){
+  previewItems.forEach(item=>{
+   if(item.type==='image') trackHTML+=`<img src="${item.src}" alt="${item.title}">`;
+  });
+ }
+ floatingTrack.innerHTML=trackHTML || '<div style="padding:100px;color:#22c55e;width:100%">No images uploaded yet - Go to Admin</div>';
 } else {
- pub.innerHTML='';
+ floatingTrack.innerHTML='<div style="padding:100px;color:#22c55e;width:100%">No projects yet - Upload in Admin Panel</div>';
+ fullGrid.innerHTML='<p style="color:#fff;opacity:.6">No images in gallery yet. Upload via Admin Panel.</p>';
 }
 </script>
 </body>
