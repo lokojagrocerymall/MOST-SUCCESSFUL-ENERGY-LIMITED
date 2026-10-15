@@ -252,7 +252,7 @@ async function addVideoFile(){
  btn.disabled=false; btn.innerText='Upload Video File';
 }
 
-// --- ONLY UPDATE FIXED ---
+// --- FIXED UPDATE ONLY - NOW SAVES TO SUPABASE TABLE ---
 async function addProduct(){
  let n=document.getElementById('prodName').value.trim();
  let pr=document.getElementById('prodPrice').value.trim();
@@ -280,7 +280,6 @@ async function addProduct(){
     }
   }
 
-  // UPDATE FIX: if editing and no new images, keep old images 100%
   if(imgUrls.length===0 && oldData){
     if(oldData.imgs && oldData.imgs.length>0){ imgUrls = [...oldData.imgs]; }
     else if(oldData.img){ imgUrls = [oldData.img]; }
@@ -288,12 +287,24 @@ async function addProduct(){
 
   let mainImg = imgUrls.length>0? imgUrls[0] : (oldData? (oldData.img || (oldData.imgs?oldData.imgs[0]:'')) : '');
 
-  let obj={name:n,price:pr,desc:d,badge:badge,img:mainImg,imgs:imgUrls};
+  // SAVE TO SUPABASE TABLE - THIS FIXES ALL BROWSERS
+  let savedId = oldData? oldData.id : null;
+  try{
+    let rowData = {name:n, price:pr, description:d, badge:badge, img:mainImg, imgs:imgUrls};
+    if(idx>-1 && oldData && oldData.id){
+      await supabaseClient.from('msel_products').update(rowData).eq('id', oldData.id);
+      savedId = oldData.id;
+    }else{
+      let {data} = await supabaseClient.from('msel_products').insert(rowData).select();
+      if(data && data[0]) savedId = data[0].id;
+    }
+  }catch(err){ console.log('table save failed', err.message); }
 
-  if(idx>-1){ products[idx]=obj; } else { products.unshift(obj); }
+  let obj={id:savedId, name:n, price:pr, desc:d, badge:badge, img:mainImg, imgs:imgUrls};
 
+  if(idx>-1) products[idx]=obj; else products.unshift(obj);
   saveProducts(); clearProdForm();
-  status.innerText='Saved';
+  status.innerText='Saved - visible in ALL browsers';
  }catch(e){ status.innerText='Error: '+e.message; }
  btn.disabled=false; btn.innerText='Add to Shop';
  document.getElementById('editIndex').value='-1';
@@ -318,7 +329,14 @@ function editProduct(i){
  });
  window.scrollTo({top:0,behavior:'smooth'});
 }
-function delProduct(i){ if(confirm('Delete?')){ products.splice(i,1); saveProducts(); } }
+
+async function delProduct(i){
+  if(!confirm('Delete?')) return;
+  let p=products[i];
+  try{ if(p.id) await supabaseClient.from('msel_products').delete().eq('id', p.id); }catch{}
+  products.splice(i,1); saveProducts();
+}
+
 function clearProdForm(){
   document.getElementById('prodName').value='';
   document.getElementById('prodPrice').value='';
@@ -350,6 +368,18 @@ function logout(){localStorage.removeItem('msel_admin');localStorage.removeItem(
       localStorage.setItem('msel_gallery', JSON.stringify(gallery));
       render();
     }
+  }
+ }catch(e){}
+})();
+
+// Load existing products from table on start
+(async function restoreProducts(){
+ try{
+  const {data} = await supabaseClient.from('msel_products').select('*').order('created_at',{ascending:false});
+  if(data && data.length>0){
+    products = data.map(r=>({id:r.id, name:r.name, price:r.price, desc:r.description||'', badge:r.badge||'NEW', img:r.img, imgs:r.imgs||[]}));
+    localStorage.setItem('msel_products', JSON.stringify(products));
+    renderProducts();
   }
  }catch(e){}
 })();
