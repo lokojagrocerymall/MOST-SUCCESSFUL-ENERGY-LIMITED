@@ -128,8 +128,9 @@ if(products.length===0){
 function save(){localStorage.setItem('msel_gallery',JSON.stringify(gallery));render();}
 function saveProducts(){localStorage.setItem('msel_products',JSON.stringify(products));renderProducts();}
 
-async function uploadToSupabase(file){
-  const name = Date.now()+'_'+Math.random().toString(36).slice(2,6)+'_'+file.name.replace(/\s+/g,'_');
+async function uploadToSupabase(file, folder=''){
+  const prefix = folder? folder + '/' : '';
+  const name = prefix + Date.now()+'_'+Math.random().toString(36).slice(2,6)+'_'+file.name.replace(/\s+/g,'_');
   const {error} = await supabaseClient.storage.from(BUCKET).upload(name, file, {upsert:true});
   if(error) throw error;
   const {data} = supabaseClient.storage.from(BUCKET).getPublicUrl(name);
@@ -216,7 +217,7 @@ async function addPictures(){
    btn.innerText='Uploading '+(i+1)+'/'+list.length+'...';
    let compressed = await compressImage(list[i]);
    let fileToUpload = compressed instanceof File? compressed : new File([compressed], list[i].name, {type:'image/jpeg'});
-   let url = await uploadToSupabase(fileToUpload);
+   let url = await uploadToSupabase(fileToUpload, 'gallery');
    gallery.unshift({type:'image',src:url,title:title});
   }
   save();
@@ -243,7 +244,7 @@ async function addVideoFile(){
  if(!file){status.innerText='Choose video file';return;}
  btn.disabled=true; btn.innerText='Uploading...';
  try{
-  let url = await uploadToSupabase(file);
+  let url = await uploadToSupabase(file, 'gallery');
   gallery.unshift({type:'video_blob', src:url, title:title});
   save();
   fileInput.value=''; document.getElementById('vidTitle').value='';
@@ -252,7 +253,6 @@ async function addVideoFile(){
  btn.disabled=false; btn.innerText='Upload Video File';
 }
 
-// --- FIXED UPDATE ONLY - NOW SAVES TO SUPABASE TABLE ---
 async function addProduct(){
  let n=document.getElementById('prodName').value.trim();
  let pr=document.getElementById('prodPrice').value.trim();
@@ -268,26 +268,21 @@ async function addProduct(){
  try{
   let oldData = idx>-1? products[idx] : null;
   let imgUrls = [];
-
   if(files && files.length>0){
     let list = Array.from(files);
     for(let i=0;i<list.length && i<5;i++){
       status.innerText='Uploading image '+(i+1)+'/'+list.length+'...';
       let compressed = await compressImage(list[i]);
       let fileToUpload = compressed instanceof File? compressed : new File([compressed], list[i].name, {type:'image/jpeg'});
-      let url = await uploadToSupabase(fileToUpload);
+      let url = await uploadToSupabase(fileToUpload, 'products');
       imgUrls.push(url);
     }
   }
-
   if(imgUrls.length===0 && oldData){
     if(oldData.imgs && oldData.imgs.length>0){ imgUrls = [...oldData.imgs]; }
     else if(oldData.img){ imgUrls = [oldData.img]; }
   }
-
   let mainImg = imgUrls.length>0? imgUrls[0] : (oldData? (oldData.img || (oldData.imgs?oldData.imgs[0]:'')) : '');
-
-  // SAVE TO SUPABASE TABLE - THIS FIXES ALL BROWSERS
   let savedId = oldData? oldData.id : null;
   try{
     let rowData = {name:n, price:pr, description:d, badge:badge, img:mainImg, imgs:imgUrls};
@@ -299,9 +294,7 @@ async function addProduct(){
       if(data && data[0]) savedId = data[0].id;
     }
   }catch(err){ console.log('table save failed', err.message); }
-
   let obj={id:savedId, name:n, price:pr, desc:d, badge:badge, img:mainImg, imgs:imgUrls};
-
   if(idx>-1) products[idx]=obj; else products.unshift(obj);
   saveProducts(); clearProdForm();
   status.innerText='Saved - visible in ALL browsers';
@@ -350,7 +343,42 @@ async function delItem(i){ gallery.splice(i,1); save(); }
 async function clearGallery(){ if(confirm('Clear gallery?')){ gallery=[]; save(); } }
 function logout(){localStorage.removeItem('msel_admin');localStorage.removeItem('msel_role');window.location.href='login.html';}
 
-// REMOVED restoreGallery() auto-scan that was polluting gallery with product images
+// FIXED GALLERY RESTORE - shows gallery in ALL browsers, skips products folder
+(async function restoreGallery(){
+ try{
+  let changed=false;
+  // 1. Load new gallery/ folder
+  const {data: gFiles} = await supabaseClient.storage.from(BUCKET).list('gallery', {limit:100, sortBy:{column:'created_at', order:'desc'}});
+  if(gFiles && gFiles.length>0){
+    for(let f of gFiles){
+      if(f.name==='.emptyFolderPlaceholder') continue;
+      const {data} = supabaseClient.storage.from(BUCKET).getPublicUrl('gallery/'+f.name);
+      if(!gallery.some(g=>g.src===data.publicUrl)){
+        gallery.unshift({type:'image', src:data.publicUrl, title:f.name});
+        changed=true;
+      }
+    }
+  }
+  // 2. Load OLD ROOT gallery images (to bring back your old gallery)
+  const {data: rootFiles} = await supabaseClient.storage.from(BUCKET).list('', {limit:100, sortBy:{column:'created_at', order:'desc'}});
+  if(rootFiles && rootFiles.length>0){
+    for(let f of rootFiles){
+      if(f.name==='.emptyFolderPlaceholder') continue;
+      if(f.name==='gallery' || f.name==='products') continue;
+      if(!f.metadata) continue; // skip folders
+      const {data} = supabaseClient.storage.from(BUCKET).getPublicUrl(f.name);
+      const url=data.publicUrl;
+      // Skip if this image is already a product image
+      if(products.some(p=>p.img===url || (p.imgs && p.imgs.includes(url)))) continue;
+      if(!gallery.some(g=>g.src===url)){
+        gallery.unshift({type:'image', src:url, title:f.name});
+        changed=true;
+      }
+    }
+  }
+  if(changed){ localStorage.setItem('msel_gallery', JSON.stringify(gallery)); render(); }
+ }catch(e){ console.log('gallery restore', e.message); }
+})();
 
 // Load existing products from table on start
 (async function restoreProducts(){
