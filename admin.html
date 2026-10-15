@@ -253,7 +253,7 @@ async function addVideoFile(){
  btn.disabled=false; btn.innerText='Upload Video File';
 }
 
- async function addProducts(){
+ async function addProduct(){
  let n=document.getElementById('prodName').value.trim();
  let pr=document.getElementById('prodPrice').value.trim();
  let d=document.getElementById('prodDesc').value.trim();
@@ -264,44 +264,43 @@ async function addVideoFile(){
  let btn=document.getElementById('prodBtn');
  let status=document.getElementById('prodStatus');
  if(!n||!pr){status.innerText='Enter name & price';return;}
- btn.disabled=true; btn.innerText='Saving...';
+ btn.disabled=true; btn.innerText='Saving...'; status.innerText='Uploading...';
  try{
   let oldData = idx>-1? products[idx] : null;
   let imgUrls = [];
   if(files && files.length>0){
     for(let i=0;i<files.length && i<5;i++){
-      status.innerText='Uploading image '+(i+1)+'/'+files.length+'...';
-      let compressed = await compressImage(files[i]);
-      let toUp = compressed instanceof File? compressed : new File([compressed], files[i].name, {type:'image/jpeg'});
-      let url = await uploadToSupabase(toUp);
+      status.innerText='Uploading '+(i+1)+'/'+files.length+'...';
+      let url = await uploadToSupabase(files[i]);
       imgUrls.push(url);
     }
   }
   if(imgUrls.length===0 && oldData){
-    if(oldData.imgs && oldData.imgs.length>0){ imgUrls = [...oldData.imgs]; }
-    else if(oldData.img){ imgUrls = [oldData.img]; }
+    if(oldData.imgs && oldData.imgs.length>0) imgUrls=[...oldData.imgs];
+    else if(oldData.img) imgUrls=[oldData.img];
   }
-  let mainImg = imgUrls.length>0? imgUrls[0] : (oldData? (oldData.img || (oldData.imgs?oldData.imgs[0]:'')) : '');
+  let mainImg = imgUrls[0] || (oldData? oldData.img : '');
   let savedId = oldData? oldData.id : null;
-  try{
-    let rowData = {name:n, price:pr, description:d, badge:badge, img:mainImg, imgs:imgUrls};
-    if(idx>-1 && oldData && oldData.id){
-      await supabaseClient.from('msel_products').update(rowData).eq('id', oldData.id);
-      savedId = oldData.id;
-    }else{
-      let {data} = await supabaseClient.from('msel_products').insert(rowData).select();
-      if(data && data[0]) savedId = data[0].id;
-    }
-  }catch(err){ console.log('table save failed', err.message); }
+  let rowData={name:n, price:pr, description:d, badge:badge, img:mainImg, imgs:imgUrls};
+  if(idx>-1 && oldData && oldData.id){
+    await supabaseClient.from('msel_products').update(rowData).eq('id', oldData.id);
+    savedId=oldData.id;
+  }else{
+    let {data} = await supabaseClient.from('msel_products').insert(rowData).select();
+    if(data && data[0]) savedId=data[0].id;
+  }
   let obj={id:savedId, name:n, price:pr, desc:d, badge:badge, img:mainImg, imgs:imgUrls};
   if(idx>-1) products[idx]=obj; else products.unshift(obj);
   saveProducts(); clearProdForm();
-  status.innerText='Saved';
- }catch(e){ status.innerText='Error: '+e.message; }
+  status.innerText='Saved ✓'; fileInput.value='';
+ }catch(e){
+  console.log(e);
+  status.innerText='Error: '+e.message;
+  alert('Error: '+e.message);
+ }
  btn.disabled=false; btn.innerText='Add to Shop';
  document.getElementById('editIndex').value='-1';
 }
-
 function editProduct(i){
  let p=products[i];
  document.getElementById('prodName').value=p.name;
