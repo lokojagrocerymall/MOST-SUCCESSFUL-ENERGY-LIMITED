@@ -217,7 +217,7 @@ async function addPictures(){
    btn.innerText='Uploading '+(i+1)+'/'+list.length+'...';
    let compressed = await compressImage(list[i]);
    let fileToUpload = compressed instanceof File? compressed : new File([compressed], list[i].name, {type:'image/jpeg'});
-   let url = await uploadToSupabase(fileToUpload, 'gallery');
+   let url = await uploadToSupabase(fileToUpload);
    gallery.unshift({type:'image',src:url,title:title});
   }
   save();
@@ -253,7 +253,7 @@ async function addVideoFile(){
  btn.disabled=false; btn.innerText='Upload Video File';
 }
 
-async function addProduct(){
+ async function addProducts(){
  let n=document.getElementById('prodName').value.trim();
  let pr=document.getElementById('prodPrice').value.trim();
  let d=document.getElementById('prodDesc').value.trim();
@@ -269,12 +269,11 @@ async function addProduct(){
   let oldData = idx>-1? products[idx] : null;
   let imgUrls = [];
   if(files && files.length>0){
-    let list = Array.from(files);
-    for(let i=0;i<list.length && i<5;i++){
-      status.innerText='Uploading image '+(i+1)+'/'+list.length+'...';
-      let compressed = await compressImage(list[i]);
-      let fileToUpload = compressed instanceof File? compressed : new File([compressed], list[i].name, {type:'image/jpeg'});
-      let url = await uploadToSupabase(fileToUpload, 'products');
+    for(let i=0;i<files.length && i<5;i++){
+      status.innerText='Uploading image '+(i+1)+'/'+files.length+'...';
+      let compressed = await compressImage(files[i]);
+      let toUp = compressed instanceof File? compressed : new File([compressed], files[i].name, {type:'image/jpeg'});
+      let url = await uploadToSupabase(toUp);
       imgUrls.push(url);
     }
   }
@@ -297,7 +296,7 @@ async function addProduct(){
   let obj={id:savedId, name:n, price:pr, desc:d, badge:badge, img:mainImg, imgs:imgUrls};
   if(idx>-1) products[idx]=obj; else products.unshift(obj);
   saveProducts(); clearProdForm();
-  status.innerText='Saved - visible in ALL browsers';
+  status.innerText='Saved';
  }catch(e){ status.innerText='Error: '+e.message; }
  btn.disabled=false; btn.innerText='Add to Shop';
  document.getElementById('editIndex').value='-1';
