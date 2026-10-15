@@ -337,10 +337,27 @@ function clearProdForm(){
   document.getElementById('editIndex').value='-1';
   document.getElementById('prodBtn').innerText='Add to Shop';
 }
-async function delItem(i){ gallery.splice(i,1); save(); }
-async function clearGallery(){ if(confirm('Clear gallery?')){ gallery=[]; save(); } }
-function logout(){localStorage.removeItem('msel_admin');localStorage.removeItem('msel_role');window.location.href='login.html';}
+async function delItem(i){
+ try{
+  let item = gallery[i];
+  if(item && item.id){
+    await supabaseClient.from('msel_gallery').delete().eq('id', item.id);
+  }
+  gallery.splice(i,1);
+  save();
+ }catch(e){ alert('Delete failed: '+e.message); }
+}
 
+async function clearGallery(){
+ if(!confirm('Clear ALL gallery? This will delete from all browsers.')) return;
+ try{
+  await supabaseClient.from('msel_gallery').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  gallery=[];
+  save();
+ }catch(e){ alert('Clear failed: '+e.message); }
+}
+
+function logout(){localStorage.removeItem('msel_admin');localStorage.removeItem('msel_role');window.location.href='login.html';}
 // FIXED GALLERY RESTORE - shows gallery in ALL browsers, skips products folder
 (async function restoreGallery(){
  try{
