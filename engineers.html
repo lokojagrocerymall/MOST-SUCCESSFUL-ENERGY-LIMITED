@@ -266,10 +266,14 @@ async function placeOrder(){
   try{
     const {error} = await supabaseClient.from('msel_orders').insert({customer_name:name, customer_phone:phone, customer_address:address, customer_state:state, items:cart, total:total, payment_ref:ref, payment_proof_url:proofUrl, status:'pending'});
     if(error) throw error;
-    const itemsText = cart.map(c=>`${c.name} x${c.qty} = ₦${(c.price*c.qty).toLocaleString()}`).join('%0A');
-    const msg = `*NEW MSEL ORDER*%0A%0A*Name:* ${name}%0A*Phone:* ${phone}%0A*Address:* ${address}%0A*State:* ${state}%0A*Ref:* ${ref}%0A%0A*Items:*%0A${itemsText}%0A%0A*TOTAL: ₦${total.toLocaleString()}*%0A%0A*Receipt:* ${proofUrl}%0A%0A*Bank:* ACCESS 1817568677`;
-    window.open(`https://wa.me/${08052941223}?text=${msg}`, '_blank');
-    alert('✅ Order Placed! Receipt uploaded. Admin will be notified on WhatsApp.');
+
+    // --- FIXED WHATSAPP LINK - NO MORE DOWNLOAD PAGE ---
+    const itemsRaw = cart.map(c=>`${c.name} x${c.qty} = ₦${(c.price*c.qty).toLocaleString()}`).join('\n');
+    const msgRaw = `*NEW MSEL ORDER*\n\n*Name:* ${name}\n*Phone:* ${phone}\n*Address:* ${address}\n*State:* ${state}\n*Ref:* ${ref}\n\n*Items:*\n${itemsRaw}\n\n*TOTAL: ₦${total.toLocaleString()}*\n\n*Receipt:* ${proofUrl}\n\n*Bank:* ACCESS 1817568677`;
+    const finalUrl = `https://api.whatsapp.com/send?phone=${ADMIN_WHATSAPP}&text=${encodeURIComponent(msgRaw)}`;
+    window.location.href = finalUrl;
+
+    alert('✅ Order Placed! Opening WhatsApp to notify admin...');
     cart=[]; localStorage.setItem('msel_cart', JSON.stringify(cart)); updateCartCount();
     document.getElementById('checkoutModal').style.display='none';
     btn.innerText='I Have Paid - Place Order'; btn.disabled=false;
