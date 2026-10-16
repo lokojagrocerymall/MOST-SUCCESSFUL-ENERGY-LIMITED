@@ -19,9 +19,10 @@ body{background:#0f172a;color:#fff}
 .badge{display:inline-block;background:#22c55e;color:#000;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:800;margin-top:6px}
 .name{font-size:13px;font-weight:800;margin-top:6px;min-height:32px}
 .desc{font-size:11px;opacity:.7;min-height:28px;margin:4px 0}
-.price{color:#22c55e;font-weight:800;margin:6px 0}
+.price{color:#FF0000;font-weight:900;margin:6px 0;font-size:14px}
 .btn{width:100%;padding:8px;border-radius:8px;border:0;background:#22c55e;color:#000;font-weight:800;font-size:12px;margin-top:4px;cursor:pointer}
 .btn2{background:#334155;color:#fff}
+.view-cart-btn{width:90%;max-width:340px;margin:16px auto;display:block;background:#00C853!important;background-color:#00C853!important;color:#000!important;font-weight:900!important;padding:14px!important;border-radius:12px!important;border:0!important;font-size:15px!important;box-shadow:0 4px 15px rgba(0,200,83,0.5);letter-spacing:0.5px}
 .logout{display:block;margin:10px auto;background:#ef4444;color:#fff;border:0;padding:10px 24px;border-radius:20px;font-weight:800}
 #productModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:1000;overflow:auto;padding:12px}
 .modal-box{background:#1e293b;max-width:500px;margin:20px auto;border-radius:16px;overflow:hidden;border:1px solid #334155}
@@ -49,7 +50,7 @@ body{background:#0f172a;color:#fff}
 </div>
 
 <div id="grid" class="grid">Loading products...</div>
-<button class="btn" style="width:auto;margin:12px auto;display:block;background:#334155" onclick="openCheckout()">View Cart & Checkout</button>
+<button class="view-cart-btn" onclick="openCheckout()">View Cart & Checkout</button>
 <button class="logout" onclick="logout()">Logout</button>
 
 <div id="productModal">
@@ -66,7 +67,7 @@ body{background:#0f172a;color:#fff}
       <div id="modalBadge" class="badge"></div>
       <div id="modalTitle" style="font-size:18px;font-weight:900;margin:8px 0"></div>
       <div id="modalDesc" style="font-size:13px;opacity:.8;margin:6px 0"></div>
-      <div id="modalPrice" style="color:#22c55e;font-weight:900;font-size:20px;margin:10px 0"></div>
+      <div id="modalPrice" style="color:#FF0000;font-weight:900;font-size:20px;margin:10px 0"></div>
       <button class="btn" onclick="addToCartFromModal()" style="padding:14px;font-size:15px">🛒 Add to Cart</button>
       <button class="btn btn2" onclick="closeProduct()">Continue Shopping</button>
     </div>
@@ -77,7 +78,7 @@ body{background:#0f172a;color:#fff}
   <div class="checkout-box">
     <h2 style="text-align:center;color:#22c55e">Checkout</h2>
     <div id="checkoutItems" style="margin:12px 0"></div>
-    <h3 id="checkoutTotal" style="text-align:right;color:#22c55e;margin:8px 0"></h3>
+    <h3 id="checkoutTotal" style="text-align:right;color:#FF0000;margin:8px 0"></h3>
     <div class="bank-box">
       <h4 style="color:#22c55e;text-align:center;margin:0 0 8px 0">PAY DIRECTLY TO:</h4>
       <p><b>Account Name:</b> Most Successful Energy Limited</p>
@@ -179,7 +180,7 @@ function openCheckout(){
   let total=0;
   itemsDiv.innerHTML = cart.map((c, i)=>{
     total+= c.price*c.qty;
-    return `<div style="display:flex;justify-content:space-between;margin:8px 0;border-bottom:1px solid #1e3a5f;padding-bottom:6px"><span style="font-size:13px">${c.name} x${c.qty}</span><span style="font-size:13px">₦${(c.price*c.qty).toLocaleString()} <span onclick="removeFromCart(${i})" style="color:#ef4444;cursor:pointer">✕</span></span></div>`;
+    return `<div style="display:flex;justify-content:space-between;margin:8px 0;border-bottom:1px solid #1e3a5f;padding-bottom:6px"><span style="font-size:13px">${c.name} x${c.qty}</span><span style="font-size:13px;color:#FF0000">₦${(c.price*c.qty).toLocaleString()} <span onclick="removeFromCart(${i})" style="color:#ef4444;cursor:pointer">✕</span></span></div>`;
   }).join('');
   document.getElementById('checkoutTotal').innerText = 'Total: ₦' + total.toLocaleString();
   document.getElementById('checkoutModal').style.display='block';
