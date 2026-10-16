@@ -11,8 +11,10 @@ body{background:#0f172a;color:#fff}
 .top{background:#00924C;padding:12px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
 .top b{font-size:15px}
 .top a{background:#fff;color:#00924C;padding:6px 14px;border-radius:20px;text-decoration:none;font-weight:800;font-size:13px}
+.cart-btn{background:#000;color:#22c55e;padding:7px 14px;border-radius:20px;font-weight:800;font-size:13px;border:1px solid #22c55e;cursor:pointer;margin-right:6px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
-.card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:10px;text-align:center}
+.card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:10px;text-align:center;cursor:pointer}
+.card:active{transform:scale(0.97);border-color:#22c55e}
 .card img{width:100%;height:120px;object-fit:contain;background:#fff;border-radius:10px}
 .badge{display:inline-block;background:#22c55e;color:#000;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:800;margin-top:6px}
 .name{font-size:13px;font-weight:800;margin-top:6px;min-height:32px}
@@ -21,68 +23,196 @@ body{background:#0f172a;color:#fff}
 .btn{width:100%;padding:8px;border-radius:8px;border:0;background:#22c55e;color:#000;font-weight:800;font-size:12px;margin-top:4px;cursor:pointer}
 .btn2{background:#334155;color:#fff}
 .logout{display:block;margin:10px auto;background:#ef4444;color:#fff;border:0;padding:10px 24px;border-radius:20px;font-weight:800}
+#productModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:1000;overflow:auto;padding:12px}
+.modal-box{background:#1e293b;max-width:500px;margin:20px auto;border-radius:16px;overflow:hidden;border:1px solid #334155}
+.modal-img-wrap{position:relative;background:#fff}
+.modal-img-wrap img{width:100%;max-height:380px;object-fit:contain;display:block}
+.nav-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.6);color:#fff;border:0;width:36px;height:36px;border-radius:50%;font-size:22px;cursor:pointer}
+.nav-prev{left:10px}.nav-next{right:10px}
+.counter{position:absolute;top:10px;right:10px;background:#000;color:#fff;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:800}
+.close-btn{position:absolute;top:10px;left:10px;background:#ef4444;color:#fff;border:0;width:32px;height:32px;border-radius:50%;font-weight:800;cursor:pointer}
+.dots{text-align:center;padding:8px;background:#fff}
+.dots span{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 4px;cursor:pointer}
+#checkoutModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:2000;overflow:auto;padding:12px}
+.checkout-box{background:#0f1a2e;color:#fff;max-width:520px;margin:15px auto;border-radius:16px;padding:18px;border:1px solid #1e3a5f}
+.bank-box{background:#162a4a;border:1px dashed #22c55e;padding:14px;border-radius:12px;margin:12px 0}
+.inp{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:0;font-size:14px}
 </style>
 </head>
 <body>
 <div class="top">
 <div style="display:flex;align-items:center;gap:8px"><img src="logo.png" style="width:32px;height:32px;background:#fff;border-radius:6px"><div><b>MSEL MENTE</b><br><small>Engineers Private Shop</small></div></div>
+<div style="display:flex;align-items:center">
+<button class="cart-btn" onclick="openCheckout()">🛒 Cart (<span id="cartCount">0</span>)</button>
 <a href="index.html">Home</a>
+</div>
 </div>
 
 <div id="grid" class="grid">Loading products...</div>
-<button class="btn" style="width:auto;margin:12px auto;display:block;background:#22c55e" onclick="orderAll()">💬 Order All on WhatsApp</button>
+<button class="btn" style="width:auto;margin:12px auto;display:block;background:#334155" onclick="openCheckout()">View Cart & Checkout</button>
 <button class="logout" onclick="logout()">Logout</button>
+
+<div id="productModal">
+  <div class="modal-box">
+    <div class="modal-img-wrap">
+      <button class="close-btn" onclick="closeProduct()">X</button>
+      <div class="counter" id="modalCounter"></div>
+      <img id="modalImage" src="logo.png" onerror="this.src='logo.png'">
+      <button class="nav-arrow nav-prev" onclick="prevImage()">‹</button>
+      <button class="nav-arrow nav-next" onclick="nextImage()">›</button>
+      <div class="dots" id="modalDots"></div>
+    </div>
+    <div style="padding:14px">
+      <div id="modalBadge" class="badge"></div>
+      <div id="modalTitle" style="font-size:18px;font-weight:900;margin:8px 0"></div>
+      <div id="modalDesc" style="font-size:13px;opacity:.8;margin:6px 0"></div>
+      <div id="modalPrice" style="color:#22c55e;font-weight:900;font-size:20px;margin:10px 0"></div>
+      <button class="btn" onclick="addToCartFromModal()" style="padding:14px;font-size:15px">🛒 Add to Cart</button>
+      <button class="btn btn2" onclick="closeProduct()">Continue Shopping</button>
+    </div>
+  </div>
+</div>
+
+<div id="checkoutModal">
+  <div class="checkout-box">
+    <h2 style="text-align:center;color:#22c55e">Checkout</h2>
+    <div id="checkoutItems" style="margin:12px 0"></div>
+    <h3 id="checkoutTotal" style="text-align:right;color:#22c55e;margin:8px 0"></h3>
+    <div class="bank-box">
+      <h4 style="color:#22c55e;text-align:center;margin:0 0 8px 0">PAY DIRECTLY TO:</h4>
+      <p><b>Account Name:</b> Most Successful Energy Limited</p>
+      <p><b>Account Number:</b> 1817568677</p>
+      <p><b>Bank:</b> ACCESS BANK</p>
+      <p style="font-size:11px;color:#facc15;margin-top:8px">⚠️ Transfer total amount, then fill form below. We confirm after payment verification.</p>
+    </div>
+    <input id="custName" class="inp" placeholder="Full Name *">
+    <input id="custPhone" class="inp" placeholder="WhatsApp Number *">
+    <input id="custAddress" class="inp" placeholder="Delivery Address *">
+    <input id="paymentRef" class="inp" placeholder="Transfer Reference / Sender Name *">
+    <label style="font-size:12px;opacity:.8">Upload Payment Proof (faster confirmation):</label>
+    <input id="paymentProof" type="file" accept="image/*" class="inp" style="background:white">
+    <button id="placeOrderBtn" onclick="placeOrder()" style="width:100%;padding:14px;background:#22c55e;color:#000;font-weight:900;border:0;border-radius:10px;margin-top:12px;font-size:16px;cursor:pointer">I Have Paid - Place Order</button>
+    <button onclick="document.getElementById('checkoutModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:white;border:0;border-radius:10px;margin-top:8px;cursor:pointer">Cancel</button>
+  </div>
+</div>
 
 <script>
 const SUPABASE_URL='https://rsnsciisycruhxtvfhwb.supabase.co';
 const SUPABASE_KEY='sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const BUCKET='msel-project';
+
+let allProducts=[];
+let currentProduct=null;
+let currentImages=[];
+let currentIdx=0;
+let cart = JSON.parse(localStorage.getItem('msel_cart')||'[]');
 
 async function loadProducts(){
  let grid=document.getElementById('grid');
  let products=[];
-
- // 1. TRY SUPABASE TABLE FIRST - This fixes new browser issue
  try{
   const {data, error}=await supabaseClient.from('msel_products').select('*').order('created_at',{ascending:false});
   if(!error && data && data.length>0){
-    products=data.map(r=>({name:r.name, price:r.price, desc:r.description||r.desc||'', badge:r.badge||'NEW', img:r.img, imgs:r.imgs||[]}));
+    products=data.map(r=>({id:r.id||r.name, name:r.name, price:r.price, desc:r.description||r.desc||'', badge:r.badge||'NEW', img:r.img, imgs:r.imgs||[]}));
   }
- }catch(e){ console.log('table not ready', e.message); }
-
- // 2. FALLBACK TO LOCAL STORAGE - This is what you use now
+ }catch(e){}
  if(products.length===0){
    try{
      let local=JSON.parse(localStorage.getItem('msel_products')||'[]');
-     if(local && local.length>0) products=local;
+     if(local && local.length>0) products=local.map((p,i)=>({id:p.id||i,...p}));
    }catch{}
  }
-
  if(products.length===0){
-   grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px 10px;opacity:.6">No products yet<br>Go to Admin to add<br><small style="font-size:11px">If you just created table, add 1 product again in Admin</small></div>';
+   grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px 10px;opacity:.6">No products yet</div>';
    return;
  }
-
+ allProducts=products;
  let h='';
- products.forEach(p=>{
+ products.forEach((p, idx)=>{
    let mainImg = p.img || (p.imgs && p.imgs[0]) || 'logo.png';
    let count = p.imgs? p.imgs.length : 0;
-   h+=`<div class="card"><img src="${mainImg}" onerror="this.src='logo.png'"><div class="badge">${p.badge||'NEW'}${count>1?' ('+count+')':''}</div><div class="name">${p.name}</div><div class="desc">${p.desc||''}</div><div class="price">₦${p.price}</div><button class="btn" onclick="orderOne('${p.name.replace(/'/g,"")}','${p.price}')">Order Now</button><button class="btn btn2" onclick="orderOne('${p.name.replace(/'/g,"")}','${p.price}')">WhatsApp</button></div>`;
+   h+=`<div class="card" onclick="openProductByIndex(${idx})"><img src="${mainImg}" onerror="this.src='logo.png'"><div class="badge">${p.badge||'NEW'}${count>1?' ('+count+')':''}</div><div class="name">${p.name}</div><div class="desc">${p.desc||''}</div><div class="price">₦${Number(p.price).toLocaleString()}</div><button class="btn" onclick="event.stopPropagation(); addToCartByIndex(${idx})">Add to Cart</button><button class="btn btn2" onclick="event.stopPropagation(); openProductByIndex(${idx})">View (${count>1?count:1})</button></div>`;
  });
  grid.innerHTML=h;
- // Save to local so old Chrome also gets new data next time
- try{ localStorage.setItem('msel_products', JSON.stringify(products)); }catch{}
+ updateCartCount();
 }
 
-function orderOne(name,price){
- window.open('https://wa.me/2348034623421?text='+encodeURIComponent('Hello MSEL, I want '+name+' - ₦'+price),'_blank');
+function openProductByIndex(i){
+  const p = allProducts[i]; if(!p) return;
+  currentProduct = p;
+  if(p.imgs && p.imgs.length>0) currentImages = p.imgs;
+  else if(p.img) currentImages = [p.img];
+  else currentImages = ['logo.png'];
+  currentIdx=0;
+  document.getElementById('productModal').style.display='block';
+  document.getElementById('modalTitle').innerText = p.name;
+  document.getElementById('modalDesc').innerText = p.desc||'';
+  document.getElementById('modalPrice').innerText = '₦' + Number(p.price).toLocaleString();
+  document.getElementById('modalBadge').innerText = (p.badge||'NEW') + (currentImages.length>1? ' ('+currentImages.length+')' : '');
+  showImage(0);
 }
-function orderAll(){
- window.open('https://wa.me/2348034623421?text='+encodeURIComponent('Hello MSEL, I want to order biogas materials'),' _blank');
+function closeProduct(){ document.getElementById('productModal').style.display='none'; }
+function showImage(idx){
+  currentIdx=idx;
+  document.getElementById('modalImage').src = currentImages[idx] || 'logo.png';
+  document.getElementById('modalCounter').innerText = currentImages.length>1? (idx+1)+' / '+currentImages.length : '';
+  const dots = document.getElementById('modalDots');
+  if(currentImages.length>1){
+    dots.style.display='block';
+    dots.innerHTML = currentImages.map((_,i)=>`<span onclick="showImage(${i})" style="background:${i===idx?'#22c55e':'#cbd5e1'}"></span>`).join('');
+  }else{ dots.style.display='none'; }
+}
+function nextImage(){ showImage((currentIdx+1)%currentImages.length); }
+function prevImage(){ showImage((currentIdx-1+currentImages.length)%currentImages.length); }
+function addToCartFromModal(){ if(!currentProduct) return; let idx = allProducts.indexOf(currentProduct); addToCartByIndex(idx); closeProduct(); }
+function addToCartByIndex(i){
+  const p = allProducts[i]; if(!p) return;
+  let existing = cart.find(c=>c.id===p.id);
+  if(existing){ existing.qty++; } else { cart.push({id:p.id, name:p.name, price:Number(p.price), image: p.img || (p.imgs&&p.imgs[0])||'logo.png', qty:1}); }
+  localStorage.setItem('msel_cart', JSON.stringify(cart));
+  updateCartCount();
+}
+function updateCartCount(){ document.getElementById('cartCount').innerText = cart.reduce((a,b)=>a+b.qty,0); }
+function openCheckout(){
+  if(cart.length===0){ alert('Cart is empty'); return; }
+  const itemsDiv = document.getElementById('checkoutItems');
+  let total=0;
+  itemsDiv.innerHTML = cart.map((c, i)=>{
+    total+= c.price*c.qty;
+    return `<div style="display:flex;justify-content:space-between;margin:8px 0;border-bottom:1px solid #1e3a5f;padding-bottom:6px"><span style="font-size:13px">${c.name} x${c.qty}</span><span style="font-size:13px">₦${(c.price*c.qty).toLocaleString()} <span onclick="removeFromCart(${i})" style="color:#ef4444;cursor:pointer">✕</span></span></div>`;
+  }).join('');
+  document.getElementById('checkoutTotal').innerText = 'Total: ₦' + total.toLocaleString();
+  document.getElementById('checkoutModal').style.display='block';
+}
+function removeFromCart(i){ cart.splice(i,1); localStorage.setItem('msel_cart', JSON.stringify(cart)); updateCartCount(); if(cart.length===0) document.getElementById('checkoutModal').style.display='none'; else openCheckout(); }
+async function placeOrder(){
+  const name = document.getElementById('custName').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
+  const address = document.getElementById('custAddress').value.trim();
+  const ref = document.getElementById('paymentRef').value.trim();
+  const file = document.getElementById('paymentProof').files[0];
+  if(!name ||!phone ||!address ||!ref){ alert('Fill all required fields'); return; }
+  const btn = document.getElementById('placeOrderBtn'); btn.innerText='Processing...'; btn.disabled=true;
+  let proofUrl='';
+  try{
+    if(file){
+      const fileName = Date.now()+'_'+file.name.replace(/\s/g,'_');
+      const {data, error} = await supabaseClient.storage.from('payment_proofs').upload(fileName, file);
+      if(!error){ const {data: urlData} = supabaseClient.storage.from('payment_proofs').getPublicUrl(fileName); proofUrl = urlData.publicUrl; }
+    }
+  }catch(e){}
+  const total = cart.reduce((a,b)=>a + b.price*b.qty, 0);
+  try{
+    const {error} = await supabaseClient.from('msel_orders').insert({customer_name:name, customer_phone:phone, customer_address:address, items:cart, total:total, payment_ref:ref, payment_proof_url:proofUrl, status:'pending'});
+    if(error) throw error;
+    alert('✅ Order Placed! We will confirm your payment to ACCESS BANK 1817568677 and call you.');
+    cart=[]; localStorage.setItem('msel_cart', JSON.stringify(cart)); updateCartCount();
+    document.getElementById('checkoutModal').style.display='none';
+    btn.innerText='I Have Paid - Place Order'; btn.disabled=false;
+    document.getElementById('custName').value=''; document.getElementById('custPhone').value=''; document.getElementById('custAddress').value=''; document.getElementById('paymentRef').value='';
+  }catch(err){ alert('Order failed: '+err.message+'\nCreate msel_orders table and payment_proofs bucket first'); btn.innerText='I Have Paid - Place Order'; btn.disabled=false; }
 }
 function logout(){ localStorage.removeItem('msel_role'); window.location.href='login.html'; }
-
 loadProducts();
 </script>
 </body>
