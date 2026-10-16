@@ -11,6 +11,9 @@ body{background:#0f172a;color:#fff;padding:10px}
 .top{background:#00924C;border-radius:14px;padding:14px;display:flex;justify-content:space-between;align-items:center}
 .top h2{font-size:18px;line-height:1.2}
 .top a{background:#fff;color:#00924C;padding:8px 16px;border-radius:20px;text-decoration:none;font-weight:800;font-size:13px}
+.tabs{display:flex;gap:8px;margin:12px 0;position:sticky;top:10px;z-index:20;background:#0f172a;padding:6px;border-radius:12px}
+.tab-btn{flex:1;padding:12px;border-radius:10px;border:0;font-weight:900;font-size:13px;cursor:pointer;background:#1e293b;color:#94a3b8;border:1px solid #334155}
+.tab-btn.active{background:#22c55e;color:#000;border-color:#22c55e;box-shadow:0 4px 12px rgba(34,197,94,.4)}
 .box{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:16px;margin-top:12px}
 .box h3{font-size:16px;margin-bottom:10px}
 input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:#fff;margin-top:8px;outline:none}
@@ -24,7 +27,6 @@ button:disabled{opacity:.5}
 .mini-badge{display:inline-block;background:#22c55e;color:#000;font-size:9px;padding:2px 6px;border-radius:10px;font-weight:800;margin-bottom:3px}
 .img-previews{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .img-previews img{width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid #22c55e}
-/* --- NEW ORDERS DASHBOARD STYLES - ONLY ADDITION --- */
 .order-card{background:#0f172a;border:1px solid #334155;border-radius:12px;padding:12px;margin:10px 0;text-align:left}
 .order-card.pending{border-left:5px solid #facc15}
 .order-card.confirmed{border-left:5px solid #22c55e}
@@ -48,7 +50,14 @@ button:disabled{opacity:.5}
 <a href="index.html">🏠 Homepage</a>
 </div>
 
-<!-- ========= NEW FEATURE: ORDERS DASHBOARD - ADDED ON TOP ========= -->
+<!-- TABS -->
+<div class="tabs">
+<button id="tabOrders" class="tab-btn active" onclick="showTab('orders')">📦 ORDERS</button>
+<button id="tabUploads" class="tab-btn" onclick="showTab('uploads')">📤 UPLOADS / PRODUCTS</button>
+</div>
+
+<!-- ===== ORDERS SECTION - SEPARATE ===== -->
+<div id="ordersSection">
 <div class="box" style="border:1.5px solid #facc15">
 <h3>📦 Orders Dashboard - WhatsApp + Receipt Preview</h3>
 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px" id="orderStats"></div>
@@ -59,6 +68,10 @@ button:disabled{opacity:.5}
 </div>
 <div id="orderList" style="margin-top:12px">Loading orders...</div>
 </div>
+</div>
+
+<!-- ===== UPLOADS SECTION - SEPARATE ===== -->
+<div id="uploadsSection" style="display:none">
 
 <div class="box">
 <h3>📸 Upload Pictures</h3>
@@ -95,12 +108,10 @@ button:disabled{opacity:.5}
 <option value="WC">WC</option>
 <option value="SALE">SALE</option>
 </select>
-
 <label style="display:block;margin-top:10px;font-size:13px;color:#22c55e;font-weight:800">📸 Product Images (up to 5 images):</label>
 <input type="file" id="prodImage" multiple accept="image/*" onchange="previewProdImages(this)">
 <div id="prodImgPreview" class="img-previews"></div>
 <small style="color:#94a3b8;font-size:11px">Select multiple images at once. First image = main image.</small>
-
 <button id="prodBtn" onclick="addProduct()">Add to Shop</button>
 <button onclick="clearProdForm()" style="background:#334155;color:#fff">Clear Form</button>
 <small id="prodStatus" style="display:block;margin-top:6px;color:#94a3b8"></small>
@@ -117,6 +128,8 @@ button:disabled{opacity:.5}
 <button onclick="clearGallery()" style="background:#ef4444;color:#fff;margin-top:12px">🗑️ Clear Gallery</button>
 </div>
 
+</div>
+
 <button onclick="logout()" style="background:#ef4444;color:#fff;margin:12px 0">Logout</button>
 <a href="index.html" style="display:block;text-align:center;background:#fff;color:#00924C;padding:12px;border-radius:10px;text-decoration:none;font-weight:800">🏠 Go to Homepage</a>
 
@@ -125,6 +138,14 @@ const SUPABASE_URL = 'https://rsnsciisycruhxtvfhwb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const BUCKET = 'msel-project';
+
+function showTab(which){
+  document.getElementById('ordersSection').style.display = which==='orders'? 'block' : 'none';
+  document.getElementById('uploadsSection').style.display = which==='uploads'? 'block' : 'none';
+  document.getElementById('tabOrders').className = which==='orders'? 'tab-btn active' : 'tab-btn';
+  document.getElementById('tabUploads').className = which==='uploads'? 'tab-btn active' : 'tab-btn';
+  localStorage.setItem('msel_admin_tab', which);
+}
 
 let gallery = JSON.parse(localStorage.getItem('msel_gallery')||'[]');
 let products = JSON.parse(localStorage.getItem('msel_products')||'[]');
@@ -336,6 +357,7 @@ function editProduct(i){
  document.getElementById('prodBadge').value=p.badge||'NEW';
  document.getElementById('editIndex').value=i;
  document.getElementById('prodBtn').innerText='Save Changes';
+ showTab('uploads');
  let preview=document.getElementById('prodImgPreview');
  preview.innerHTML='';
  let imgs = p.imgs && p.imgs.length>0? p.imgs : (p.img?[p.img]:[]);
@@ -386,7 +408,6 @@ async function clearGallery(){
 
 function logout(){localStorage.removeItem('msel_admin');localStorage.removeItem('msel_role');window.location.href='login.html';}
 
-// ========= NEW ORDERS LOGIC - ONLY ADDITION =========
 let allOrders=[];
 async function loadOrders(){
   const div=document.getElementById('orderList');
@@ -397,7 +418,7 @@ async function loadOrders(){
     allOrders=data||[];
     renderOrders(allOrders);
   }catch(e){
-    div.innerHTML=`<div style="text-align:center;padding:20px;color:#f87171">Error: ${e.message}<br>Check msel_orders table</div>`;
+    div.innerHTML=`<div style="text-align:center;padding:20px;color:#f87171">Error: ${e.message}</div>`;
   }
 }
 function renderOrders(orders){
@@ -433,12 +454,12 @@ function renderOrders(orders){
       <div class="info"><b>Ref:</b> ${o.payment_ref||''}</div>
       <div class="items-box"><b>Items x Qty:</b><br>${itemsHtml}</div>
       <div class="total">TOTAL: ₦${Number(o.total||0).toLocaleString()}</div>
-      ${o.payment_proof_url?`<a href="${o.payment_proof_url}" target="_blank"><img src="${o.payment_proof_url}" class="receipt-img" onerror="this.style.display='none'"><div style="font-size:10px;color:#22c55e;text-align:center">Receipt image shows directly - tap to open full</div></a>`:'<div style="color:#f87171;font-size:11px">No receipt</div>'}
+      ${o.payment_proof_url?`<a href="${o.payment_proof_url}" target="_blank"><img src="${o.payment_proof_url}" class="receipt-img"><div style="font-size:10px;color:#22c55e;text-align:center">Receipt shows directly - tap to open full</div></a>`:'<div style="color:#f87171;font-size:11px">No receipt</div>'}
       <div style="margin-top:8px">
         <button class="btn-small" style="background:#22c55e;color:#000" onclick="window.location.href='tel:${o.customer_phone}'">📞 Call</button>
-        <button class="btn-small" style="background:#25D366;color:#000" onclick="window.open('https://wa.me/${(o.customer_phone||'').replace(/[^0-9]/g,'').replace(/^0/,'234')}','_blank')">💬 WhatsApp customer</button>
-        ${o.status==='pending'?`<button class="btn-small" style="background:#3b82f6;color:#fff" onclick="updateOrderStatus('${o.id}','confirmed')">✓ Confirm Payment</button>`:''}
-        ${o.status!=='delivered'?`<button class="btn-small" style="background:#00924C;color:#fff" onclick="updateOrderStatus('${o.id}','delivered')">🚚 Mark Delivered</button>`:''}
+        <button class="btn-small" style="background:#25D366;color:#000" onclick="window.open('https://wa.me/${(o.customer_phone||'').replace(/[^0-9]/g,'').replace(/^0/,'234')}','_blank')">💬 WhatsApp</button>
+        ${o.status==='pending'?`<button class="btn-small" style="background:#3b82f6;color:#fff" onclick="updateOrderStatus('${o.id}','confirmed')">✓ Confirm</button>`:''}
+        ${o.status!=='delivered'?`<button class="btn-small" style="background:#00924C;color:#fff" onclick="updateOrderStatus('${o.id}','delivered')">🚚 Delivered</button>`:''}
         <button class="btn-small" style="background:#ef4444;color:#fff" onclick="deleteOrder('${o.id}')">🗑️ Delete</button>
       </div>
     </div>`;
@@ -461,7 +482,6 @@ async function deleteOrder(id){
   if(error) alert(error.message); else loadOrders();
 }
 
-// FIXED GALLERY RESTORE - shows gallery in ALL browsers, skips products folder
 (async function restoreGallery(){
  try{
   let changed=false;
@@ -506,9 +526,11 @@ async function deleteOrder(id){
  }catch(e){}
 })();
 
-// Load orders on start + auto refresh every 30 sec
+// INIT
+let savedTab = localStorage.getItem('msel_admin_tab')||'orders';
+showTab(savedTab);
 loadOrders();
-setInterval(loadOrders, 30000);
+setInterval(loadOrders, 300000);
 </script>
 </body>
 </html>
