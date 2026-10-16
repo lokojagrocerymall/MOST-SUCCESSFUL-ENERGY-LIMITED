@@ -139,7 +139,35 @@ supabaseClient.channel('mente-chat-final').on('postgres_changes',{event:'*',sche
 function selectMsg(id){ selectedMsg=allMessages.find(m=>m.id==id); if(!selectedMsg) return; document.getElementById('reactionPicker').style.display='flex'; if(myIsAdmin&&selectedMsg.name!=='MSEL BOSS'){ document.getElementById('adminTarget').innerText='Managing: '+selectedMsg.name; document.getElementById('adminPanel').style.display='flex'; } }
 function closeAdminPanel(){ document.getElementById('adminPanel').style.display='none'; document.getElementById('reactionPicker').style.display='none'; }
 document.addEventListener('click',e=>{ if(!e.target.closest('.msg')&&!e.target.closest('#reactionPicker')&&!e.target.closest('#adminPanel')){ document.getElementById('reactionPicker').style.display='none'; } });
-async function react(emoji,forcedId){ let id=forcedId||selectedMsg?.id; if(!id) return; let msg=allMessages.find(m=>m.id==id); let r=msg.reactions||{}; if(!r[emoji]) r[emoji]=[]; if(r[emoji].includes(myName)) r[emoji]=r[emoji].filter(n=>n!==myName); else r[emoji].push(myName); if(!r[emoji].length) delete r[emoji]; try{ await supabaseClient.from('msel_mente_messages').update({reactions:r}).eq('id',id); }catch(e){} closeAdminPanel(); }
+async function react(emoji,forcedId){
+  let id=forcedId||selectedMsg?.id; if(!id) return;
+  let msg=allMessages.find(m=>m.id==id); if(!msg) return;
+  let r=msg.reactions||{};
+
+  // --- NEW RULE: 1 person = 1 emoji only ---
+  // 1. Remove this user from ALL other emojis first
+  for(let e in r){
+    if(Array.isArray(r[e]) && r[e].includes(myName) && e!==emoji){
+      r[e]=r[e].filter(n=>n!==myName);
+      if(!r[e].length) delete r[e];
+    }
+  }
+  // 2. Now toggle the clicked emoji
+  if(!r[emoji]) r[emoji]=[];
+  if(Array.isArray(r[emoji]) && r[emoji].includes(myName)){
+    r[emoji]=r[emoji].filter(n=>n!==myName);
+    if(!r[emoji].length) delete r[emoji];
+  } else {
+    r[emoji].push(myName);
+  }
+
+  try{
+    let {error}=await supabaseClient.from('msel_mente_messages').update({reactions:r}).eq('id',id);
+    if(error) throw error;
+  }catch(e){ showToast('Network error'); return; }
+  closeAdminPanel();
+  showToast(emoji+' reaction!');
+}
 function startReply(){ if(!selectedMsg) return; replyToData={id:selectedMsg.id,name:selectedMsg.name,message:selectedMsg.message||''}; document.getElementById('replyName').innerText=selectedMsg.name; document.getElementById('replyText').innerText=(selectedMsg.message||'').substring(0,50); document.getElementById('replyPreview').style.display='block'; closeAdminPanel(); document.getElementById('msgInput').focus(); }
 function cancelReply(){ replyToData=null; document.getElementById('replyPreview').style.display='none'; }
 function tagUser(){ if(!selectedMsg) return; insertTag(selectedMsg.name); closeAdminPanel(); }
