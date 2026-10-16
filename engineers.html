@@ -22,7 +22,7 @@ body{background:#0f172a;color:#fff}
 .price{color:#FF0000;font-weight:900;margin:6px 0;font-size:14px}
 .btn{width:100%;padding:8px;border-radius:8px;border:0;background:#22c55e;color:#000;font-weight:800;font-size:12px;margin-top:4px;cursor:pointer}
 .btn2{background:#334155;color:#fff}
-.view-cart-btn{width:90%;max-width:340px;margin:16px auto;display:block;background:#00C853!important;background-color:#00C853!important;color:#000!important;font-weight:900!important;padding:14px!important;border-radius:12px!important;border:0!important;font-size:15px!important;box-shadow:0 4px 15px rgba(0,200,83,0.5)}
+.view-cart-btn{width:90%;max-width:340px;margin:16px auto;display:block;background:#00C853!important;color:#000!important;font-weight:900!important;padding:14px!important;border-radius:12px!important;border:0!important;font-size:15px!important;box-shadow:0 4px 15px rgba(0,200,83,0.5)}
 .logout{display:block;margin:10px auto;background:#ef4444;color:#fff;border:0;padding:10px 24px;border-radius:20px;font-weight:800}
 #productModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:1000;overflow:auto;padding:12px}
 .modal-box{background:#1e293b;max-width:500px;margin:20px auto;border-radius:16px;overflow:hidden;border:1px solid #334155}
@@ -40,6 +40,7 @@ body{background:#0f172a;color:#fff}
 .inp{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:0;font-size:14px}
 .qty-btn{background:#22c55e;color:#000;border:0;width:28px;height:28px;border-radius:6px;font-weight:900;font-size:16px;cursor:pointer}
 .qty-num{margin:0 8px;font-weight:900;min-width:20px;text-align:center;display:inline-block}
+.req-label{font-size:11px;color:#f87171;margin:2px 0 0 2px;display:block}
 </style>
 </head>
 <body>
@@ -90,10 +91,18 @@ body{background:#0f172a;color:#fff}
     </div>
     <input id="custName" class="inp" placeholder="Full Name *">
     <input id="custPhone" class="inp" placeholder="WhatsApp Number *">
-    <input id="custAddress" class="inp" placeholder="Delivery Address *">
+    <input id="custAddress" class="inp" placeholder="Delivery Address (Street) *">
+
+    <select id="custState" class="inp" style="background:white">
+      <option value="">Select State *</option>
+      <option>Abia</option><option>Adamawa</option><option>Akwa Ibom</option><option>Anambra</option><option>Bauchi</option><option>Bayelsa</option><option>Benue</option><option>Borno</option><option>Cross River</option><option>Delta</option><option>Ebonyi</option><option>Edo</option><option>Ekiti</option><option>Enugu</option><option>FCT Abuja</option><option>Gombe</option><option>Imo</option><option>Jigawa</option><option>Kaduna</option><option>Kano</option><option>Katsina</option><option>Kebbi</option><option>Kogi</option><option>Kwara</option><option>Lagos</option><option>Nasarawa</option><option>Niger</option><option>Ogun</option><option>Ondo</option><option>Osun</option><option>Oyo</option><option>Plateau</option><option>Rivers</option><option>Sokoto</option><option>Taraba</option><option>Yobe</option><option>Zamfara</option>
+    </select>
+
     <input id="paymentRef" class="inp" placeholder="Transfer Reference / Sender Name *">
-    <label style="font-size:12px;opacity:.8">Upload Payment Proof (faster confirmation):</label>
-    <input id="paymentProof" type="file" accept="image/*" class="inp" style="background:white">
+    <label style="font-size:12px;font-weight:800;color:#f87171">Upload Payment Proof * (Required):</label>
+    <input id="paymentProof" type="file" accept="image/*" class="inp" style="background:white;border:2px solid #ef4444">
+    <span class="req-label">* You must upload receipt to place order</span>
+
     <button id="placeOrderBtn" onclick="placeOrder()" style="width:100%;padding:14px;background:#22c55e;color:#000;font-weight:900;border:0;border-radius:10px;margin-top:12px;font-size:16px;cursor:pointer">I Have Paid - Place Order</button>
     <button onclick="document.getElementById('checkoutModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:white;border:0;border-radius:10px;margin-top:8px;cursor:pointer">Cancel</button>
   </div>
@@ -103,6 +112,7 @@ body{background:#0f172a;color:#fff}
 const SUPABASE_URL='https://rsnsciisycruhxtvfhwb.supabase.co';
 const SUPABASE_KEY='sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const ADMIN_WHATSAPP='2348052941223'; // CHANGE to your admin number
 
 let allProducts=[];
 let currentProduct=null;
@@ -139,7 +149,6 @@ async function loadProducts(){
  grid.innerHTML=h;
  updateCartCount();
 }
-
 function openProductByIndex(i){
   const p = allProducts[i]; if(!p) return;
   currentProduct = p;
@@ -176,7 +185,6 @@ function addToCartByIndex(i){
   updateCartCount();
 }
 function updateCartCount(){ document.getElementById('cartCount').innerText = cart.reduce((a,b)=>a+b.qty,0); }
-
 function openCheckout(){
   if(cart.length===0){ alert('Cart is empty'); return; }
   const itemsDiv = document.getElementById('checkoutItems');
@@ -205,27 +213,37 @@ async function placeOrder(){
   const name = document.getElementById('custName').value.trim();
   const phone = document.getElementById('custPhone').value.trim();
   const address = document.getElementById('custAddress').value.trim();
+  const state = document.getElementById('custState').value;
   const ref = document.getElementById('paymentRef').value.trim();
   const file = document.getElementById('paymentProof').files[0];
-  if(!name ||!phone ||!address ||!ref){ alert('Fill all required fields'); return; }
+  if(!name ||!phone ||!address ||!state ||!ref){ alert('Fill all required fields including State'); return; }
+  if(!file){ alert('❌ Please upload payment proof / receipt. This is now required!'); document.getElementById('paymentProof').focus(); return; }
+
   const btn = document.getElementById('placeOrderBtn'); btn.innerText='Processing...'; btn.disabled=true;
   let proofUrl='';
   try{
-    if(file){
-      const fileName = Date.now()+'_'+file.name.replace(/\s/g,'_');
-      const {data, error} = await supabaseClient.storage.from('payment_proofs').upload(fileName, file);
-      if(!error){ const {data: urlData} = supabaseClient.storage.from('payment_proofs').getPublicUrl(fileName); proofUrl = urlData.publicUrl; }
-    }
-  }catch(e){}
+    const fileName = Date.now()+'_'+file.name.replace(/\s/g,'_');
+    const {data, error} = await supabaseClient.storage.from('payment_proofs').upload(fileName, file);
+    if(error) throw error;
+    const {data: urlData} = supabaseClient.storage.from('payment_proofs').getPublicUrl(fileName);
+    proofUrl = urlData.publicUrl;
+  }catch(e){ alert('Receipt upload failed: '+e.message); btn.innerText='I Have Paid - Place Order'; btn.disabled=false; return; }
+
   const total = cart.reduce((a,b)=>a + b.price*b.qty, 0);
   try{
-    const {error} = await supabaseClient.from('msel_orders').insert({customer_name:name, customer_phone:phone, customer_address:address, items:cart, total:total, payment_ref:ref, payment_proof_url:proofUrl, status:'pending'});
+    const {error} = await supabaseClient.from('msel_orders').insert({customer_name:name, customer_phone:phone, customer_address:address, customer_state:state, items:cart, total:total, payment_ref:ref, payment_proof_url:proofUrl, status:'pending'});
     if(error) throw error;
-    alert('✅ Order Placed! We will confirm your payment to ACCESS BANK 1817568677 and call you.');
+
+    // --- ADMIN NOTIFICATION ---
+    const itemsText = cart.map(c=>`${c.name} x${c.qty} = ₦${(c.price*c.qty).toLocaleString()}`).join('%0A');
+    const msg = `*NEW MSEL ORDER*%0A%0A*Name:* ${name}%0A*Phone:* ${phone}%0A*Address:* ${address}%0A*State:* ${state}%0A*Ref:* ${ref}%0A%0A*Items:*%0A${itemsText}%0A%0A*TOTAL: ₦${total.toLocaleString()}*%0A%0A*Receipt:* ${proofUrl}%0A%0A*Bank:* ACCESS 1817568677`;
+    window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${msg}`, '_blank');
+
+    alert('✅ Order Placed! Receipt uploaded. Admin will be notified on WhatsApp.');
     cart=[]; localStorage.setItem('msel_cart', JSON.stringify(cart)); updateCartCount();
     document.getElementById('checkoutModal').style.display='none';
     btn.innerText='I Have Paid - Place Order'; btn.disabled=false;
-    document.getElementById('custName').value=''; document.getElementById('custPhone').value=''; document.getElementById('custAddress').value=''; document.getElementById('paymentRef').value='';
+    document.getElementById('custName').value=''; document.getElementById('custPhone').value=''; document.getElementById('custAddress').value=''; document.getElementById('custState').value=''; document.getElementById('paymentRef').value=''; document.getElementById('paymentProof').value='';
   }catch(err){ alert('Order failed: '+err.message); btn.innerText='I Have Paid - Place Order'; btn.disabled=false; }
 }
 function logout(){ localStorage.removeItem('msel_role'); window.location.href='login.html'; }
