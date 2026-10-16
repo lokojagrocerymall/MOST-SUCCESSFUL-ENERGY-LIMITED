@@ -147,6 +147,95 @@ function showTab(which){
   localStorage.setItem('msel_admin_tab', which);
 }
 
+// ==== NEW UPDATE ONLY: PRINT DELIVERY RECEIPT WITH LOGO + ADDRESS + WHATSAPP + QR ====
+function printDeliveryReceipt(orderId){
+  let o = allOrders.find(x=>x.id===orderId);
+  if(!o) return alert('Order not found');
+  let itemsHtml='';
+  try{
+    let items=Array.isArray(o.items)?o.items:JSON.parse(o.items||'[]');
+    itemsHtml=items.map((it,i)=>`<tr><td style="padding:6px;border:1px solid #ddd">${i+1}</td><td style="padding:6px;border:1px solid #ddd">${it.name}</td><td style="padding:6px;border:1px solid #ddd;text-align:center">${it.qty}</td><td style="padding:6px;border:1px solid #ddd;text-align:right">₦${Number(it.price).toLocaleString()}</td><td style="padding:6px;border:1px solid #ddd;text-align:right">₦${(Number(it.price)*Number(it.qty)).toLocaleString()}</td></tr>`).join('');
+  }catch{ itemsHtml=`<tr><td colspan="5">${o.items||''}</td></tr>`; }
+  let date=new Date(o.created_at||Date.now()).toLocaleString();
+  let qrData=`MSEL Order - ${o.customer_name} | ${o.customer_phone} | ${o.customer_state} | Ref:${o.payment_ref} | Total:₦${Number(o.total).toLocaleString()} | MSEL 07011620564, 08104441545`;
+  let qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(qrData)}`;
+  let win=window.open('','_blank');
+  win.document.write(`
+<html><head><title>Delivery Receipt - ${o.customer_name}</title>
+<style>
+body{font-family:Arial,sans-serif;padding:16px;color:#111}
+.header{text-align:center;border-bottom:3px solid #00924C;padding-bottom:10px;margin-bottom:12px}
+.header img{max-width:240px;max-height:90px;object-fit:contain}
+.header h2{margin:6px 0 2px;color:#00924C;font-size:18px}
+.header p{margin:2px 0;font-size:13px}
+.info-grid{display:flex;justify-content:space-between;gap:10px;margin:12px 0}
+.info-box{flex:1;background:#f8fafc;border:1px solid #ddd;border-radius:8px;padding:10px;font-size:12px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:12px}
+th{background:#00924C;color:#fff;padding:7px;border:1px solid #00924C}
+.total-row td{font-weight:900;background:#fef2f2;color:#dc2626}
+.footer{display:flex;justify-content:space-between;align-items:flex-end;margin-top:18px;border-top:2px dashed #999;padding-top:10px}
+.qr{text-align:center}
+.qr img{border:1px solid #ddd;padding:4px;border-radius:6px}
+@media print{button{display:none}}
+</style>
+</head><body>
+<div class="header">
+<img src="logo.png" onerror="this.src='https://rsnsciisycruhxtvfhwb.supabase.co/storage/v1/object/public/msel-project/logo.png'" alt="MSEL Logo">
+<h2 style="color:#00924C;margin-bottom:0">MOST SUCCESSFUL ENERGY LIMITED</h2>
+<p style="color:#f97316;font-weight:800;letter-spacing:1px">MSEL</p>
+<p><b>14, Adedotun Dina Crescent, Mende Maryland, Lagos</b></p>
+<p>Call: <b>07011620564, 08104441545</b> | WhatsApp: <b>07011620564</b></p>
+</div>
+<h3 style="text-align:center;margin:10px 0">DELIVERY RECEIPT / INVOICE</h3>
+<div class="info-grid">
+<div class="info-box">
+<b>Bill To:</b><br>
+Name: ${o.customer_name||''}<br>
+Phone: ${o.customer_phone||''}<br>
+Address: ${o.customer_address||''}<br>
+State: ${o.customer_state||''}<br>
+Date: ${date}<br>
+Payment Ref: ${o.payment_ref||''}<br>
+Status: <b>${(o.status||'pending').toUpperCase()}</b>
+</div>
+<div class="info-box">
+<b>From:</b><br>
+MSEL - Most Successful Energy Ltd<br>
+14, Adedotun Dina Crescent<br>
+Mende Maryland, Lagos<br>
+Call: 07011620564<br>
+WhatsApp: 08104441545<br><br>
+<b>Thank you for your patronage!</b>
+</div>
+</div>
+<table>
+<thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit Price</th><th>Amount</th></tr></thead>
+<tbody>${itemsHtml}</tbody>
+<tfoot><tr class="total-row"><td colspan="4" style="padding:8px;border:1px solid #ddd;text-align:right">TOTAL</td><td style="padding:8px;border:1px solid #ddd;text-align:right">₦${Number(o.total||0).toLocaleString()}</td></tr></tfoot>
+</table>
+<div class="footer">
+<div style="font-size:11px">
+<b>Customer Signature:</b> ________________________<br><br>
+<b>Delivery Officer:</b> ________________________<br><br>
+Date: ${new Date().toLocaleDateString()}
+</div>
+<div class="qr">
+<img src="${qrUrl}" alt="QR Code"><br>
+<small>Scan to verify order<br>${o.payment_ref||o.id.slice(0,8)}</small>
+</div>
+</div>
+<p style="text-align:center;font-size:10px;margin-top:18px;color:#666;border-top:1px solid #ddd;padding-top:8px">
+MSEL Biogas - Clean Energy Solutions | This receipt is valid for delivery
+</p>
+<div style="text-align:center;margin-top:12px">
+<button onclick="window.print()" style="background:#00924C;color:#fff;border:0;padding:10px 20px;border-radius:20px;font-weight:800;cursor:pointer">🖨️ Print Now</button>
+<button onclick="window.close()" style="background:#334155;color:#fff;border:0;padding:10px 20px;border-radius:20px;font-weight:800;margin-left:6px;cursor:pointer">Close</button>
+</div>
+</body></html>`);
+  win.document.close();
+  setTimeout(()=>{ win.focus(); },500);
+}
+
 let gallery = JSON.parse(localStorage.getItem('msel_gallery')||'[]');
 let products = JSON.parse(localStorage.getItem('msel_products')||'[]');
 
@@ -456,6 +545,7 @@ function renderOrders(orders){
       <div class="total">TOTAL: ₦${Number(o.total||0).toLocaleString()}</div>
       ${o.payment_proof_url?`<a href="${o.payment_proof_url}" target="_blank"><img src="${o.payment_proof_url}" class="receipt-img"><div style="font-size:10px;color:#22c55e;text-align:center">Receipt shows directly - tap to open full</div></a>`:'<div style="color:#f87171;font-size:11px">No receipt</div>'}
       <div style="margin-top:8px">
+        <button class="btn-small" style="background:#000;color:#22c55e;border:1px solid #22c55e" onclick="printDeliveryReceipt('${o.id}')">🖨️ Print Receipt</button>
         <button class="btn-small" style="background:#22c55e;color:#000" onclick="window.location.href='tel:${o.customer_phone}'">📞 Call</button>
         <button class="btn-small" style="background:#25D366;color:#000" onclick="window.open('https://wa.me/${(o.customer_phone||'').replace(/[^0-9]/g,'').replace(/^0/,'234')}','_blank')">💬 WhatsApp</button>
         ${o.status==='pending'?`<button class="btn-small" style="background:#3b82f6;color:#fff" onclick="updateOrderStatus('${o.id}','confirmed')">✓ Confirm</button>`:''}
