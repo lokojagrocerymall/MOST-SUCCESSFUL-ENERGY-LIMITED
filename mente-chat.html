@@ -13,16 +13,22 @@ header{background:#fff;color:#00924C;padding:10px 3%;display:flex;justify-conten
 header img{height:38px}
 header h1{font-size:16px;line-height:1.1}
 .badge-new{background:#FFC72C;color:#000;font-size:9px;font-weight:900;padding:3px 7px;border-radius:12px;margin-left:5px;animation:pulse 1.5s infinite;display:inline-block}
+.badge-boss{background:linear-gradient(90deg,#FFC72C,#FF8C00);color:#000;font-size:9px;font-weight:900;padding:3px 8px;border-radius:12px;margin-left:5px;display:inline-flex;box-shadow:0 0 8px rgba(255,199,44,.6)}
 @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes highlight{0%{box-shadow:0 0 0 0 #22c55e}50%{box-shadow:0 0 0 10px rgba(34,197,94,.6);transform:scale(1.02)}100%{box-shadow:0 0 0 0 transparent}}
+.highlight{animation:highlight 1.2s ease 2}
 #chatBox{flex:1;overflow-y:auto;padding:15px 3%;display:flex;flex-direction:column;gap:12px;padding-bottom:130px}
 .msg{max-width:82%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.4;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.2);word-break:break-word;cursor:pointer;user-select:none}
 .msg.me{align-self:flex-end;background:#22c55e;color:#000;border-bottom-right-radius:4px}
 .msg.other{align-self:flex-start;background:#1e293b;border-bottom-left-radius:4px}
+.msg.boss{border:2px solid #FFC72C;box-shadow:0 0 15px rgba(255,199,44,.35)}
 .msg.meta{font-size:10px;opacity:.7;margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .msg img.chat-img{width:100%;max-width:260px;border-radius:10px;margin-top:6px;cursor:pointer;display:block}
 .msg video.chat-video{width:100%;max-width:280px;border-radius:10px;margin-top:6px;background:#000}
 .msg audio{width:230px;margin-top:6px;height:38px;display:block}
-.replyBox{background:rgba(0,0,0,.25);border-left:3px solid #22c55e;padding:6px 8px;border-radius:8px;margin-bottom:6px;font-size:11px;opacity:.9}
+.replyBox{background:rgba(0,0,0,.25);border-left:3px solid #22c55e;padding:6px 8px;border-radius:8px;margin-bottom:6px;font-size:11px;opacity:.9;cursor:pointer;transition:.2s}
+.replyBox:hover{background:rgba(0,0,0,.5);transform:translateX(2px)}
+.replyBox.bossReply{border-left-color:#FFC72C}
 .reactions{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
 .react{font-size:11px;background:rgba(0,0,0,.3);padding:2px 6px;border-radius:12px;display:flex;align-items:center;gap:3px;cursor:pointer}
 .react.me{background:#FFC72C;color:#000;font-weight:900}
@@ -43,6 +49,8 @@ header h1{font-size:16px;line-height:1.1}
 #tagList div:hover{background:#0f172a}
 #replyPreview{display:none;position:fixed;bottom:60px;left:0;right:0;background:#1e293b;padding:8px 3%;border-top:1px solid #22c55e;z-index:55;font-size:12px}
 #replyPreview b{color:#22c55e}
+.avatar{width:20px;height:20px;border-radius:50%;background:#22c55e;color:#000;font-weight:900;font-size:10px;display:inline-flex;align-items:center;justify-content:center;margin-right:4px;vertical-align:middle}
+.avatar.bossAvatar{background:linear-gradient(90deg,#FFC72C,#FF8C00)}
 </style>
 </head>
 <body>
@@ -79,24 +87,32 @@ const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const ADMIN_WHATSAPP='2347011620564';
 
 let session=JSON.parse(localStorage.getItem('msel_mente_session')||'null');
-if(!session){ alert('🔐 Please login first.'); window.location.href='login.html'; }
+if(!session){ alert('🔐 Create account first.'); window.location.href='mente-register.html'; }
 let myName=session?.name||'Guest';
 let myCode=session?.code||'MSEL2026';
-document.getElementById('userLabel').innerText=myName+' ('+myCode+')';
+let myRole=session?.role||'mente';
+let myIsAdmin=myRole==='admin' || myName==='MSEL BOSS' || myName.toLowerCase().includes('boss') || myCode.toUpperCase().includes('BOSS');
+document.getElementById('userLabel').innerText=myIsAdmin?'👑 MSEL BOSS (Admin)':myName+' ('+myCode+')';
 
 let menteUsers=JSON.parse(localStorage.getItem('msel_mente_users')||'{}');
-let allMessages=[]; let selectedMsg=null; let replyToData=null;
+let allMessages=[]; let selectedMsg=null; let replyToData=null; let accountsMap={};
 
-function isNewMente(name){ if(!menteUsers[name]) return true; let d=(Date.now()-new Date(menteUsers[name]))/1000/60/60/24; return d<7; }
+function isNewMente(name){ if(name==='MSEL BOSS') return false; if(!menteUsers[name]) return true; let d=(Date.now()-new Date(menteUsers[name]))/1000/60/60/24; return d<7; }
 function markUserSeen(name){ if(!menteUsers[name]){ menteUsers[name]=new Date().toISOString(); localStorage.setItem('msel_mente_users',JSON.stringify(menteUsers)); } }
 function escapeHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function showToast(t){ let el=document.getElementById('notifyToast'); el.innerText=t; el.style.display='block'; setTimeout(()=>el.style.display='none',3000); }
 function formatNigeriaTime(dateStr){ let d=new Date(dateStr); let time=d.toLocaleTimeString('en-NG',{timeZone:'Africa/Lagos',hour:'numeric',minute:'2-digit',hour12:true}); let date=d.toLocaleDateString('en-NG',{timeZone:'Africa/Lagos',day:'2-digit',month:'2-digit',year:'numeric'}); return `${time} • ${date}`; }
+function isAdminMsg(m){ return m.name==='MSEL BOSS' || (m.code&&m.code.toUpperCase().includes('BOSS')) || (m.name&&m.name.toLowerCase().includes('boss')) || (accountsMap[m.name]?.role==='admin'); }
+function scrollToMsg(id){ let el=document.querySelector(`[data-id="${id}"]`); if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.classList.add('highlight'); showToast('↩️ Jumped to original'); setTimeout(()=>el.classList.remove('highlight'),2500); } else showToast('Original not loaded'); }
+async function loadAccounts(){ let {data}=await supabaseClient.from('msel_mente_accounts').select('name,phone,role'); if(data){ data.forEach(a=>{ accountsMap[a.name]=a; }); } }
 
 function renderMessages(data){
   allMessages=data; let box=document.getElementById('chatBox'); box.innerHTML='';
   data.forEach(m=>{
-    let isMe=m.name===myName; let newBadge=isNewMente(m.name)?'<span class="badge-new">🆕 NEW MENTE</span>':'';
+    let isMe=m.name===myName;
+    let admin=isAdminMsg(m);
+    let newBadge=!admin && isNewMente(m.name)?'<span class="badge-new">🆕 NEW MENTE</span>':'';
+    let bossBadge=admin?'<span class="badge-boss">👑 MSEL BOSS</span>':'';
     let type=(m.type||'text').toLowerCase(); let mediaUrl=m.media_url||''; let textContent=m.message||'';
     let reactionsHtml=''; let reacts=m.reactions||{};
     if(reacts && Object.keys(reacts).length){
@@ -109,24 +125,29 @@ function renderMessages(data){
       reactionsHtml+='</div>';
     }
     let replyHtml='';
-    if(m.reply_to){ replyHtml=`<div class="replyBox">↩️ Replying to <b>${escapeHtml(m.reply_to.name||'')}</b>: ${escapeHtml((m.reply_to.message||'').substring(0,60))} ${m.reply_to.type!=='text'?`[${m.reply_to.type}]`:''}</div>`; }
-
-    let html=`<div style="font-weight:900;font-size:11px;margin-bottom:4px">${escapeHtml(m.name)} • ${escapeHtml(m.code||'MSEL2026')} ${newBadge}</div>${replyHtml}`;
+    if(m.reply_to){
+      let rid=m.reply_to.id||'';
+      let clickAttr=rid?`onclick="event.stopPropagation();scrollToMsg('${rid}')"`:'';
+      replyHtml=`<div class="replyBox ${admin?'bossReply':''}" ${clickAttr} title="Tap to view original">↩️ Replying to <b>${escapeHtml(m.reply_to.name||'')}</b>: ${escapeHtml((m.reply_to.message||'').substring(0,80))} ${m.reply_to.type!=='text'?`[${m.reply_to.type}]`:''} <span style="float:right;opacity:.6">👆 tap</span></div>`;
+    }
+    let displayName=admin?'MSEL BOSS':escapeHtml(m.name);
+    let displayCode=admin?'ADMIN • MSEL-BOSS-001':escapeHtml(m.code||'MSEL2026');
+    let initial=displayName.charAt(0).toUpperCase();
+    let html=`<div style="font-weight:900;font-size:11px;margin-bottom:4px"><span class="avatar ${admin?'bossAvatar':''}">${admin?'👑':initial}</span>${displayName} • ${displayCode} ${bossBadge} ${newBadge}</div>${replyHtml}`;
     if(type==='image' && mediaUrl) html+=`<img src="${mediaUrl}" class="chat-img" onclick="event.stopPropagation();window.open('${mediaUrl}','_blank')">`;
     else if(type==='video' && mediaUrl) html+=`<video src="${mediaUrl}" class="chat-video" controls playsinline onclick="event.stopPropagation()"></video>`;
     else if(type==='voice' && mediaUrl) html+=`<audio src="${mediaUrl}" controls onclick="event.stopPropagation()"></audio>`;
     else if((type==='file'||type==='document') && mediaUrl) html+=`<a href="${mediaUrl}" target="_blank" onclick="event.stopPropagation()" style="color:${isMe?'#000':'#22c55e'};font-weight:900">📄 Open File</a>`;
     if(textContent){ let text=escapeHtml(textContent).replace(/@(\w+)/g,'<span class="tag" onclick="event.stopPropagation();insertTag(\'$1\')">@$1</span>'); html+=`<div style="margin-top:4px">${text}</div>`; }
     html+=`${reactionsHtml}<div class="meta">🕒 ${formatNigeriaTime(m.created_at)}</div>`;
-    box.innerHTML+=`<div class="msg ${isMe?'me':'other'}" data-id="${m.id}" onclick="selectMsg('${m.id}')" oncontextmenu="event.preventDefault();selectMsg('${m.id}');return false;">${html}</div>`; markUserSeen(m.name);
+    box.innerHTML+=`<div class="msg ${isMe?'me':'other'} ${admin?'boss':''}" data-id="${m.id}" onclick="selectMsg('${m.id}')" oncontextmenu="event.preventDefault();selectMsg('${m.id}');return false;">${html}</div>`; markUserSeen(m.name);
   });
   box.scrollTop=box.scrollHeight;
 }
-async function loadMessages(){ let {data}=await supabaseClient.from('msel_mente_messages').select('*').order('created_at',{ascending:true}).limit(500); if(data) renderMessages(data); }
+async function loadMessages(){ await loadAccounts(); let {data}=await supabaseClient.from('msel_mente_messages').select('*').order('created_at',{ascending:true}).limit(500); if(data) renderMessages(data); }
 loadMessages();
 supabaseClient.channel('mente-chat-live-4').on('postgres_changes',{event:'*',schema:'public',table:'msel_mente_messages'},()=>loadMessages()).subscribe();
 
-// Select message -> show picker
 function selectMsg(id){
   selectedMsg=allMessages.find(m=>m.id==id);
   let picker=document.getElementById('reactionPicker');
@@ -136,7 +157,6 @@ document.addEventListener('click',e=>{
   if(!e.target.closest('.msg') &&!e.target.closest('#reactionPicker')) document.getElementById('reactionPicker').style.display='none';
 });
 
-// React
 async function react(emoji, forcedId=null){
   let id=forcedId||selectedMsg?.id; if(!id) return;
   let msg=allMessages.find(m=>m.id==id);
@@ -150,7 +170,6 @@ async function react(emoji, forcedId=null){
   showToast(`${emoji} reaction!`);
 }
 
-// Reply/Tag
 function startReply(){
   if(!selectedMsg) return;
   replyToData={id:selectedMsg.id,name:selectedMsg.name,message:selectedMsg.message||'',type:selectedMsg.type||'text',media_url:selectedMsg.media_url||''};
@@ -176,7 +195,10 @@ async function sendMsg(mediaUrl=null, mediaType='text'){
   let input=document.getElementById('msgInput'); let text=input.value.trim();
   if(!text &&!mediaUrl) return;
   if(!mediaUrl) input.value='';
-  let payload={ name:myName, code:myCode, message:text|| (mediaType!=='text'?`[${mediaType}]`:'') };
+  // FORCE BOSS IDENTITY FOR ADMIN
+  let sendName=myIsAdmin?'MSEL BOSS':myName;
+  let sendCode=myIsAdmin?'MSEL-BOSS-001':myCode;
+  let payload={ name:sendName, code:sendCode, message:text|| (mediaType!=='text'?`[${mediaType}]`:'') };
   if(mediaUrl){ payload.media_url=mediaUrl; payload.type=mediaType; }
   if(replyToData){ payload.reply_to=replyToData; }
   let {error}=await supabaseClient.from('msel_mente_messages').insert(payload);
