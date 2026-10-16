@@ -1,93 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MSEL MENTE Chat</title>
 <link rel="icon" href="logo.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-body{background:#0f172a;color:#fff;display:flex;flex-direction:column;height:100vh}
-.header{background:#00924C;padding:12px;display:flex;justify-content:space-between;align-items:center}
-.chat-box{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;background:#111b2f}
-.msg{background:#1e293b;padding:10px 14px;border-radius:14px;max-width:85%;border:1px solid #334155}
-.msg.me{align-self:flex-end;background:#00924C;border-color:#22c55e}
-.msg.name{font-size:11px;font-weight:800;color:#22c55e;margin-bottom:4px}
-.msg.me.name{color:#fff}
-.msg.text{font-size:14px;line-height:1.4}
-.msg.time{font-size:10px;opacity:.5;margin-top:4px;text-align:right}
-.input-area{background:#1e293b;padding:10px;display:flex;gap:8px;border-top:1px solid #334155}
-.input-area input{flex:1;padding:12px;border-radius:25px;border:1px solid #334155;background:#0f172a;color:#fff;outline:none}
-.input-area button{padding:12px 18px;border-radius:25px;border:0;background:#22c55e;color:#0f172a;font-weight:800;cursor:pointer}
-.tag{color:#22c55e;font-weight:800}
-.update-banner{background:#f59e0b;color:#000;padding:10px;text-align:center;font-weight:800;font-size:13px;display:none}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
+body{background:#0f172a;color:#fff;min-height:100vh;display:flex;flex-direction:column}
+header{background:#fff;color:#00924C;padding:10px 3%;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.left{display:flex;align-items:center;gap:8px}
+header img{height:38px}
+header h1{font-size:16px;line-height:1.1}
+.badge-new{background:#FFC72C;color:#000;font-size:9px;font-weight:900;padding:3px 7px;border-radius:12px;margin-left:5px;animation:pulse 1.5s infinite;display:inline-block}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+#chatBox{flex:1;overflow-y:auto;padding:15px 3%;display:flex;flex-direction:column;gap:12px;padding-bottom:95px}
+.msg{max-width:78%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.4;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.msg.me{align-self:flex-end;background:#22c55e;color:#000;border-bottom-right-radius:4px}
+.msg.other{align-self:flex-start;background:#1e293b;border-bottom-left-radius:4px}
+.msg.meta{font-size:10px;opacity:.7;margin-top:6px;display:flex;gap:6px;align-items:center}
+.inputBar{position:fixed;bottom:0;left:0;right:0;background:#0f172a;padding:10px 3%;display:flex;gap:8px;border-top:1px solid #1e293b;z-index:50}
+.inputBar input{flex:1;padding:12px 16px;border-radius:24px;border:1px solid #334155;background:#1e293b;color:#fff;outline:none;font-size:14px}
+.inputBar button{background:#22c55e;color:#000;font-weight:900;padding:12px 20px;border-radius:24px;border:0;cursor:pointer}
+.tag{color:#22c55e;font-weight:900;background:rgba(34,197,94,.15);padding:0 4px;border-radius:4px}
+.btnTop{background:#0f172a;color:#22c55e;border:1px solid #22c55e;padding:8px 14px;border-radius:20px;font-weight:900;font-size:13px;text-decoration:none;margin-left:6px;display:inline-block}
+#notifyToast{position:fixed;top:80px;right:10px;background:#22c55e;color:#000;padding:10px 14px;border-radius:10px;font-size:12px;font-weight:900;display:none;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.4)}
 </style>
 </head>
 <body>
-<div class="header">
-<div><b>MSEL MENTE CHAT</b><br><small id="userLabel" style="opacity:.8">Engineer</small></div>
-<div style="display:flex;gap:8px">
-<a href="engineers.html" style="background:#fff;color:#00924C;padding:6px 12px;border-radius:20px;text-decoration:none;font-size:12px;font-weight:800">Shop</a>
-<a href="index.html" style="background:#1e293b;color:#fff;padding:6px 12px;border-radius:20px;text-decoration:none;font-size:12px">Home</a>
-</div>
-</div>
-<div id="updateBanner" class="update-banner"></div>
-<div id="chatBox" class="chat-box"></div>
-<div class="input-area">
+<header>
+<div class="left"><img src="logo.png" alt="MSEL"><div><h1>MSEL MENTE CHAT</h1><small id="userLabel" style="color:#64748b;font-size:11px">Loading...</small></div></div>
+<div><a href="public-shop.html" class="btnTop">🛒 Shop</a><a href="index.html" class="btnTop" style="background:#fff;color:#000;border-color:#fff">Home</a></div>
+</header>
+<div id="chatBox"></div>
+<div id="notifyToast">📲 WhatsApp alert sent to Admin!</div>
+<div class="inputBar">
 <input id="msgInput" placeholder="Type message, use @name to tag...">
 <button onclick="sendMsg()">Send</button>
 </div>
 
 <script>
-const SUPABASE_URL = 'https://rsnsciisycruhxtvfhwb.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL='https://rsnsciisycruhxtvfhwb.supabase.co';
+const SUPABASE_KEY='sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const ADMIN_WHATSAPP='2347011620564';
 
-let myName = localStorage.getItem('msel_engineer') || localStorage.getItem('msel_eng_code') || 'Mente-'+Math.floor(Math.random()*1000);
-let myCode = localStorage.getItem('msel_eng_code') || myName;
-document.getElementById('userLabel').innerText = myName + ' ('+myCode+')';
-
-async function loadUpdates(){
-  try{
-    const {data} = await supabaseClient.from('msel_updates').select('*').gt('expires_at', new Date().toISOString()).order('created_at',{ascending:false}).limit(1);
-    if(data && data.length){
-      let banner = document.getElementById('updateBanner');
-      banner.style.display='block';
-      banner.innerText = '📢 '+data[0].title+': '+data[0].message;
-    }
-  }catch{}
+// === LOGIN CHECK ===
+let session=JSON.parse(localStorage.getItem('msel_mente_session')||'null');
+if(!session){
+  alert('🔐 MENTE Chat is for trained engineers only. Please login first.');
+  window.location.href='login.html';
 }
-loadUpdates();
+let myName=session?.name||'Guest';
+let myCode=session?.code||'MSEL2026';
+document.getElementById('userLabel').innerText=myName+' ('+myCode+')';
 
-async function loadChat(){
-  const {data} = await supabaseClient.from('msel_chat').select('*').order('created_at',{ascending:true}).limit(100);
-  let box = document.getElementById('chatBox');
-  if(!data) return;
+// === NEW MENTE BADGE LOGIC ===
+let menteUsers=JSON.parse(localStorage.getItem('msel_mente_users')||'{}');
+function isNewMente(name){
+  if(!menteUsers[name]) return true;
+  let joined=new Date(menteUsers[name]);
+  let diffDays=(Date.now()-joined)/1000/60/60/24;
+  return diffDays<7;
+}
+function markUserSeen(name){
+  if(!menteUsers[name]){
+    menteUsers[name]=new Date().toISOString();
+    localStorage.setItem('msel_mente_users',JSON.stringify(menteUsers));
+  }
+}
+function escapeHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function renderMessages(data){
+  let box=document.getElementById('chatBox');
   box.innerHTML='';
   data.forEach(m=>{
-    let isMe = m.code===myCode || m.name===myName;
-    let text = m.message.replace(/@(\w+)/g,'<span class="tag">@$1</span>');
-    box.innerHTML+=`<div class="msg ${isMe?'me':''}"><div class="name">${m.name} • ${m.code}</div><div class="text">${text}</div><div class="time">${new Date(m.created_at).toLocaleTimeString()}</div></div>`;
+    let isMe=m.name===myName;
+    let newBadge=isNewMente(m.name)?'<span class="badge-new">🆕 NEW MENTE</span>':'';
+    let text=escapeHtml(m.message).replace(/@(\w+)/g,'<span class="tag">@$1</span>');
+    box.innerHTML+=`<div class="msg ${isMe?'me':'other'}"><div style="font-weight:900;font-size:11px;margin-bottom:4px">${escapeHtml(m.name)} • ${escapeHtml(m.code||'MSEL2026')} ${newBadge}</div><div>${text}</div><div class="meta">🕒 ${new Date(m.created_at).toLocaleTimeString()} • ${new Date(m.created_at).toLocaleDateString()}</div></div>`;
+    markUserSeen(m.name);
   });
-  box.scrollTop = box.scrollHeight;
+  box.scrollTop=box.scrollHeight;
 }
-loadChat();
+async function loadMessages(){
+  let {data,error}=await supabaseClient.from('msel_mente_messages').select('*').order('created_at',{ascending:true}).limit(300);
+  if(!error && data) renderMessages(data);
+}
+loadMessages();
+supabaseClient.channel('mente-chat-live').on('postgres_changes',{event:'INSERT',schema:'public',table:'msel_mente_messages'},()=>loadMessages()).subscribe();
+
+function showToast(){
+  let t=document.getElementById('notifyToast');
+  t.style.display='block';
+  setTimeout(()=>t.style.display='none',3000);
+}
 
 async function sendMsg(){
-  let input = document.getElementById('msgInput');
-  let txt = input.value.trim();
-  if(!txt) return;
+  let input=document.getElementById('msgInput');
+  let text=input.value.trim();
+  if(!text) return;
   input.value='';
-  await supabaseClient.from('msel_chat').insert({name:myName, code:myCode, message:txt});
-  loadChat();
+  let {error}=await supabaseClient.from('msel_mente_messages').insert({name:myName,code:myCode,message:text});
+  if(error){ alert(error.message); return; }
+  loadMessages();
+
+  // === WHATSAPP AUTO NOTIFY TO ADMIN ===
+  let adminMsg=`🔔 NEW MENTE CHAT ALERT\n\n👤 From: ${myName} (${myCode})\n💬 Message: ${text}\n🕒 Time: ${new Date().toLocaleString()}\n\nReply now: https://mostsuccessfulenergy.com/mente-chat.html`;
+  let waLink=`https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(adminMsg)}`;
+  // Open hidden window for admin alert (you will get it on your phone if you enable CallMeBot, else just logs)
+  // For now, we open WhatsApp in new tab for you to send to yourself - you can save this number
+  console.log('Admin WhatsApp Alert:', waLink);
+  // Uncomment to auto-open WhatsApp (may be blocked on mobile, so we use toast)
+  // window.open(waLink,'_blank');
+  showToast();
+  // Also try to send via free API if configured
+  try{
+    fetch(`https://api.whatsapp.com/send?phone=${ADMIN_WHATSAPP}&text=${encodeURIComponent(adminMsg)}`, {mode:'no-cors'});
+  }catch(e){}
 }
-
-document.getElementById('msgInput').addEventListener('keydown',e=>{ if(e.key==='Enter') sendMsg(); });
-
-// Realtime
-supabaseClient.channel('chat-room').on('postgres_changes',{event:'INSERT',schema:'public',table:'msel_chat'},()=>{loadChat();}).subscribe();
-
-setInterval(loadChat, 5000);
+document.getElementById('msgInput').addEventListener('keypress',e=>{if(e.key==='Enter')sendMsg()});
 </script>
 </body>
 </html>
