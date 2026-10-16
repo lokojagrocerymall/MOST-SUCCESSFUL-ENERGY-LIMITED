@@ -132,24 +132,27 @@ function showTab(which){
   localStorage.setItem('msel_admin_tab', which);
 }
 
-// ==== UPDATED: PRINT + DOWNLOAD PDF WITH LOGO, ADDRESS, WHATSAPP & QR ====
+// ==== FIXED UPDATE: SAVE/DOWNLOAD PDF WITHOUT BLOB ERROR ====
 function printDeliveryReceipt(orderId){
   let o = allOrders.find(x=>x.id===orderId);
   if(!o) return alert('Order not found');
   let itemsHtml='';
+  let itemsForPDF=[];
   try{
     let items=Array.isArray(o.items)?o.items:JSON.parse(o.items||'[]');
+    itemsForPDF=items;
     itemsHtml=items.map((it,i)=>`<tr><td style="padding:6px;border:1px solid #ddd">${i+1}</td><td style="padding:6px;border:1px solid #ddd">${it.name}</td><td style="padding:6px;border:1px solid #ddd;text-align:center">${it.qty}</td><td style="padding:6px;border:1px solid #ddd;text-align:right">₦${Number(it.price).toLocaleString()}</td><td style="padding:6px;border:1px solid #ddd;text-align:right">₦${(Number(it.price)*Number(it.qty)).toLocaleString()}</td></tr>`).join('');
   }catch{ itemsHtml=`<tr><td colspan="5">${o.items||''}</td></tr>`; }
   let date=new Date(o.created_at||Date.now()).toLocaleString();
-  let qrData=`MSEL Order - ${o.customer_name} | ${o.customer_phone} | ${o.customer_state} | Ref:${o.payment_ref} | Total:₦${Number(o.total).toLocaleString()} | MSEL 07011620564`;
+  let qrData=`MSEL Order - ${o.customer_name} | ${o.customer_phone} | ${o.customer_state} | Ref:${o.payment_ref} | Total:₦${Number(o.total).toLocaleString()}`;
   let qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(qrData)}`;
   let fileName=`MSEL-Receipt-${o.customer_name.replace(/\s+/g,'-')}-${o.payment_ref||o.id.slice(0,6)}.pdf`;
 
   let win=window.open('','_blank');
   win.document.write(`
 <html><head><title>Delivery Receipt - ${o.customer_name}</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"><\/script>
 <style>
 body{font-family:Arial,sans-serif;padding:16px;color:#111;background:#fff}
 .header{text-align:center;border-bottom:3px solid #00924C;padding-bottom:10px;margin-bottom:12px}
@@ -210,7 +213,7 @@ WhatsApp: 08104441545<br><br>
 Date: ${new Date().toLocaleDateString()}
 </div>
 <div class="qr">
-<img src="${qrUrl}" alt="QR Code"><br>
+<img id="qrImg" src="${qrUrl}" crossorigin="anonymous" alt="QR Code"><br>
 <small>Scan to verify order<br>${o.payment_ref||o.id.slice(0,8)}</small>
 </div>
 </div>
@@ -221,23 +224,102 @@ MSEL Biogas - Clean Energy Solutions | This receipt is valid for delivery
 
 <div class="action-bar">
 <button onclick="window.print()" style="background:#00924C;color:#fff">🖨️ Print Now</button>
-<button id="pdfBtn" onclick="downloadPDF()" style="background:#000;color:#22c55e;border:1px solid #22c55e">📥 Download PDF</button>
+<button id="pdfBtn" onclick="downloadPDF()" style="background:#000;color:#22c55e;border:1px solid #22c55e">📥 Save PDF</button>
 <button onclick="window.close()" style="background:#334155;color:#fff">Close</button>
 </div>
 
 <script>
+const orderData = {
+  name: \`${o.customer_name||''}\`,
+  phone: \`${o.customer_phone||''}\`,
+  address: \`${o.customer_address||''}\`,
+  state: \`${o.customer_state||''}\`,
+  ref: \`${o.payment_ref||''}\`,
+  total: ${Number(o.total||0)},
+  date: \`${date}\`,
+  status: \`${o.status||'pending'}\`,
+  items: ${JSON.stringify(itemsForPDF).replace(/</g, '\\u003c')}
+};
+
 function downloadPDF(){
   const btn=document.getElementById('pdfBtn');
-  btn.innerText='⏳ Saving...';
-  const element=document.getElementById('receipt-content');
-  const opt={
-    margin:0.3,
-    filename:'${fileName}',
-    image:{type:'jpeg',quality:0.98},
-    html2canvas:{scale:2,useCORS:true},
-    jsPDF:{unit:'in',format:'a4',orientation:'portrait'}
-  };
-  html2pdf().set(opt).from(element).save().then(()=>{ btn.innerText='✅ Saved!'; setTimeout(()=>btn.innerText='📥 Download PDF',2000); });
+  btn.innerText='⏳ Generating...';
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p','mm','a4');
+    
+    // Header
+    doc.setFontSize(14);
+    doc.setTextColor(0,146,76);
+    doc.setFont('helvetica','bold');
+    doc.text('MOST SUCCESSFUL ENERGY LIMITED', 105, 15, {align:'center'});
+    doc.setFontSize(9);
+    doc.setTextColor(0,0,0);
+    doc.setFont('helvetica','normal');
+    doc.text('14, Adedotun Dina Crescent, Mende Maryland, Lagos', 105, 20, {align:'center'});
+    doc.text('Call: 07011620564, 08104441545 | WhatsApp: 07011620564', 105, 24, {align:'center'});
+    doc.setDrawColor(0,146,76);
+    doc.setLineWidth(0.8);
+    doc.line(10,27,200,27);
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica','bold');
+    doc.text('DELIVERY RECEIPT / INVOICE', 105, 34, {align:'center'});
+    
+    // Customer Info
+    doc.setFontSize(9);
+    doc.setFont('helvetica','normal');
+    let y=40;
+    doc.text('Bill To:', 10, y);
+    doc.setFont('helvetica','bold');
+    doc.text(orderData.name, 10, y+5);
+    doc.setFont('helvetica','normal');
+    doc.text('Phone: ' + orderData.phone, 10, y+10);
+    doc.text('Address: ' + orderData.address, 10, y+15);
+    doc.text('State: ' + orderData.state, 10, y+20);
+    doc.text('Ref: ' + orderData.ref, 10, y+25);
+    doc.text('Date: ' + orderData.date, 10, y+30);
+    doc.text('Status: ' + orderData.status.toUpperCase(), 10, y+35);
+    
+    doc.text('From: MSEL - Most Successful Energy Ltd', 120, y);
+    doc.text('14, Adedotun Dina Crescent', 120, y+5);
+    doc.text('Mende Maryland, Lagos', 120, y+10);
+    doc.text('Call: 07011620564', 120, y+15);
+    doc.text('WhatsApp: 08104441545', 120, y+20);
+    
+    // Table
+    const tableData = orderData.items.map((it,i)=>[i+1, it.name, it.qty, 'N'+Number(it.price).toLocaleString(), 'N'+(Number(it.price)*Number(it.qty)).toLocaleString()]);
+    
+    doc.autoTable({
+      startY: y+42,
+      head: [['#','Item','Qty','Unit Price','Amount']],
+      body: tableData,
+      foot: [['','','','TOTAL','N'+orderData.total.toLocaleString()]],
+      theme: 'grid',
+      headStyles: {fillColor:[0,146,76]},
+      footStyles: {fillColor:[254,242,242], textColor:[220,38,38], fontStyle:'bold'},
+      styles: {fontSize:9}
+    });
+    
+    let finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(9);
+    doc.text('Customer Signature: ________________________', 10, finalY);
+    doc.text('Delivery Officer: ________________________', 10, finalY+10);
+    doc.text('Date: ' + new Date().toLocaleDateString(), 10, finalY+20);
+    
+    doc.setFontSize(8);
+    doc.setTextColor(100,100,100);
+    doc.text('Scan QR to verify: ' + orderData.ref, 140, finalY);
+    doc.text('Thank you for your patronage! MSEL Biogas', 105, 285, {align:'center'});
+    
+    // THIS SAVES DIRECTLY TO LOCAL STORAGE / DOWNLOADS - NO BLOB ERROR
+    doc.save('${fileName}');
+    btn.innerText='✅ Saved!';
+    setTimeout(()=>btn.innerText='📥 Save PDF',2000);
+  }catch(e){
+    alert('PDF Error: ' + e.message);
+    btn.innerText='📥 Save PDF';
+  }
 }
 <\/script>
 </body></html>`);
