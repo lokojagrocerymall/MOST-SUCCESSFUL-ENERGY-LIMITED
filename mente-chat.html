@@ -14,17 +14,23 @@ header img{height:38px}
 header h1{font-size:16px;line-height:1.1}
 .badge-new{background:#FFC72C;color:#000;font-size:9px;font-weight:900;padding:3px 7px;border-radius:12px;margin-left:5px;animation:pulse 1.5s infinite;display:inline-block}
 @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
-#chatBox{flex:1;overflow-y:auto;padding:15px 3%;display:flex;flex-direction:column;gap:12px;padding-bottom:95px}
-.msg{max-width:78%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.4;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+#chatBox{flex:1;overflow-y:auto;padding:15px 3%;display:flex;flex-direction:column;gap:12px;padding-bottom:110px}
+.msg{max-width:78%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.4;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.2);word-break:break-word}
 .msg.me{align-self:flex-end;background:#22c55e;color:#000;border-bottom-right-radius:4px}
 .msg.other{align-self:flex-start;background:#1e293b;border-bottom-left-radius:4px}
-.msg.meta{font-size:10px;opacity:.7;margin-top:6px;display:flex;gap:6px;align-items:center}
-.inputBar{position:fixed;bottom:0;left:0;right:0;background:#0f172a;padding:10px 3%;display:flex;gap:8px;border-top:1px solid #1e293b;z-index:50}
-.inputBar input{flex:1;padding:12px 16px;border-radius:24px;border:1px solid #334155;background:#1e293b;color:#fff;outline:none;font-size:14px}
-.inputBar button{background:#22c55e;color:#000;font-weight:900;padding:12px 20px;border-radius:24px;border:0;cursor:pointer}
+.msg.meta{font-size:10px;opacity:.7;margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.msg img.chat-img{width:100%;max-width:240px;border-radius:10px;margin-top:6px;cursor:pointer;display:block}
+.msg video.chat-video{width:100%;max-width:260px;border-radius:10px;margin-top:6px;background:#000}
+.msg audio{width:220px;margin-top:6px;height:36px}
+.inputBar{position:fixed;bottom:0;left:0;right:0;background:#0f172a;padding:10px 3%;display:flex;gap:6px;align-items:center;border-top:1px solid #1e293b;z-index:50}
+.iconBtn{background:#1e293b;color:#22c55e;border:1px solid #334155;width:42px;height:42px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.inputBar input.textInput{flex:1;padding:12px 16px;border-radius:24px;border:1px solid #334155;background:#1e293b;color:#fff;outline:none;font-size:14px}
+.sendBtn{background:#22c55e;color:#000;font-weight:900;padding:0;width:46px;height:46px;border-radius:50%;border:0;cursor:pointer;font-size:20px;flex-shrink:0}
 .tag{color:#22c55e;font-weight:900;background:rgba(34,197,94,.15);padding:0 4px;border-radius:4px}
 .btnTop{background:#0f172a;color:#22c55e;border:1px solid #22c55e;padding:8px 14px;border-radius:20px;font-weight:900;font-size:13px;text-decoration:none;margin-left:6px;display:inline-block}
 #notifyToast{position:fixed;top:80px;right:10px;background:#22c55e;color:#000;padding:10px 14px;border-radius:10px;font-size:12px;font-weight:900;display:none;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+#recordingBar{display:none;position:fixed;bottom:70px;left:3%;right:3%;background:#ef4444;color:#fff;padding:12px 16px;border-radius:24px;font-weight:900;text-align:center;z-index:60;animation:pulse 1s infinite}
+#fileInput{display:none}
 </style>
 </head>
 <body>
@@ -34,18 +40,22 @@ header h1{font-size:16px;line-height:1.1}
 </header>
 <div id="chatBox"></div>
 <div id="notifyToast">📲 WhatsApp alert sent to Admin!</div>
+<div id="recordingBar">🔴 Recording voice... Release to send</div>
+<input type="file" id="fileInput" accept="image/*,video/*,audio/*,.pdf,.doc,.docx">
 <div class="inputBar">
-<input id="msgInput" placeholder="Type message, use @name to tag...">
-<button onclick="sendMsg()">Send</button>
+<button class="iconBtn" onclick="document.getElementById('fileInput').click()" title="Attach media">📎</button>
+<input id="msgInput" class="textInput" placeholder="Type message, @name to tag...">
+<button class="iconBtn" id="micBtn" title="Hold to record voice">🎤</button>
+<button class="sendBtn" onclick="sendMsg()" title="Send">➤</button>
 </div>
 
 <script>
 const SUPABASE_URL='https://rsnsciisycruhxtvfhwb.supabase.co';
 const SUPABASE_KEY='sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
+const BUCKET='msel-project';
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const ADMIN_WHATSAPP='2347011620564';
 
-// === LOGIN CHECK ===
 let session=JSON.parse(localStorage.getItem('msel_mente_session')||'null');
 if(!session){
   alert('🔐 MENTE Chat is for trained engineers only. Please login first.');
@@ -55,7 +65,6 @@ let myName=session?.name||'Guest';
 let myCode=session?.code||'MSEL2026';
 document.getElementById('userLabel').innerText=myName+' ('+myCode+')';
 
-// === NEW MENTE BADGE LOGIC ===
 let menteUsers=JSON.parse(localStorage.getItem('msel_mente_users')||'{}');
 function isNewMente(name){
   if(!menteUsers[name]) return true;
@@ -70,55 +79,144 @@ function markUserSeen(name){
   }
 }
 function escapeHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
 function renderMessages(data){
   let box=document.getElementById('chatBox');
   box.innerHTML='';
   data.forEach(m=>{
     let isMe=m.name===myName;
     let newBadge=isNewMente(m.name)?'<span class="badge-new">🆕 NEW MENTE</span>':'';
-    let text=escapeHtml(m.message).replace(/@(\w+)/g,'<span class="tag">@$1</span>');
-    box.innerHTML+=`<div class="msg ${isMe?'me':'other'}"><div style="font-weight:900;font-size:11px;margin-bottom:4px">${escapeHtml(m.name)} • ${escapeHtml(m.code||'MSEL2026')} ${newBadge}</div><div>${text}</div><div class="meta">🕒 ${new Date(m.created_at).toLocaleTimeString()} • ${new Date(m.created_at).toLocaleDateString()}</div></div>`;
+    let type=m.type||m.message_type||'text';
+    let mediaUrl=m.media_url||m.mediaUrl||m.src||'';
+    let textContent=m.message||m.text||'';
+    let html=`<div style="font-weight:900;font-size:11px;margin-bottom:4px">${escapeHtml(m.name)} • ${escapeHtml(m.code||'MSEL2026')} ${newBadge}</div>`;
+
+    if(type==='image' && mediaUrl){
+      html+=`<img src="${mediaUrl}" class="chat-img" onclick="window.open('${mediaUrl}','_blank')" loading="lazy">`;
+    } else if(type==='video' && mediaUrl){
+      html+=`<video src="${mediaUrl}" class="chat-video" controls></video>`;
+    } else if(type==='voice' && mediaUrl){
+      html+=`<audio src="${mediaUrl}" controls></audio>`;
+    } else if((type==='file' || type==='document') && mediaUrl){
+      html+=`<a href="${mediaUrl}" target="_blank" style="color:${isMe?'#000':'#22c55e'};font-weight:900">📄 Open File</a>`;
+    }
+    if(textContent){
+      let text=escapeHtml(textContent).replace(/@(\w+)/g,'<span class="tag">@$1</span>');
+      html+=`<div style="margin-top:4px">${text}</div>`;
+    }
+    html+=`<div class="meta">🕒 ${new Date(m.created_at).toLocaleTimeString()} • ${new Date(m.created_at).toLocaleDateString()}</div>`;
+    box.innerHTML+=`<div class="msg ${isMe?'me':'other'}">${html}</div>`;
     markUserSeen(m.name);
   });
   box.scrollTop=box.scrollHeight;
 }
+
 async function loadMessages(){
-  let {data,error}=await supabaseClient.from('msel_mente_messages').select('*').order('created_at',{ascending:true}).limit(300);
+  let {data,error}=await supabaseClient.from('msel_mente_messages').select('*').order('created_at',{ascending:true}).limit(400);
   if(!error && data) renderMessages(data);
 }
 loadMessages();
 supabaseClient.channel('mente-chat-live').on('postgres_changes',{event:'INSERT',schema:'public',table:'msel_mente_messages'},()=>loadMessages()).subscribe();
 
-function showToast(){
-  let t=document.getElementById('notifyToast');
-  t.style.display='block';
-  setTimeout(()=>t.style.display='none',3000);
+function showToast(t){
+  let el=document.getElementById('notifyToast');
+  el.innerText=t||'📲 WhatsApp alert sent to Admin!';
+  el.style.display='block';
+  setTimeout(()=>el.style.display='none',3000);
 }
 
-async function sendMsg(){
+// Upload to Supabase Storage
+async function uploadMedia(file){
+  showToast('⏳ Uploading...');
+  let ext=file.name.split('.').pop();
+  let fileName=`chat/${Date.now()}_${myName.replace(/\s/g,'_')}.${ext}`;
+  let {error}=await supabaseClient.storage.from(BUCKET).upload(fileName,file);
+  if(error){ alert('Upload failed: '+error.message); return null; }
+  let {data}=supabaseClient.storage.from(BUCKET).getPublicUrl(fileName);
+  return data.publicUrl;
+}
+
+async function sendMsg(mediaUrl=null, mediaType='text', caption=''){
   let input=document.getElementById('msgInput');
-  let text=input.value.trim();
-  if(!text) return;
-  input.value='';
-  let {error}=await supabaseClient.from('msel_mente_messages').insert({name:myName,code:myCode,message:text});
-  if(error){ alert(error.message); return; }
-  loadMessages();
+  let text=caption || input.value.trim();
+  if(!text &&!mediaUrl) return;
+  if(!mediaUrl) input.value='';
 
-  // === WHATSAPP AUTO NOTIFY TO ADMIN ===
-  let adminMsg=`🔔 NEW MENTE CHAT ALERT\n\n👤 From: ${myName} (${myCode})\n💬 Message: ${text}\n🕒 Time: ${new Date().toLocaleString()}\n\nReply now: https://mostsuccessfulenergy.com/mente-chat.html`;
-  let waLink=`https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(adminMsg)}`;
-  // Open hidden window for admin alert (you will get it on your phone if you enable CallMeBot, else just logs)
-  // For now, we open WhatsApp in new tab for you to send to yourself - you can save this number
-  console.log('Admin WhatsApp Alert:', waLink);
-  // Uncomment to auto-open WhatsApp (may be blocked on mobile, so we use toast)
-  // window.open(waLink,'_blank');
-  showToast();
-  // Also try to send via free API if configured
-  try{
-    fetch(`https://api.whatsapp.com/send?phone=${ADMIN_WHATSAPP}&text=${encodeURIComponent(adminMsg)}`, {mode:'no-cors'});
-  }catch(e){}
+  let payload={name:myName,code:myCode,message:text};
+  // Support both old and new schema
+  if(mediaUrl){
+    payload.media_url=mediaUrl;
+    payload.mediaUrl=mediaUrl;
+    payload.type=mediaType;
+    payload.message_type=mediaType;
+  }
+  let {error}=await supabaseClient.from('msel_mente_messages').insert(payload);
+  if(error){
+    // Fallback if media_url column doesn't exist yet - try without it
+    if(error.message.includes('media_url') || error.message.includes('type')){
+      // Save as text with link
+      let fallbackText=text+(mediaUrl?` [${mediaType}: ${mediaUrl}]`: '');
+      await supabaseClient.from('msel_mente_messages').insert({name:myName,code:myCode,message:fallbackText});
+    } else {
+      alert(error.message); return;
+    }
+  }
+  loadMessages();
+  let adminMsg=`🔔 NEW MENTE CHAT\n👤 ${myName} (${myCode})\n${mediaType!=='text'?'📎 '+mediaType.toUpperCase()+' sent':''}\n💬 ${text}\n${mediaUrl||''}`;
+  console.log('Admin WhatsApp Alert:',`https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(adminMsg)}`);
+  showToast('✅ Sent!');
 }
-document.getElementById('msgInput').addEventListener('keypress',e=>{if(e.key==='Enter')sendMsg()});
+
+// File attach
+document.getElementById('fileInput').addEventListener('change', async (e)=>{
+  let file=e.target.files[0];
+  if(!file) return;
+  let type='file';
+  if(file.type.startsWith('image/')) type='image';
+  else if(file.type.startsWith('video/')) type='video';
+  else if(file.type.startsWith('audio/')) type='voice';
+  let url=await uploadMedia(file);
+  if(url) await sendMsg(url,type,document.getElementById('msgInput').value);
+  e.target.value='';
+});
+
+// Voice recording - hold to record like WhatsApp
+let mediaRecorder=null;
+let audioChunks=[];
+let isRecording=false;
+
+async function startRecording(){
+  try{
+    let stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    mediaRecorder=new MediaRecorder(stream);
+    audioChunks=[];
+    mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
+    mediaRecorder.onstop=async ()=>{
+      let blob=new Blob(audioChunks,{type:'audio/webm'});
+      let file=new File([blob],`voice_${Date.now()}.webm`,{type:'audio/webm'});
+      let url=await uploadMedia(file);
+      if(url) await sendMsg(url,'voice','🎤 Voice message');
+      stream.getTracks().forEach(t=>t.stop());
+    };
+    mediaRecorder.start();
+    isRecording=true;
+    document.getElementById('recordingBar').style.display='block';
+  }catch(err){ alert('Mic access denied: '+err.message); }
+}
+function stopRecording(){
+  if(mediaRecorder && isRecording){
+    mediaRecorder.stop();
+    isRecording=false;
+    document.getElementById('recordingBar').style.display='none';
+  }
+}
+let micBtn=document.getElementById('micBtn');
+micBtn.addEventListener('mousedown', startRecording);
+micBtn.addEventListener('mouseup', stopRecording);
+micBtn.addEventListener('touchstart', (e)=>{e.preventDefault();startRecording();});
+micBtn.addEventListener('touchend', (e)=>{e.preventDefault();stopRecording();});
+
+document.getElementById('msgInput').addEventListener('keypress',e=>{if(e.key==='Enter')sendMsg();});
 </script>
 </body>
 </html>
