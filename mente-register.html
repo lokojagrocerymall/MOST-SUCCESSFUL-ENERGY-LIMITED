@@ -13,7 +13,7 @@ small{color:#94a3b8}
 </style>
 </head><body>
 <div class="card">
-<div class="logo"><img src="logo.png"><h3 style="color:#22c55e;margin-top:6px">Create MENTE Account</h3><small>One account</small></div>
+<div class="logo"><img src="logo.png"><h3 style="color:#22c55e;margin-top:6px">Create MENTE Account</h3><small>One account - Boss approval required</small></div>
 <input id="name" placeholder="Full Name (e.g. John MENTE)">
 <input id="phone" placeholder="Phone">
 <input id="code" placeholder="Your MSEL Code (e.g. MSEL2026-123)" value="MSEL2026">
@@ -29,14 +29,22 @@ async function register(){
   let code=document.getElementById('code').value.trim()||'MSEL2026';
   if(!name||!phone){ alert('Fill name & phone'); return; }
   document.getElementById('msg').innerText='⏳ Creating...';
-  let {data,error}=await supabaseClient.from('msel_mente_accounts').insert({name,phone,code,role: name.toLowerCase().includes('boss')?'admin':'mente'}).select().single();
+  let isBoss = name.toLowerCase().includes('boss');
+  let role = isBoss ? 'admin' : 'mente';
+  let status = isBoss ? 'approved' : 'pending';
+  let payload = {name:name, full_name:name, phone:phone, code:code, role:role, status:status, approval_status:status};
+  let {data,error}=await supabaseClient.from('msel_mente_accounts').insert(payload).select().single();
   if(error){ 
-    // if exists, try login
     let {data:existing}=await supabaseClient.from('msel_mente_accounts').select('*').eq('phone',phone).single();
-    if(existing) data=existing; else { document.getElementById('msg').innerText='❌ '+error.message; return; }
+    if(existing){ data=existing; } else { document.getElementById('msg').innerText='❌ '+error.message; return; }
   }
-  localStorage.setItem('msel_mente_session', JSON.stringify({name:data.name, phone:data.phone, code:data.code, role:data.role, id:data.id}));
-  document.getElementById('msg').innerText='✅ Success! Entering chat...';
-  setTimeout(()=>location.href='mente-chat.html',800);
+  localStorage.setItem('msel_mente_session', JSON.stringify({name:data.name||data.full_name, full_name:data.full_name||data.name, phone:data.phone, code:data.code, role:data.role, id:data.id, status:data.status||status}));
+  if((data.status||status)==='pending' && !isBoss){
+    document.getElementById('msg').innerHTML='✅ Created!<br><br>⏳ <b>Awaiting Boss Approval</b><br>Your account is pending. Boss will approve you in Members list.';
+    setTimeout(()=>location.href='mente-chat.html',1500);
+  } else {
+    document.getElementById('msg').innerText='✅ Success! Entering chat...';
+    setTimeout(()=>location.href='mente-chat.html',800);
+  }
 }
 </script></body></html>
