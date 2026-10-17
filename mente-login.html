@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>MSEL MENTE Login</title>
+<link rel="icon" href="logo.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
+body{background:#0f172a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:15px;color:#fff}
+.card{background:#1e293b;width:100%;max-width:400px;padding:22px;border-radius:18px;border:2px solid #334155;box-shadow:0 10px 40px rgba(0,0,0,.5);text-align:center}
+.card img{height:55px;margin-bottom:10px}
+.card h2{color:#22c55e;margin:10px 0;font-size:18px}
+.card p{color:#94a3b8;font-size:13px;margin-bottom:15px}
+input{width:100%;padding:13px 14px;border-radius:12px;border:1px solid #334155;background:#0f172a;color:#fff;outline:none;margin-bottom:12px;font-size:14px}
+button{width:100%;padding:14px;background:#22c55e;color:#000;border:0;border-radius:12px;font-weight:900;font-size:15px;cursor:pointer}
+a{color:#22c55e;text-decoration:none;font-weight:900}
+small{font-size:12px;color:#94a3b8}
+</style>
+</head>
+<body>
+<div class="card">
+<img src="logo.png" alt="MSEL">
+<h2>Login to MENTE Chat</h2>
+<p>One phone = One account like WhatsApp</p>
+<input id="phone" type="tel" placeholder="Enter Phone (WhatsApp) used during registration">
+<button id="loginBtn" onclick="login()">Login & Enter Chat</button>
+<p style="margin-top:14px"><small>Don't have account? <a href="mente-register.html">Create Account</a></small></p>
+<p id="msg" style="margin-top:10px;font-size:13px;color:#FFC72C"></p>
+</div>
+<script>
+const SUPABASE_URL='https://rsnsciisycruhxtvfhwb.supabase.co';
+const SUPABASE_KEY='sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+function cleanPhone(p){
+  return p.replace(/\s+/g,'').replace(/\+/g,'').trim();
+}
+
+async function login(){
+  let rawPhone=document.getElementById('phone').value.trim();
+  let msg=document.getElementById('msg');
+  if(!rawPhone){ msg.innerText='❌ Enter your phone number'; return; }
+  let phone=cleanPhone(rawPhone);
+  document.getElementById('loginBtn').innerText='Checking...';
+
+  try{
+    // Search by phone ONLY - exact and like
+    let {data,error}=await supabaseClient.from('msel_mente_accounts').select('*').or(`phone.eq.${phone},phone.ilike.%${phone}%`);
+    if(error) throw error;
+
+    if(!data || data.length===0){
+      // Try cleaning +234 vs 0 format
+      let alt = phone.startsWith('0') ? phone.slice(1) : '0'+phone;
+      let {data:d2}=await supabaseClient.from('msel_mente_accounts').select('*').or(`phone.eq.${alt},phone.ilike.%${alt}%`);
+      data=d2;
+    }
+
+    if(!data || data.length===0){
+      msg.innerText='❌ Phone not found. Create account first.';
+      document.getElementById('loginBtn').innerText='Login & Enter Chat';
+      return;
+    }
+
+    let acc=data[0];
+    let session={
+      name: acc.name,
+      code: acc.code || 'MSEL2026',
+      full_name: acc.full_name || acc.name,
+      display_name: acc.full_name || acc.name,
+      phone: acc.phone,
+      role: acc.role || 'mente'
+    };
+    localStorage.setItem('msel_mente_session', JSON.stringify(session));
+    msg.innerText='✅ Welcome '+ (acc.full_name||acc.name) +' - Entering chat...';
+    setTimeout(()=>{ location.href='mente-chat.html'; },900);
+
+  }catch(e){
+    msg.innerText='Error: '+e.message;
+    document.getElementById('loginBtn').innerText='Login & Enter Chat';
+  }
+}
+</script>
+</body>
+</html>
