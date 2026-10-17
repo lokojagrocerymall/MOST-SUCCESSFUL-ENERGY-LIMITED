@@ -2,66 +2,67 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MSEL MENTE - Engineers Private Shop</title>
+<title>MSEL MENTE - Engineers Private Shop vFINAL</title>
 <link rel="icon" href="logo.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
 body{background:#0f172a;color:#fff}
-.top{background:#00924C;padding:10px 12px;display:flex;flex-direction:column;gap:10px;position:sticky;top:0;z-index:9999}
-.top-main{width:100%;display:flex;justify-content:space-between;align-items:center}
-.top b{font-size:15px}
-.top-actions{width:100%;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-start;background:#004d29;padding:10px;border-radius:12px;border:1px solid #00b85c}
-.top a.home-link{background:#fff;color:#00924C;padding:7px 16px;border-radius:20px;text-decoration:none;font-weight:800;font-size:13px;white-space:nowrap;flex-shrink:0}
-.cart-btn{background:#000;color:#22c55e;padding:8px 16px;border-radius:20px;font-weight:800;font-size:13px;border:1px solid #22c55e;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.header-fix{background:#00924C;padding:0;position:sticky;top:0;z-index:99999;display:block!important}
+.header-top-row{padding:10px 12px;display:flex;justify-content:space-between;align-items:center;background:#00924C}
+.header-bottom-row{background:#004d29;padding:10px 12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-top:2px solid #00b85c}
+.header-top-row b{font-size:16px;color:#fff}
+.header-top-row small{color:#e0ffe0}
+.home-link-fix{background:#fff!important;color:#00924C!important;padding:8px 20px!important;border-radius:20px!important;text-decoration:none!important;font-weight:900!important;font-size:14px!important}
+.cart-btn-fix{background:#000!important;color:#22c55e!important;padding:8px 18px!important;border-radius:20px!important;font-weight:900!important;font-size:14px!important;border:2px solid #22c55e!important;cursor:pointer!important}
+.chat-magenta-fix{background:#FF00FF!important;color:#fff!important;padding:10px 24px!important;border-radius:20px!important;text-decoration:none!important;font-weight:900!important;font-size:15px!important;border:3px solid #fff!important;box-shadow:0 0 15px #FF00FF!important;display:inline-block!important}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
 .card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:10px;text-align:center;cursor:pointer}
-.card:active{transform:scale(0.97);border-color:#22c55e}
 .card img{width:100%;height:120px;object-fit:contain;background:#fff;border-radius:10px}
 .badge{display:inline-block;background:#22c55e;color:#000;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:800;margin-top:6px}
 .name{font-size:13px;font-weight:800;margin-top:6px;min-height:32px}
 .desc{font-size:11px;opacity:.7;min-height:28px;margin:4px 0}
 .price{color:#FF0000;font-weight:900;margin:6px 0;font-size:14px}
-.btn{width:100%;padding:8px;border-radius:8px;border:0;background:#22c55e;color:#000;font-weight:800;font-size:12px;margin-top:4px;cursor:pointer}
+.btn{width:100%;padding:10px;border-radius:8px;border:0;background:#22c55e;color:#000;font-weight:800;font-size:13px;margin-top:6px;cursor:pointer}
 .btn2{background:#334155;color:#fff}
-.view-cart-btn{width:90%;max-width:340px;margin:16px auto;display:block;background:#00C853!important;color:#000!important;font-weight:900!important;padding:14px!important;border-radius:12px!important;border:0!important;font-size:15px!important;box-shadow:0 4px 15px rgba(0,200,83,0.5)}
+.view-cart-btn{width:90%;max-width:340px;margin:16px auto;display:block;background:#00C853!important;color:#000!important;font-weight:900!important;padding:14px!important;border-radius:12px!important;border:0!important;font-size:15px!important}
 .logout{display:block;margin:10px auto;background:#ef4444;color:#fff;border:0;padding:10px 24px;border-radius:20px;font-weight:800}
-#productModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;overflow:auto;padding:12px}
-.modal-box{background:#1e293b;max-width:500px;margin:20px auto;border-radius:16px;overflow:hidden;border:1px solid #334155}
+#productModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:999999;overflow:auto;padding:12px}
+.modal-box{background:#1e293b;max-width:500px;margin:20px auto;border-radius:16px;overflow:hidden;border:2px solid #22c55e}
 .modal-img-wrap{position:relative;background:#fff}
 .modal-img-wrap img{width:100%;max-height:380px;object-fit:contain;display:block}
-.nav-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.6);color:#fff;border:0;width:36px;height:36px;border-radius:50%;font-size:22px;cursor:pointer}
+.nav-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.7);color:#fff;border:0;width:40px;height:40px;border-radius:50%;font-size:26px;cursor:pointer}
 .nav-prev{left:10px}.nav-next{right:10px}
-.counter{position:absolute;top:10px;right:10px;background:#000;color:#fff;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:800}
-.close-btn{position:absolute;top:10px;left:10px;background:#ef4444;color:#fff;border:0;width:32px;height:32px;border-radius:50%;font-weight:800;cursor:pointer}
-.dots{text-align:center;padding:8px;background:#fff}
-.dots span{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 4px;cursor:pointer}
-#checkoutModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:100000;overflow:auto;padding:12px}
+.counter{position:absolute;top:10px;right:10px;background:#000;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:800}
+.close-btn{position:absolute;top:10px;left:10px;background:#ef4444;color:#fff;border:0;width:36px;height:36px;border-radius:50%;font-weight:900;font-size:18px;cursor:pointer}
+.dots{text-align:center;padding:10px;background:#fff}
+.dots span{display:inline-block;width:12px;height:12px;border-radius:50%;margin:0 5px;cursor:pointer}
+#checkoutModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:1000000;overflow:auto;padding:12px}
 .checkout-box{background:#0f1a2e;color:#fff;max-width:520px;margin:15px auto;border-radius:16px;padding:18px;border:1px solid #1e3a5f}
 .bank-box{background:#162a4a;border:1px dashed #22c55e;padding:14px;border-radius:12px;margin:12px 0}
 .inp{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:0;font-size:14px}
-.qty-btn{background:#22c55e;color:#000;border:0;width:28px;height:28px;border-radius:6px;font-weight:900;font-size:16px;cursor:pointer}
-.qty-num{margin:0 8px;font-weight:900;min-width:20px;text-align:center;display:inline-block}
-.req-label{font-size:11px;color:#f87171;margin:2px 0 0 2px;display:block}
+.qty-btn{background:#22c55e;color:#000;border:0;width:30px;height:30px;border-radius:6px;font-weight:900;font-size:18px;cursor:pointer}
+.qty-num{margin:0 10px;font-weight:900;min-width:20px;text-align:center;display:inline-block}
 .register-banner{background:linear-gradient(90deg,#FFC72C,#FF8C00);color:#000;padding:12px 10px;text-align:center;font-weight:900;font-size:13px;display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap}
 .register-banner a{background:#000;color:#FFC72C;padding:6px 14px;border-radius:20px;text-decoration:none;font-weight:900;font-size:12px}
 </style>
 </head>
 <body>
-<div class="top">
-<div class="top-main">
-<div style="display:flex;align-items:center;gap:8px"><img src="logo.png" style="width:32px;height:32px;background:#fff;border-radius:6px"><div><b>MSEL MENTE</b><br><small>Engineers Private Shop</small></div></div>
-<a href="index.html" class="home-link">Home</a>
-</div>
-<div class="top-actions">
-<button class="cart-btn" onclick="openCheckout()">🛒 Cart (<span id="cartCount">0</span>)</button>
-<a href="mente-register.html" style="background:linear-gradient(90deg,#FFC72C,#FF8C00);color:#000;padding:7px 14px;border-radius:20px;text-decoration:none;font-weight:900;font-size:13px;border:2px solid #fff;white-space:nowrap;flex-shrink:0">👤 Register 🆕</a>
-<a href="mente-chat.html" style="background:#FF00FF!important;color:#fff!important;padding:8px 20px!important;border-radius:20px!important;text-decoration:none!important;font-weight:900!important;font-size:14px!important;border:3px solid #fff!important;box-shadow:0 0 12px rgba(255,0,255,.9)!important;white-space:nowrap!important;flex-shrink:0!important;display:inline-block!important">💬 Chat</a>
-</div>
+
+<div class="header-fix">
+  <div class="header-top-row">
+    <div style="display:flex;align-items:center;gap:8px"><img src="logo.png" style="width:36px;height:36px;background:#fff;border-radius:8px"><div><b>MSEL MENTE</b><br><small>Engineers Private Shop</small></div></div>
+    <a href="index.html" class="home-link-fix">Home</a>
+  </div>
+  <div class="header-bottom-row">
+    <button class="cart-btn-fix" onclick="openCheckout()">🛒 Cart (<span id="cartCount">0</span>)</button>
+    <a href="mente-register.html" style="background:linear-gradient(90deg,#FFC72C,#FF8C00);color:#000;padding:8px 16px;border-radius:20px;text-decoration:none;font-weight:900;font-size:13px;border:2px solid #fff;white-space:nowrap">👤 Register 🆕</a>
+    <a href="mente-chat.html" class="chat-magenta-fix">💬 Chat</a>
+  </div>
 </div>
 
 <div class="register-banner">
-<span>🆕 New MENTE? Register here — your name will show like WhatsApp!</span>
+<span>🆕 New MENTE? Register — your name will show like WhatsApp!</span>
 <a href="mente-register.html">👤 Join MENTE Now</a>
 <a href="mente-chat.html" style="background:#00924C;color:#fff">💬 Open Chat</a>
 </div>
@@ -76,15 +77,15 @@ body{background:#0f172a;color:#fff}
       <button class="close-btn" onclick="closeProduct()">X</button>
       <div class="counter" id="modalCounter"></div>
       <img id="modalImage" src="logo.png" onerror="this.src='logo.png'">
-      <button class="nav-arrow nav-prev" onclick="prevImage()">‹</button>
-      <button class="nav-arrow nav-next" onclick="nextImage()">›</button>
+      <button class="nav-arrow nav-prev" onclick="event.stopPropagation();prevImage()">‹</button>
+      <button class="nav-arrow nav-next" onclick="event.stopPropagation();nextImage()">›</button>
       <div class="dots" id="modalDots"></div>
     </div>
     <div style="padding:14px">
       <div id="modalBadge" class="badge"></div>
       <div id="modalTitle" style="font-size:18px;font-weight:900;margin:8px 0"></div>
       <div id="modalDesc" style="font-size:13px;opacity:.8;margin:6px 0"></div>
-      <div id="modalPrice" style="color:#FF0000;font-weight:900;font-size:20px;margin:10px 0"></div>
+      <div id="modalPrice" style="color:#FF0000;font-weight:900;font-size:22px;margin:10px 0"></div>
       <button class="btn" onclick="addToCartFromModal()" style="padding:14px;font-size:15px">🛒 Add to Cart</button>
       <button class="btn btn2" onclick="closeProduct()">Continue Shopping</button>
     </div>
@@ -101,7 +102,7 @@ body{background:#0f172a;color:#fff}
       <p><b>Account Name:</b> Most Successful Energy Limited</p>
       <p><b>Account Number:</b> 1817568677</p>
       <p><b>Bank:</b> ACCESS BANK</p>
-      <p style="font-size:11px;color:#facc15;margin-top:8px">⚠️ Transfer total amount, then fill form below. We confirm after payment verification.</p>
+      <p style="font-size:11px;color:#facc15;margin-top:8px">⚠️ Transfer total amount, then fill form below.</p>
     </div>
     <input id="custName" class="inp" placeholder="Full Name *">
     <input id="custPhone" class="inp" placeholder="WhatsApp Number *">
@@ -119,7 +120,7 @@ body{background:#0f172a;color:#fff}
       <div id="fileSize" style="font-size:11px;opacity:.8;color:#bbf7d0;margin-top:2px"></div>
       <img id="receiptPreview" src="" style="display:none;width:100%;max-height:200px;object-fit:contain;margin-top:8px;border-radius:8px;background:#fff;padding:4px">
     </div>
-    <span id="reqText" class="req-label">* You must upload receipt to place order</span>
+    <span id="reqText" class="req-label" style="font-size:11px;color:#f87171">* You must upload receipt to place order</span>
     <button id="placeOrderBtn" onclick="placeOrder()" style="width:100%;padding:14px;background:#22c55e;color:#000;font-weight:900;border:0;border-radius:10px;margin-top:12px;font-size:16px;cursor:pointer">I Have Paid - Place Order</button>
     <button onclick="document.getElementById('checkoutModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:white;border:0;border-radius:10px;margin-top:8px;cursor:pointer">Cancel</button>
   </div>
@@ -132,7 +133,7 @@ const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const ADMIN_WHATSAPP='2348052941223';
 let allProducts=[];let currentProduct=null;let currentImages=[];let currentIdx=0;
 let cart = JSON.parse(localStorage.getItem('msel_cart')||'[]');
-function escapeHtml(s){return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function escapeHtml(s){return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 async function loadProducts(){
  let grid=document.getElementById('grid');
  let products=[];
@@ -141,7 +142,7 @@ async function loadProducts(){
   if(!error && data && data.length>0){
     products=data.map(r=>({id:r.id||r.name, name:r.name, price:r.price, desc:r.description||r.desc||'', badge:r.badge||'NEW', img:r.img, imgs:r.imgs||[]}));
   }
- }catch(e){}
+ }catch(e){console.log(e)}
  if(products.length===0){
    try{
      let local=JSON.parse(localStorage.getItem('msel_products')||'[]');
@@ -156,13 +157,13 @@ async function loadProducts(){
  products.forEach((p, idx)=>{
    let mainImg = p.img || (p.imgs && p.imgs[0]) || 'logo.png';
    let count = p.imgs? p.imgs.length : (p.img?1:0);
-   h+=`<div class="card" onclick="openProductByIndex(${idx})"><img src="${mainImg}" onerror="this.src='logo.png'"><div class="badge">${escapeHtml(p.badge||'NEW')}${count>1?' ('+count+')':''}</div><div class="name">${escapeHtml(p.name)}</div><div class="desc">${escapeHtml(p.desc||'')}</div><div class="price">₦${Number(p.price).toLocaleString()}</div><button class="btn" onclick="event.stopPropagation(); addToCartByIndex(${idx})">Add to Cart</button><button class="btn btn2" onclick="event.stopPropagation(); openProductByIndex(${idx})">View (${count} pics)</button></div>`;
+   h+=`<div class="card" onclick="window.openProductByIndex(${idx})"><img src="${mainImg}" onerror="this.src='logo.png'"><div class="badge">${escapeHtml(p.badge||'NEW')}${count>1?' ('+count+')':''}</div><div class="name">${escapeHtml(p.name)}</div><div class="desc">${escapeHtml(p.desc||'')}</div><div class="price">₦${Number(p.price).toLocaleString()}</div><button class="btn" onclick="event.stopPropagation(); addToCartByIndex(${idx})">Add to Cart</button><button class="btn btn2" onclick="event.stopPropagation(); window.openProductByIndex(${idx})">View (${count})</button></div>`;
  });
  grid.innerHTML=h;
  updateCartCount();
 }
-function openProductByIndex(i){
-  const p = allProducts[i]; if(!p) return;
+window.openProductByIndex = function(i){
+  const p = allProducts[i]; if(!p){alert('Product not found');return;}
   currentProduct = p;
   if(p.imgs && p.imgs.length>0) currentImages = p.imgs;
   else if(p.img) currentImages = [p.img];
@@ -173,7 +174,7 @@ function openProductByIndex(i){
   document.getElementById('modalTitle').innerText = p.name;
   document.getElementById('modalDesc').innerText = p.desc||'';
   document.getElementById('modalPrice').innerText = '₦' + Number(p.price).toLocaleString();
-  document.getElementById('modalBadge').innerText = (p.badge||'NEW') + (currentImages.length>1? ' ('+currentImages.length+')' : '');
+  document.getElementById('modalBadge').innerText = (p.badge||'NEW');
   showImage(0);
 }
 function closeProduct(){ document.getElementById('productModal').style.display='none'; document.body.style.overflow='auto'; }
@@ -212,14 +213,7 @@ function openCheckout(){
   document.getElementById('checkoutTotal').innerText = 'Total: ₦' + total.toLocaleString();
   document.getElementById('checkoutModal').style.display='block';
 }
-function changeQty(i, delta){
-  cart[i].qty += delta;
-  if(cart[i].qty <=0){ cart.splice(i,1); }
-  localStorage.setItem('msel_cart', JSON.stringify(cart));
-  updateCartCount();
-  if(cart.length===0) document.getElementById('checkoutModal').style.display='none';
-  else openCheckout();
-}
+function changeQty(i, delta){ cart[i].qty += delta; if(cart[i].qty <=0){ cart.splice(i,1); } localStorage.setItem('msel_cart', JSON.stringify(cart)); updateCartCount(); if(cart.length===0) document.getElementById('checkoutModal').style.display='none'; else openCheckout();}
 function removeFromCart(i){ cart.splice(i,1); localStorage.setItem('msel_cart', JSON.stringify(cart)); updateCartCount(); if(cart.length===0) document.getElementById('checkoutModal').style.display='none'; else openCheckout(); }
 function handleReceiptUpload(input){
   const statusDiv = document.getElementById('uploadStatus');const fileNameSpan = document.getElementById('fileName');const fileSizeDiv = document.getElementById('fileSize');const preview = document.getElementById('receiptPreview');const reqText = document.getElementById('reqText');
@@ -246,7 +240,7 @@ async function placeOrder(){
     const msgRaw = `*NEW MSEL ORDER*\n\n*Name:* ${name}\n*Phone:* ${phone}\n*Address:* ${address}\n*State:* ${state}\n*Ref:* ${ref}\n\n*Items:*\n${itemsRaw}\n\n*TOTAL: ₦${total.toLocaleString()}*\n\n*Receipt:* ${proofUrl}\n\n*Bank:* ACCESS 1817568677`;
     const finalUrl = `https://api.whatsapp.com/send?phone=${ADMIN_WHATSAPP}&text=${encodeURIComponent(msgRaw)}`;
     window.location.href = finalUrl;
-    alert('✅ Order Placed! Opening WhatsApp...');cart=[];localStorage.setItem('msel_cart', JSON.stringify(cart));updateCartCount();document.getElementById('checkoutModal').style.display='none';btn.innerText='I Have Paid - Place Order';btn.disabled=false;
+    alert('✅ Order Placed!');cart=[];localStorage.setItem('msel_cart', JSON.stringify(cart));updateCartCount();document.getElementById('checkoutModal').style.display='none';btn.innerText='I Have Paid - Place Order';btn.disabled=false;
   }catch(err){ alert('Order failed: '+err.message); btn.innerText='I Have Paid - Place Order'; btn.disabled=false; }
 }
 function logout(){ localStorage.removeItem('msel_role'); window.location.href='login.html'; }
