@@ -116,7 +116,6 @@ function formatNigeriaTime(d){
 function isAdminMsg(m){ return m.name==='MSEL BOSS'||(m.code&&m.code.toUpperCase().includes('BOSS'))||(m.name&&m.name.toLowerCase().includes('boss'))||(accountsMap[m.name]?.role==='admin'); }
 function getBanStatus(name){ let b=bannedMap[name]; if(!b) return null; if(b.status==='suspended'){ if(new Date()>new Date(b.until)){ delete bannedMap[name]; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); return null; } return b; } return b; }
 function scrollToMsg(id){ let el=document.querySelector(`[data-id="${id}"]`); if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.classList.add('highlight'); setTimeout(()=>el.classList.remove('highlight'),2500); } }
-// FIXED BULLETPROOF SCROLL TO LAST CHAT
 function scrollToBottom(force){
   const box=document.getElementById('chatBox');
   const anchor=document.getElementById('bottomAnchor');
@@ -282,7 +281,15 @@ function autoResize(){ let i=document.getElementById('msgInput'); i.style.height
 function toggleSendMic(){ let i=document.getElementById('msgInput'); let m=document.getElementById('micBtn'); if(i.value.trim().length>0) m.style.display='none'; else m.style.display='flex'; }
 document.getElementById('msgInput').addEventListener('input',()=>{ autoResize(); toggleSendMic(); });
 document.getElementById('sendBtn').addEventListener('click',()=>sendMsg());
-document.getElementById('msgInput').addEventListener('keypress',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMsg(); }});
+// FIXED: Enter = New Line (only button sends) - no auto-send on Enter
+document.getElementById('msgInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter' && !e.shiftKey){
+    // Allow default newline behavior - DO NOT send
+    // Message will only send via sendBtn click
+    e.stopPropagation();
+    // Do NOT call preventDefault, so newline is created
+  }
+});
 document.getElementById('attachBtn').addEventListener('click',()=>document.getElementById('fileInput').click());
 document.getElementById('fileInput').addEventListener('change',async e=>{
   let files=Array.from(e.target.files||[]); if(!files.length) return;
