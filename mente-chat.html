@@ -44,9 +44,7 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 .btnTop{background:#0f172a;color:#22c55e;border:1px solid #22c55e;padding:8px 14px;border-radius:20px;font-weight:900;font-size:13px;text-decoration:none;margin-left:6px;display:inline-block}
 #notifyToast{position:fixed;top:80px;right:10px;background:#22c55e;color:#000;padding:10px 14px;border-radius:10px;font-size:12px;font-weight:900;display:none;z-index:200}
 #recordingBar{display:none;position:fixed;bottom:65px;left:3%;right:3%;background:#ef4444;color:#fff;padding:12px 16px;border-radius:24px;font-weight:900;text-align:center;z-index:60}
-/* FIXED PICKER - was display:none blocking */
-#fileInput{position:absolute;left:-9999px;opacity:0;width:1px;height:1px;pointer-events:none}
-/* LONG PRESS MENU */
+#fileInput{display:none}
 #ctxMenu{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#1e293b;border:2px solid #FFC72C;border-radius:18px;padding:10px;display:none;flex-direction:column;gap:6px;z-index:90;box-shadow:0 10px 30px rgba(0,0,0,.6);min-width:240px;max-width:92%}
 #ctxMenu .mTitle{font-size:11px;font-weight:900;color:#FFC72C;text-align:center;padding:4px 0;border-bottom:1px solid #334155;margin-bottom:4px}
 #ctxMenu button{padding:10px 12px;border-radius:12px;border:0;font-weight:900;font-size:13px;cursor:pointer;text-align:left;background:#0f172a;color:#fff;border:1px solid #334155}
@@ -94,13 +92,15 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <div id="banModal"><div class="banBox"><h2 style="color:#FFC72C;text-align:center">👑 Banned List</h2><div id="banList" style="margin:14px 0"></div><button onclick="document.getElementById('banModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:#fff;border:0;border-radius:10px;font-weight:900">Close</button></div></div>
 <div id="viewModal"><div class="banBox"><h3 style="color:#22c55e;text-align:center">👁️ Viewed</h3><div id="viewList" style="margin:14px 0"></div><button onclick="document.getElementById('viewModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:#fff;border:0;border-radius:10px;font-weight:900">Close</button></div></div>
 <div id="editModal"><div class="banBox"><h3 style="color:#FFC72C;text-align:center">✏️ Edit Your Message (5 hours)</h3><textarea id="editInput" style="width:100%;min-height:90px;margin:12px 0;padding:12px;border-radius:10px;background:#1e293b;color:#fff;border:1px solid #334155"></textarea><div style="display:flex;gap:8px"><button onclick="saveEdit()" style="flex:1;padding:12px;background:#22c55e;color:#000;border:0;border-radius:12px;font-weight:900">Save Edit</button><button onclick="document.getElementById('editModal').style.display='none'" style="flex:1;padding:12px;background:#334155;color:#fff;border:0;border-radius:12px;font-weight:900">Cancel</button></div></div></div>
+
 <input type="file" id="fileInput" accept="image/*,video/*,audio/*,.pdf,.doc,.docx" multiple>
 <div class="inputBar">
-<button class="iconBtn" id="attachBtn" type="button" onclick="document.getElementById('fileInput').click()">📎</button>
+<label for="fileInput" class="iconBtn" id="attachBtn" style="cursor:pointer">📎</label>
 <textarea id="msgInput" class="textInput" placeholder="Type message, @name to tag..." rows="1"></textarea>
 <button class="iconBtn" id="micBtn">🎤</button>
 <button class="sendBtn" id="sendBtn">➤</button>
 </div>
+
 <script>
 const SUPABASE_URL='https://rsnsciisycruhxtvfhwb.supabase.co';
 const SUPABASE_KEY='sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
@@ -257,7 +257,7 @@ async function react(emoji){
   if(!r[emoji]) r[emoji]=[]; if(Array.isArray(r[emoji]) && r[emoji].includes(myName)){ r[emoji]=r[emoji].filter(n=>n!==myName); if(!r[emoji].length) delete r[emoji]; } else { r[emoji].push(myName); }
   try{ await supabaseClient.from('msel_mente_messages').update({reactions:r}).eq('id',id); }catch(e){} closeCtx();
 }
-function startReply(){ if(!selectedMsg) return; replyToData={id:selectedMsg.id,name:selectedMsg.name,message:selectedMsg.message||''}; document.getElementById('replyName').innerText=selectedMsg.name; document.getElementById('replyText').innerText=(selectedMsg.message||'').substring(0,50); document.getElementById('replyPreview').style.display='block'; closeCtx(); document.getElementById('msgInput').focus(); }
+function startReply(){ if(!selectedMsg) return; replyToData={id:selectedMsg.id,name:selectedMsg.name,message:selectedMsg.message||''}; document.getElementById('replyName'); document.getElementById('replyText'); document.getElementById('replyPreview').style.display='block'; closeCtx(); document.getElementById('msgInput').focus(); }
 function cancelReply(){ replyToData=null; document.getElementById('replyPreview').style.display='none'; }
 function tagUser(){ if(!selectedMsg) return; insertTag(selectedMsg.name); closeCtx(); }
 function insertTag(n){ let i=document.getElementById('msgInput'); i.value+=(i.value?' ':'')+'@'+n+' '; i.focus(); autoResize(); }
