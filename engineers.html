@@ -1,9 +1,9 @@
-<!-- MSEL FINAL v1001 WHITE HEADER NO-CUT FIX -->
+<!-- MSEL FINAL v1002 CLEAN - NO REGISTER, ONE-LINE HEADER -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MSEL MENTE - Engineers Private Shop v1001</title>
+<title>MSEL MENTE - Engineers Private Shop v1002</title>
 <link rel="icon" href="logo.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -40,23 +40,16 @@ body{background:#0f172a;color:#fff}
 </head>
 <body>
 
-<!-- NEW HEADER - WHITE LIKE YOUR SCREENSHOT BUT FIXED NO OVERLAP -->
+<!-- NEW HEADER - ONE LINE TITLE, NO REGISTER -->
 <div style="background:#fff;padding:0;position:sticky;top:0;z-index:99999;display:block;border-bottom:3px solid #00924C">
   <div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;background:#fff">
-    <div style="display:flex;align-items:center;gap:8px"><img src="logo.png" style="width:42px;height:42px;object-fit:contain"><div style="line-height:1.1"><b style="color:#00924C;font-size:16px">MSEL<br>MENTE</b><br><small style="color:#333;font-size:12px">Engineers<br>Private<br>Shop</small></div></div>
+    <div style="display:flex;align-items:center;gap:8px"><img src="logo.png" style="width:42px;height:42px;object-fit:contain"><div style="line-height:1.2"><b style="color:#00924C;font-size:16px;white-space:nowrap">MSEL MENTE</b><br><small style="color:#333;font-size:12px;white-space:nowrap">Engineers Private Shop</small></div></div>
     <a href="index.html" style="background:#fff;color:#000;padding:8px 18px;border-radius:20px;text-decoration:none;font-weight:900;font-size:14px;border:2px solid #000;box-shadow:0 2px 6px rgba(0,0,0,0.2)">Home</a>
   </div>
   <div style="background:#f8f8f8;padding:10px 12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-top:1px solid #eee">
     <button onclick="openCheckout()" style="background:#000;color:#22c55e;padding:9px 18px;border-radius:20px;font-weight:900;font-size:14px;border:2px solid #22c55e;cursor:pointer;white-space:nowrap">🛒 Cart (<span id="cartCount">0</span>)</button>
-    <a href="mente-register.html" style="background:linear-gradient(90deg,#FFC72C,#FF8C00);color:#000;padding:9px 16px;border-radius:20px;text-decoration:none;font-weight:900;font-size:13px;border:2px solid #fff;white-space:nowrap">👤 Register 🆕</a>
     <a href="mente-chat.html" style="background:#FF00FF!important;color:#fff!important;padding:10px 22px!important;border-radius:20px!important;text-decoration:none!important;font-weight:900!important;font-size:15px!important;border:3px solid #000!important;box-shadow:0 0 10px rgba(255,0,255,0.8)!important;white-space:nowrap!important">💬 Chat</a>
   </div>
-</div>
-
-<div style="background:linear-gradient(90deg,#FFC72C,#FF8C00);color:#000;padding:12px 10px;text-align:center;font-weight:900;font-size:13px;display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap">
-<span>🆕 New MENTE? Register here</span>
-<a href="mente-register.html" style="background:#000;color:#FFC72C;padding:6px 14px;border-radius:20px;text-decoration:none;font-weight:900;font-size:12px">👤 Join MENTE Now</a>
-<a href="mente-chat.html" style="background:#00924C;color:#fff;padding:6px 14px;border-radius:20px;text-decoration:none;font-weight:900;font-size:12px">💬 Open Chat</a>
 </div>
 
 <div id="grid" class="grid">Loading products...</div>
