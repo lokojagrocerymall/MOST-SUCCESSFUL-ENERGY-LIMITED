@@ -63,6 +63,7 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <div><a href="public-shop.html" class="btnTop">🛒 Shop</a><a href="#" id="adminListBtn" style="display:none" onclick="openBanList()" class="btnTop">👑 Bans</a><a href="index.html" class="btnTop" style="background:#fff;color:#000;border-color:#fff">Home</a></div>
 </header>
 <div id="chatBox"></div>
+<div id="bottomAnchor" style="height:1px; width:100%;"></div>
 <div id="notifyToast"></div>
 <div id="recordingBar">🔴 Recording...</div>
 <div id="reactionPicker">
@@ -115,12 +116,24 @@ function formatNigeriaTime(d){
 function isAdminMsg(m){ return m.name==='MSEL BOSS'||(m.code&&m.code.toUpperCase().includes('BOSS'))||(m.name&&m.name.toLowerCase().includes('boss'))||(accountsMap[m.name]?.role==='admin'); }
 function getBanStatus(name){ let b=bannedMap[name]; if(!b) return null; if(b.status==='suspended'){ if(new Date()>new Date(b.until)){ delete bannedMap[name]; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); return null; } return b; } return b; }
 function scrollToMsg(id){ let el=document.querySelector(`[data-id="${id}"]`); if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.classList.add('highlight'); setTimeout(()=>el.classList.remove('highlight'),2500); } }
-function scrollToBottom(){
-  let box=document.getElementById('chatBox');
-  box.scrollTop=box.scrollHeight;
-  setTimeout(()=>{ box.scrollTop=box.scrollHeight; },80);
-  setTimeout(()=>{ box.scrollTo({top:box.scrollHeight,behavior:'auto'}); },250);
-  setTimeout(()=>{ box.scrollTop=box.scrollHeight; },600);
+// FIXED BULLETPROOF SCROLL TO LAST CHAT
+function scrollToBottom(force){
+  const box=document.getElementById('chatBox');
+  const anchor=document.getElementById('bottomAnchor');
+  const doScroll=()=>{
+    if(!box) return;
+    box.scrollTop = box.scrollHeight + 10000;
+    if(anchor){ try{ anchor.scrollIntoView({behavior: force ? 'auto' : 'smooth', block:'end'}); }catch(e){} }
+    window.scrollTo(0, document.body.scrollHeight);
+  };
+  doScroll();
+  requestAnimationFrame(doScroll);
+  setTimeout(doScroll, 30);
+  setTimeout(doScroll, 120);
+  setTimeout(doScroll, 350);
+  setTimeout(doScroll, 800);
+  setTimeout(doScroll, 1500);
+  setTimeout(doScroll, 2500);
 }
 async function loadAccounts(){
   if(accountsLoaded) return;
@@ -157,23 +170,24 @@ function renderMessages(data){
     let editBtn = canEdit ? `<button class="editBtn" onclick="event.stopPropagation();quickEdit('${m.id}')">✏️ Edit</button>` : '';
     let editedTag = m.is_edited ? '<small style="opacity:.6"> (edited)</small>' : '';
     let html=`<div style="font-weight:900;font-size:11px;margin-bottom:4px"><span class="avatar ${admin?'bossAvatar':''}">${admin?'👑':initial}</span>${nameLine} ${bossBadge} ${banBadge}${editedTag}</div>${replyHtml}`;
-    if(type==='image'&&mediaUrl) html+=`<img src="${mediaUrl}" class="chat-img" loading="lazy" decoding="async" onload="scrollToBottom()" onclick="event.stopPropagation();window.open('${mediaUrl}')"><br><a href="${mediaUrl}" download target="_blank" class="saveBtn" onclick="event.stopPropagation()">💾 Save Image</a>`;
-    else if(type==='video'&&mediaUrl) html+=`<video src="${mediaUrl}" class="chat-video" controls playsinline preload="none" onloadedmetadata="scrollToBottom()" onclick="event.stopPropagation()"></video><br><a href="${mediaUrl}" download target="_blank" class="saveBtn" onclick="event.stopPropagation()">💾 Save Video</a>`;
-    else if(type==='voice'&&mediaUrl) html+=`<audio src="${mediaUrl}" controls preload="none" onclick="event.stopPropagation()"></audio><br><a href="${mediaUrl}" download target="_blank" class="saveBtn" onclick="event.stopPropagation()">💾 Save Voice</a>`;
+    if(type==='image'&&mediaUrl) html+=`<img src="${mediaUrl}" class="chat-img" loading="lazy" decoding="async" onload="scrollToBottom(true)" onclick="event.stopPropagation();window.open('${mediaUrl}')"><br><a href="${mediaUrl}" download target="_blank" class="saveBtn" onclick="event.stopPropagation()">💾 Save Image</a>`;
+    else if(type==='video'&&mediaUrl) html+=`<video src="${mediaUrl}" class="chat-video" controls playsinline preload="none" onloadeddata="scrollToBottom(true)" onclick="event.stopPropagation()"></video><br><a href="${mediaUrl}" download target="_blank" class="saveBtn" onclick="event.stopPropagation()">💾 Save Video</a>`;
+    else if(type==='voice'&&mediaUrl) html+=`<audio src="${mediaUrl}" controls preload="none" onloadeddata="scrollToBottom(true)" onclick="event.stopPropagation()"></audio><br><a href="${mediaUrl}" download target="_blank" class="saveBtn" onclick="event.stopPropagation()">💾 Save Voice</a>`;
     else if((type==='file'||type==='document')&&mediaUrl) html+=`<a href="${mediaUrl}" target="_blank" style="color:${isMe?'#000':'#22c55e'};font-weight:900">📄 Open File</a><br><a href="${mediaUrl}" download target="_blank" class="saveBtn">💾 Save File</a>`;
     if(txt){ html+=`<div style="margin-top:4px;white-space:pre-wrap;word-break:break-word">${escapeHtml(txt)}</div>`; }
     html+=`${reactsHtml}<div class="views"><span>🕒 ${formatNigeriaTime(m.created_at)}</span>${viewedHtml}</div>${editBtn}`;
     box.innerHTML+=`<div class="msg ${isMe?'me':'other'} ${admin?'boss':''} ${ban?'bannedMsg':''}" data-id="${m.id}" onclick="selectMsg('${m.id}')">${html}</div>`;
   });
-  scrollToBottom();
+  box.innerHTML+=`<div id="bottomAnchor" style="height:1px;"></div>`;
+  setTimeout(()=>scrollToBottom(true),10);
+  setTimeout(()=>scrollToBottom(true),600);
   trackViews();
 }
-async function loadMessages(){ try{ await loadAccounts(); let {data,error}=await supabaseClient.from('msel_mente_messages').select('*').order('created_at',{ascending:true}).limit(100); if(error) throw error; if(data) renderMessages(data); }catch(e){} }
+async function loadMessages(){ try{ await loadAccounts(); let {data,error}=await supabaseClient.from('msel_mente_messages').select('*').order('created_at',{ascending:true}).limit(100); if(error) throw error; if(data){ renderMessages(data); setTimeout(()=>scrollToBottom(true),150); setTimeout(()=>scrollToBottom(true),1200); } }catch(e){} }
 loadMessages();
-// LOW-DATA FAST REALTIME
 supabaseClient.channel('mente-low-fast')
 .on('postgres_changes',{event:'INSERT',schema:'public',table:'msel_mente_messages'},payload=>{
-  allMessages.push(payload.new); renderMessages(allMessages); scrollToBottom();
+  allMessages.push(payload.new); renderMessages(allMessages); scrollToBottom(true);
 })
 .on('postgres_changes',{event:'UPDATE',schema:'public',table:'msel_mente_messages'},payload=>{
   let i=allMessages.findIndex(m=>m.id===payload.new.id); if(i>-1){ allMessages[i]=payload.new; renderMessages(allMessages); }
@@ -182,7 +196,7 @@ supabaseClient.channel('mente-low-fast')
   allMessages=allMessages.filter(m=>m.id!==payload.old.id); renderMessages(allMessages);
 })
 .subscribe();
-window.addEventListener('load',()=>{ setTimeout(scrollToBottom,700); });
+window.addEventListener('load',()=>{ setTimeout(()=>scrollToBottom(true),500); setTimeout(()=>scrollToBottom(true),1500); });
 async function trackViews(){
   if(viewedOnce) return; viewedOnce=true;
   for(let m of allMessages.slice(-20)){
@@ -262,7 +276,7 @@ async function sendMsg(mediaUrl=null,mediaType='text'){
   let input=document.getElementById('msgInput'); let text=input.value.trim(); if(!text&&!mediaUrl) return; if(!mediaUrl) input.value=''; autoResize();
   let sendName=myIsAdmin?'MSEL BOSS':myName; let sendCode=myIsAdmin?'MSEL-BOSS-001':myCode;
   let payload={name:sendName,code:sendCode,message:text||`[${mediaType}]`,viewed_by:[myName]}; if(mediaUrl){ payload.media_url=mediaUrl; payload.type=mediaType; } if(replyToData) payload.reply_to=replyToData;
-  try{ await supabaseClient.from('msel_mente_messages').insert(payload); }catch(e){ showToast(e.message); return; } toggleSendMic(); cancelReply(); setTimeout(()=>scrollToBottom(),100);
+  try{ await supabaseClient.from('msel_mente_messages').insert(payload); }catch(e){ showToast(e.message); return; } toggleSendMic(); cancelReply(); setTimeout(()=>scrollToBottom(true),100); setTimeout(()=>scrollToBottom(true),800);
 }
 function autoResize(){ let i=document.getElementById('msgInput'); i.style.height='auto'; i.style.height=Math.min(i.scrollHeight,120)+'px'; }
 function toggleSendMic(){ let i=document.getElementById('msgInput'); let m=document.getElementById('micBtn'); if(i.value.trim().length>0) m.style.display='none'; else m.style.display='flex'; }
