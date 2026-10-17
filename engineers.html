@@ -1,22 +1,16 @@
+<!-- MSEL FINAL v1001 WHITE HEADER NO-CUT FIX -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MSEL MENTE - Engineers Private Shop</title>
+<title>MSEL MENTE - Engineers Private Shop v1001</title>
 <link rel="icon" href="logo.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
 body{background:#0f172a;color:#fff}
-.top{background:#00924C;padding:10px 12px;display:flex;flex-direction:column;gap:10px;position:sticky;top:0;z-index:9999;overflow:visible}
-.top-main{width:100%;display:flex;justify-content:space-between;align-items:center}
-.top b{font-size:15px}
-.top-actions{width:100%;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-start;background:rgba(0,0,0,0.15);padding:10px;border-radius:12px;min-height:50px;overflow:visible}
-.top a.home-link{background:#fff;color:#00924C;padding:7px 16px;border-radius:20px;text-decoration:none;font-weight:800;font-size:13px;white-space:nowrap;flex-shrink:0}
-.cart-btn{background:#000;color:#22c55e;padding:7px 14px;border-radius:20px;font-weight:800;font-size:13px;border:1px solid #22c55e;cursor:pointer;white-space:nowrap;flex-shrink:0}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
 .card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:10px;text-align:center;cursor:pointer}
-.card:active{transform:scale(0.97);border-color:#22c55e}
 .card img{width:100%;height:120px;object-fit:contain;background:#fff;border-radius:10px}
 .badge{display:inline-block;background:#22c55e;color:#000;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:800;margin-top:6px}
 .name{font-size:13px;font-weight:800;margin-top:6px;min-height:32px}
@@ -24,102 +18,95 @@ body{background:#0f172a;color:#fff}
 .price{color:#FF0000;font-weight:900;margin:6px 0;font-size:14px}
 .btn{width:100%;padding:8px;border-radius:8px;border:0;background:#22c55e;color:#000;font-weight:800;font-size:12px;margin-top:4px;cursor:pointer}
 .btn2{background:#334155;color:#fff}
-.view-cart-btn{width:90%;max-width:340px;margin:16px auto;display:block;background:#00C853!important;color:#000!important;font-weight:900!important;padding:14px!important;border-radius:12px!important;border:0!important;font-size:15px!important;box-shadow:0 4px 15px rgba(0,200,83,0.5)}
+.view-cart-btn{width:90%;max-width:340px;margin:16px auto;display:block;background:#00C853!important;color:#000!important;font-weight:900!important;padding:14px!important;border-radius:12px!important}
 .logout{display:block;margin:10px auto;background:#ef4444;color:#fff;border:0;padding:10px 24px;border-radius:20px;font-weight:800}
-#productModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:10000;overflow:auto;padding:12px}
-.modal-box{background:#1e293b;max-width:500px;margin:20px auto;border-radius:16px;overflow:hidden;border:1px solid #334155}
+#productModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:999999;padding:12px;overflow:auto}
+.modal-box{background:#1e293b;max-width:500px;margin:20px auto;border-radius:16px;overflow:hidden;border:2px solid #22c55e}
 .modal-img-wrap{position:relative;background:#fff}
 .modal-img-wrap img{width:100%;max-height:380px;object-fit:contain;display:block}
-.nav-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.6);color:#fff;border:0;width:36px;height:36px;border-radius:50%;font-size:22px;cursor:pointer}
+.nav-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.7);color:#fff;border:0;width:40px;height:40px;border-radius:50%;font-size:26px;cursor:pointer}
 .nav-prev{left:10px}.nav-next{right:10px}
-.counter{position:absolute;top:10px;right:10px;background:#000;color:#fff;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:800}
-.close-btn{position:absolute;top:10px;left:10px;background:#ef4444;color:#fff;border:0;width:32px;height:32px;border-radius:50%;font-weight:800;cursor:pointer}
-.dots{text-align:center;padding:8px;background:#fff}
-.dots span{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 4px;cursor:pointer}
-#checkoutModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:20000;overflow:auto;padding:12px}
+.counter{position:absolute;top:10px;right:10px;background:#000;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:800}
+.close-btn{position:absolute;top:10px;left:10px;background:#ef4444;color:#fff;border:0;width:36px;height:36px;border-radius:50%;font-weight:900;cursor:pointer}
+.dots{text-align:center;padding:10px;background:#fff}
+.dots span{display:inline-block;width:12px;height:12px;border-radius:50%;margin:0 5px;cursor:pointer}
+#checkoutModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:1000000;padding:12px;overflow:auto}
 .checkout-box{background:#0f1a2e;color:#fff;max-width:520px;margin:15px auto;border-radius:16px;padding:18px;border:1px solid #1e3a5f}
 .bank-box{background:#162a4a;border:1px dashed #22c55e;padding:14px;border-radius:12px;margin:12px 0}
 .inp{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:0;font-size:14px}
-.qty-btn{background:#22c55e;color:#000;border:0;width:28px;height:28px;border-radius:6px;font-weight:900;font-size:16px;cursor:pointer}
-.qty-num{margin:0 8px;font-weight:900;min-width:20px;text-align:center;display:inline-block}
-.req-label{font-size:11px;color:#f87171;margin:2px 0 0 2px;display:block}
-.register-banner{background:linear-gradient(90deg,#FFC72C,#FF8C00);color:#000;padding:12px 10px;text-align:center;font-weight:900;font-size:13px;display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap}
-.register-banner a{background:#000;color:#FFC72C;padding:6px 14px;border-radius:20px;text-decoration:none;font-weight:900;font-size:12px}
+.qty-btn{background:#22c55e;color:#000;border:0;width:30px;height:30px;border-radius:6px;font-weight:900;font-size:18px;cursor:pointer}
+.qty-num{margin:0 10px;font-weight:900}
 </style>
 </head>
 <body>
-<div class="top">
-<div class="top-main">
-<div style="display:flex;align-items:center;gap:8px"><img src="logo.png" style="width:32px;height:32px;background:#fff;border-radius:6px"><div><b>MSEL MENTE</b><br><small>Engineers Private Shop</small></div></div>
-<a href="index.html" class="home-link">Home</a>
+
+<!-- NEW HEADER - WHITE LIKE YOUR SCREENSHOT BUT FIXED NO OVERLAP -->
+<div style="background:#fff;padding:0;position:sticky;top:0;z-index:99999;display:block;border-bottom:3px solid #00924C">
+  <div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;background:#fff">
+    <div style="display:flex;align-items:center;gap:8px"><img src="logo.png" style="width:42px;height:42px;object-fit:contain"><div style="line-height:1.1"><b style="color:#00924C;font-size:16px">MSEL<br>MENTE</b><br><small style="color:#333;font-size:12px">Engineers<br>Private<br>Shop</small></div></div>
+    <a href="index.html" style="background:#fff;color:#000;padding:8px 18px;border-radius:20px;text-decoration:none;font-weight:900;font-size:14px;border:2px solid #000;box-shadow:0 2px 6px rgba(0,0,0,0.2)">Home</a>
+  </div>
+  <div style="background:#f8f8f8;padding:10px 12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-top:1px solid #eee">
+    <button onclick="openCheckout()" style="background:#000;color:#22c55e;padding:9px 18px;border-radius:20px;font-weight:900;font-size:14px;border:2px solid #22c55e;cursor:pointer;white-space:nowrap">🛒 Cart (<span id="cartCount">0</span>)</button>
+    <a href="mente-register.html" style="background:linear-gradient(90deg,#FFC72C,#FF8C00);color:#000;padding:9px 16px;border-radius:20px;text-decoration:none;font-weight:900;font-size:13px;border:2px solid #fff;white-space:nowrap">👤 Register 🆕</a>
+    <a href="mente-chat.html" style="background:#FF00FF!important;color:#fff!important;padding:10px 22px!important;border-radius:20px!important;text-decoration:none!important;font-weight:900!important;font-size:15px!important;border:3px solid #000!important;box-shadow:0 0 10px rgba(255,0,255,0.8)!important;white-space:nowrap!important">💬 Chat</a>
+  </div>
 </div>
-<div class="top-actions">
-<button class="cart-btn" onclick="openCheckout()">🛒 Cart (<span id="cartCount">0</span>)</button>
-<a href="mente-register.html" style="background:linear-gradient(90deg,#FFC72C,#FF8C00);color:#000;padding:7px 14px;border-radius:20px;text-decoration:none;font-weight:900;font-size:13px;border:2px solid #fff;white-space:nowrap;flex-shrink:0">👤 Register 🆕</a>
-<a href="mente-chat.html" style="background:#FF00FF!important;color:#fff!important;padding:8px 20px!important;border-radius:20px!important;text-decoration:none!important;font-weight:900!important;font-size:14px!important;border:3px solid #fff!important;box-shadow:0 0 12px rgba(255,0,255,.9)!important;white-space:nowrap!important;flex-shrink:0!important">💬 Chat</a>
+
+<div style="background:linear-gradient(90deg,#FFC72C,#FF8C00);color:#000;padding:12px 10px;text-align:center;font-weight:900;font-size:13px;display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap">
+<span>🆕 New MENTE? Register here</span>
+<a href="mente-register.html" style="background:#000;color:#FFC72C;padding:6px 14px;border-radius:20px;text-decoration:none;font-weight:900;font-size:12px">👤 Join MENTE Now</a>
+<a href="mente-chat.html" style="background:#00924C;color:#fff;padding:6px 14px;border-radius:20px;text-decoration:none;font-weight:900;font-size:12px">💬 Open Chat</a>
 </div>
-</div>
-<div class="register-banner">
-<span>🆕 New MENTE? Register here — your name will show like WhatsApp!</span>
-<a href="mente-register.html">👤 Join MENTE Now</a>
-<a href="mente-chat.html" style="background:#00924C;color:#fff">💬 Open Chat</a>
-</div>
+
 <div id="grid" class="grid">Loading products...</div>
 <button class="view-cart-btn" onclick="openCheckout()">View Cart & Checkout</button>
 <button class="logout" onclick="logout()">Logout</button>
+
 <div id="productModal" onclick="if(event.target.id==='productModal')closeProduct()">
   <div class="modal-box">
     <div class="modal-img-wrap">
       <button class="close-btn" onclick="closeProduct()">X</button>
       <div class="counter" id="modalCounter"></div>
       <img id="modalImage" src="logo.png" onerror="this.src='logo.png'">
-      <button class="nav-arrow nav-prev" onclick="prevImage()">‹</button>
-      <button class="nav-arrow nav-next" onclick="nextImage()">›</button>
+      <button class="nav-arrow nav-prev" onclick="event.stopPropagation();prevImage()">‹</button>
+      <button class="nav-arrow nav-next" onclick="event.stopPropagation();nextImage()">›</button>
       <div class="dots" id="modalDots"></div>
     </div>
     <div style="padding:14px">
       <div id="modalBadge" class="badge"></div>
       <div id="modalTitle" style="font-size:18px;font-weight:900;margin:8px 0"></div>
       <div id="modalDesc" style="font-size:13px;opacity:.8;margin:6px 0"></div>
-      <div id="modalPrice" style="color:#FF0000;font-weight:900;font-size:20px;margin:10px 0"></div>
+      <div id="modalPrice" style="color:#FF0000;font-weight:900;font-size:22px;margin:10px 0"></div>
       <button class="btn" onclick="addToCartFromModal()" style="padding:14px;font-size:15px">🛒 Add to Cart</button>
       <button class="btn btn2" onclick="closeProduct()">Continue Shopping</button>
     </div>
   </div>
 </div>
+
 <div id="checkoutModal">
   <div class="checkout-box">
     <h2 style="text-align:center;color:#22c55e">Checkout</h2>
     <div id="checkoutItems" style="margin:12px 0"></div>
     <h3 id="checkoutTotal" style="text-align:right;color:#FF0000;margin:12px 0"></h3>
     <div class="bank-box">
-      <h4 style="color:#22c55e;text-align:center;margin:0 0 8px 0">PAY DIRECTLY TO:</h4>
+      <h4 style="color:#22c55e;text-align:center">PAY DIRECTLY TO:</h4>
       <p><b>Account Name:</b> Most Successful Energy Limited</p>
       <p><b>Account Number:</b> 1817568677</p>
       <p><b>Bank:</b> ACCESS BANK</p>
-      <p style="font-size:11px;color:#facc15;margin-top:8px">⚠️ Transfer total amount, then fill form below. We confirm after payment verification.</p>
     </div>
     <input id="custName" class="inp" placeholder="Full Name *">
     <input id="custPhone" class="inp" placeholder="WhatsApp Number *">
-    <input id="custAddress" class="inp" placeholder="Delivery Address (Street) *">
-    <select id="custState" class="inp" style="background:white">
-      <option value="">Select State *</option>
-      <option>Abia</option><option>Adamawa</option><option>Akwa Ibom</option><option>Anambra</option><option>Bauchi</option><option>Bayelsa</option><option>Benue</option><option>Borno</option><option>Cross River</option><option>Delta</option><option>Ebonyi</option><option>Edo</option><option>Ekiti</option><option>Enugu</option><option>FCT Abuja</option><option>Gombe</option><option>Imo</option><option>Jigawa</option><option>Kaduna</option><option>Kano</option><option>Katsina</option><option>Kebbi</option><option>Kogi</option><option>Kwara</option><option>Lagos</option><option>Nasarawa</option><option>Niger</option><option>Ogun</option><option>Ondo</option><option>Osun</option><option>Oyo</option><option>Plateau</option><option>Rivers</option><option>Sokoto</option><option>Taraba</option><option>Yobe</option><option>Zamfara</option>
-    </select>
-    <input id="paymentRef" class="inp" placeholder="Transfer Reference / Sender Name *">
-    <label style="font-size:12px;font-weight:800;color:#f87171">Upload Payment Proof * (Required):</label>
+    <input id="custAddress" class="inp" placeholder="Delivery Address *">
+    <select id="custState" class="inp" style="background:white"><option value="">Select State *</option><option>Abia</option><option>Adamawa</option><option>Akwa Ibom</option><option>Anambra</option><option>Bauchi</option><option>Bayelsa</option><option>Benue</option><option>Borno</option><option>Cross River</option><option>Delta</option><option>Ebonyi</option><option>Edo</option><option>Ekiti</option><option>Enugu</option><option>FCT Abuja</option><option>Gombe</option><option>Imo</option><option>Jigawa</option><option>Kaduna</option><option>Kano</option><option>Katsina</option><option>Kebbi</option><option>Kogi</option><option>Kwara</option><option>Lagos</option><option>Nasarawa</option><option>Niger</option><option>Ogun</option><option>Ondo</option><option>Osun</option><option>Oyo</option><option>Plateau</option><option>Rivers</option><option>Sokoto</option><option>Taraba</option><option>Yobe</option><option>Zamfara</option></select>
+    <input id="paymentRef" class="inp" placeholder="Transfer Reference *">
     <input id="paymentProof" type="file" accept="image/*" class="inp" style="background:white;border:2px solid #ef4444" onchange="handleReceiptUpload(this)">
-    <div id="uploadStatus" style="display:none;margin:6px 0;padding:10px;background:#052e16;border:1px solid #22c55e;border-radius:8px">
-      <div style="color:#22c55e;font-weight:900;font-size:13px">✅ Receipt Uploaded:</div>
-      <div id="fileName" style="color:#fff;font-weight:700;font-size:13px;margin-top:2px;word-break:break-all"></div>
-      <div id="fileSize" style="font-size:11px;opacity:.8;color:#bbf7d0;margin-top:2px"></div>
-      <img id="receiptPreview" src="" style="display:none;width:100%;max-height:200px;object-fit:contain;margin-top:8px;border-radius:8px;background:#fff;padding:4px">
-    </div>
-    <span id="reqText" class="req-label">* You must upload receipt to place order</span>
-    <button id="placeOrderBtn" onclick="placeOrder()" style="width:100%;padding:14px;background:#22c55e;color:#000;font-weight:900;border:0;border-radius:10px;margin-top:12px;font-size:16px;cursor:pointer">I Have Paid - Place Order</button>
-    <button onclick="document.getElementById('checkoutModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:white;border:0;border-radius:10px;margin-top:8px;cursor:pointer">Cancel</button>
+    <div id="uploadStatus" style="display:none;margin:6px 0;padding:10px;background:#052e16;border:1px solid #22c55e;border-radius:8px"><div style="color:#22c55e;font-weight:900">✅ Receipt Uploaded:</div><div id="fileName" style="color:#fff;font-weight:700"></div><div id="fileSize" style="font-size:11px;color:#bbf7d0"></div><img id="receiptPreview" src="" style="display:none;width:100%;max-height:200px;object-fit:contain;margin-top:8px;background:#fff;padding:4px;border-radius:8px"></div>
+    <button id="placeOrderBtn" onclick="placeOrder()" style="width:100%;padding:14px;background:#22c55e;color:#000;font-weight:900;border:0;border-radius:10px;margin-top:12px;font-size:16px">I Have Paid - Place Order</button>
+    <button onclick="document.getElementById('checkoutModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:white;border:0;border-radius:10px;margin-top:8px">Cancel</button>
   </div>
 </div>
+
 <script>
 const SUPABASE_URL='https://rsnsciisycruhxtvfhwb.supabase.co';
 const SUPABASE_KEY='sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
@@ -129,153 +116,25 @@ let allProducts=[];let currentProduct=null;let currentImages=[];let currentIdx=0
 let cart = JSON.parse(localStorage.getItem('msel_cart')||'[]');
 function escapeHtml(s){return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 async function loadProducts(){
- let grid=document.getElementById('grid');
- let products=[];
- try{
-  const {data, error}=await supabaseClient.from('msel_products').select('*').order('created_at',{ascending:false});
-  if(!error && data && data.length>0){
-    products=data.map(r=>({id:r.id||r.name, name:r.name, price:r.price, desc:r.description||r.desc||'', badge:r.badge||'NEW', img:r.img, imgs:r.imgs||[]}));
-  }
- }catch(e){}
- if(products.length===0){
-   try{
-     let local=JSON.parse(localStorage.getItem('msel_products')||'[]');
-     if(local && local.length>0) products=local.map((p,i)=>({id:p.id||i,...p}));
-   }catch{}
- }
- if(products.length===0){
-   grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px 10px;opacity:.6">No products yet</div>';
-   return;
- }
- allProducts=products;
- let h='';
- products.forEach((p, idx)=>{
-   let mainImg = p.img || (p.imgs && p.imgs[0]) || 'logo.png';
-   let count = p.imgs? p.imgs.length : 0;
-   h+=`<div class="card" onclick="window.openProductByIndex(${idx})"><img src="${mainImg}" onerror="this.src='logo.png'"><div class="badge">${p.badge||'NEW'}${count>1?' ('+count+')':''}</div><div class="name">${escapeHtml(p.name)}</div><div class="desc">${escapeHtml(p.desc||'')}</div><div class="price">₦${Number(p.price).toLocaleString()}</div><button class="btn" onclick="event.stopPropagation(); addToCartByIndex(${idx})">Add to Cart</button><button class="btn btn2" onclick="event.stopPropagation(); window.openProductByIndex(${idx})">View (${count>1?count:1} - )</button></div>`;
- });
- grid.innerHTML=h;
- updateCartCount();
+ let grid=document.getElementById('grid');let products=[];
+ try{const {data, error}=await supabaseClient.from('msel_products').select('*').order('created_at',{ascending:false});if(!error && data && data.length>0){products=data.map(r=>({id:r.id||r.name, name:r.name, price:r.price, desc:r.description||r.desc||'', badge:r.badge||'NEW', img:r.img, imgs:r.imgs||[]}));}}catch(e){}
+ if(products.length===0){try{let local=JSON.parse(localStorage.getItem('msel_products')||'[]');if(local && local.length>0) products=local.map((p,i)=>({id:p.id||i,name:p.name,price:p.price,desc:p.description||p.desc||'',badge:p.badge||'NEW',img:p.img,imgs:p.imgs||[]}));}catch{}}
+ if(products.length===0){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px">No products yet</div>';return;}
+ allProducts=products;let h='';products.forEach((p, idx)=>{let mainImg = p.img || (p.imgs && p.imgs[0]) || 'logo.png';let count = p.imgs? p.imgs.length : (p.img?1:0);h+=`<div class="card" onclick="window.openProductByIndex(${idx})"><img src="${mainImg}" onerror="this.src='logo.png'"><div class="badge">${escapeHtml(p.badge||'NEW')}</div><div class="name">${escapeHtml(p.name)}</div><div class="desc">${escapeHtml(p.desc||'')}</div><div class="price">₦${Number(p.price).toLocaleString()}</div><button class="btn" onclick="event.stopPropagation(); addToCartByIndex(${idx})">Add to Cart</button><button class="btn btn2" onclick="event.stopPropagation(); window.openProductByIndex(${idx})">View (${count})</button></div>`;});grid.innerHTML=h;updateCartCount();
 }
-window.openProductByIndex=function(i){
-  const p = allProducts[i]; if(!p) return;
-  currentProduct = p;
-  if(p.imgs && p.imgs.length>0) currentImages = p.imgs;
-  else if(p.img) currentImages = [p.img];
-  else currentImages = ['logo.png'];
-  currentIdx=0;
-  document.getElementById('productModal').style.display='block';
-  document.getElementById('modalTitle').innerText = p.name;
-  document.getElementById('modalDesc').innerText = p.desc||'';
-  document.getElementById('modalPrice').innerText = '₦' + Number(p.price).toLocaleString();
-  document.getElementById('modalBadge').innerText = (p.badge||'NEW') + (currentImages.length>1? ' ('+currentImages.length+')' : '');
-  showImage(0);
-}
-function closeProduct(){ document.getElementById('productModal').style.display='none'; }
-function showImage(idx){
-  currentIdx=idx;
-  document.getElementById('modalImage').src = currentImages[idx] || 'logo.png';
-  document.getElementById('modalCounter').innerText = currentImages.length>1? (idx+1)+' / '+currentImages.length : '';
-  const dots = document.getElementById('modalDots');
-  if(currentImages.length>1){
-    dots.style.display='block';
-    dots.innerHTML = currentImages.map((_,i)=>`<span onclick="showImage(${i})" style="background:${i===idx?'#22c55e':'#cbd5e1'}"></span>`).join('');
-  }else{ dots.style.display='none'; }
-}
+window.openProductByIndex=function(i){const p = allProducts[i]; if(!p) return; currentProduct = p; if(p.imgs && p.imgs.length>0) currentImages = p.imgs; else if(p.img) currentImages = [p.img]; else currentImages = ['logo.png']; currentIdx=0; document.getElementById('productModal').style.display='block'; document.body.style.overflow='hidden'; document.getElementById('modalTitle').innerText = p.name; document.getElementById('modalDesc').innerText = p.desc||''; document.getElementById('modalPrice').innerText = '₦' + Number(p.price).toLocaleString(); document.getElementById('modalBadge').innerText = (p.badge||'NEW'); showImage(0);}
+function closeProduct(){ document.getElementById('productModal').style.display='none'; document.body.style.overflow='auto'; }
+function showImage(idx){currentIdx=idx;document.getElementById('modalImage').src = currentImages[idx] || 'logo.png';document.getElementById('modalCounter').innerText = currentImages.length>1? (idx+1)+' / '+currentImages.length : '';const dots = document.getElementById('modalDots');if(currentImages.length>1){dots.style.display='block';dots.innerHTML = currentImages.map((_,i)=>`<span onclick="showImage(${i})" style="background:${i===idx?'#22c55e':'#cbd5e1'}"></span>`).join('');}else{ dots.style.display='none'; }}
 function nextImage(){ showImage((currentIdx+1)%currentImages.length); }
 function prevImage(){ showImage((currentIdx-1+currentImages.length)%currentImages.length); }
 function addToCartFromModal(){ if(!currentProduct) return; let idx = allProducts.indexOf(currentProduct); addToCartByIndex(idx); closeProduct(); }
-function addToCartByIndex(i){
-  const p = allProducts[i]; if(!p) return;
-  let existing = cart.find(c=>c.id===p.id);
-  if(existing){ existing.qty++; } else { cart.push({id:p.id, name:p.name, price:Number(p.price), image: p.img || (p.imgs&&p.imgs[0])||'logo.png', qty:1}); }
-  localStorage.setItem('msel_cart', JSON.stringify(cart));
-  updateCartCount();
-}
+function addToCartByIndex(i){const p = allProducts[i]; if(!p) return;let existing = cart.find(c=>c.id===p.id);if(existing){ existing.qty++; } else { cart.push({id:p.id, name:p.name, price:Number(p.price), image: p.img || (p.imgs&&p.imgs[0])||'logo.png', qty:1}); }localStorage.setItem('msel_cart', JSON.stringify(cart));updateCartCount();}
 function updateCartCount(){ document.getElementById('cartCount').innerText = cart.reduce((a,b)=>a+b.qty,0); }
-function openCheckout(){
-  if(cart.length===0){ alert('Cart is empty'); return; }
-  const itemsDiv = document.getElementById('checkoutItems');
-  let total=0;
-  itemsDiv.innerHTML = cart.map((c, i)=>{
-    total+= c.price*c.qty;
-    return `<div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0;border-bottom:1px solid #1e3a5f;padding-bottom:8px">
-      <div style="flex:1"><div style="font-size:13px;font-weight:700">${escapeHtml(c.name)}</div><div style="font-size:12px;margin-top:4px"><button class="qty-btn" onclick="changeQty(${i},-1)">-</button><span class="qty-num">x${c.qty}</span><button class="qty-btn" onclick="changeQty(${i},1)">+</button></div></div>
-      <div style="text-align:right"><div style="font-size:13px;color:#FF0000;font-weight:900">₦${(c.price*c.qty).toLocaleString()}</div><div style="color:#ef4444;cursor:pointer;font-size:12px;margin-top:4px" onclick="removeFromCart(${i})">✕ Remove</div></div>
-    </div>`;
-  }).join('');
-  document.getElementById('checkoutTotal').innerText = 'Total: ₦' + total.toLocaleString();
-  document.getElementById('checkoutModal').style.display='block';
-}
-function changeQty(i, delta){
-  cart[i].qty += delta;
-  if(cart[i].qty <=0){ cart.splice(i,1); }
-  localStorage.setItem('msel_cart', JSON.stringify(cart));
-  updateCartCount();
-  if(cart.length===0) document.getElementById('checkoutModal').style.display='none';
-  else openCheckout();
-}
+function openCheckout(){if(cart.length===0){ alert('Cart is empty'); return; }const itemsDiv = document.getElementById('checkoutItems');let total=0;itemsDiv.innerHTML = cart.map((c, i)=>{total+= c.price*c.qty;return `<div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0;border-bottom:1px solid #1e3a5f;padding-bottom:8px"><div style="flex:1"><div style="font-size:13px;font-weight:700">${escapeHtml(c.name)}</div><div style="font-size:12px;margin-top:4px"><button class="qty-btn" onclick="changeQty(${i},-1)">-</button><span style="margin:0 8px;font-weight:900">x${c.qty}</span><button class="qty-btn" onclick="changeQty(${i},1)">+</button></div></div><div style="text-align:right"><div style="font-size:13px;color:#FF0000;font-weight:900">₦${(c.price*c.qty).toLocaleString()}</div><div style="color:#ef4444;cursor:pointer;font-size:12px" onclick="removeFromCart(${i})">✕ Remove</div></div></div>`;}).join('');document.getElementById('checkoutTotal').innerText = 'Total: ₦' + total.toLocaleString();document.getElementById('checkoutModal').style.display='block';}
+function changeQty(i, delta){ cart[i].qty += delta; if(cart[i].qty <=0){ cart.splice(i,1); } localStorage.setItem('msel_cart', JSON.stringify(cart)); updateCartCount(); if(cart.length===0) document.getElementById('checkoutModal').style.display='none'; else openCheckout();}
 function removeFromCart(i){ cart.splice(i,1); localStorage.setItem('msel_cart', JSON.stringify(cart)); updateCartCount(); if(cart.length===0) document.getElementById('checkoutModal').style.display='none'; else openCheckout(); }
-function handleReceiptUpload(input){
-  const statusDiv = document.getElementById('uploadStatus');
-  const fileNameSpan = document.getElementById('fileName');
-  const fileSizeDiv = document.getElementById('fileSize');
-  const preview = document.getElementById('receiptPreview');
-  const reqText = document.getElementById('reqText');
-  if(input.files && input.files[0]){
-    const file = input.files[0];
-    fileNameSpan.innerText = file.name;
-    fileSizeDiv.innerText = (file.size/1024).toFixed(1) + ' KB - Ready to upload';
-    statusDiv.style.display = 'block';
-    input.style.border = '2px solid #22c55e';
-    reqText.style.display = 'none';
-    const reader = new FileReader();
-    reader.onload = function(e){
-      preview.src = e.target.result;
-      preview.style.display = 'block';
-    }
-    reader.readAsDataURL(file);
-  } else {
-    statusDiv.style.display = 'none';
-    preview.style.display = 'none';
-    input.style.border = '2px solid #ef4444';
-    reqText.style.display = 'block';
-  }
-}
-async function placeOrder(){
-  const name = document.getElementById('custName').value.trim();
-  const phone = document.getElementById('custPhone').value.trim();
-  const address = document.getElementById('custAddress').value.trim();
-  const state = document.getElementById('custState').value;
-  const ref = document.getElementById('paymentRef').value.trim();
-  const file = document.getElementById('paymentProof').files[0];
-  if(!name ||!phone ||!address ||!state ||!ref){ alert('Fill all required fields including State'); return; }
-  if(!file){ alert('❌ Please upload payment proof / receipt. This is now required!'); document.getElementById('paymentProof').focus(); return; }
-  const btn = document.getElementById('placeOrderBtn'); btn.innerText='Processing...'; btn.disabled=true;
-  let proofUrl='';
-  try{
-    const fileName = Date.now()+'_'+file.name.replace(/\s/g,'_');
-    const {data, error} = await supabaseClient.storage.from('payment_proofs').upload(fileName, file);
-    if(error) throw error;
-    const {data: urlData} = supabaseClient.storage.from('payment_proofs').getPublicUrl(fileName);
-    proofUrl = urlData.publicUrl;
-  }catch(e){ alert('Receipt upload failed: '+e.message); btn.innerText='I Have Paid - Place Order'; btn.disabled=false; return; }
-  const total = cart.reduce((a,b)=>a + b.price*b.qty, 0);
-  try{
-    const {error} = await supabaseClient.from('msel_orders').insert({customer_name:name, customer_phone:phone, customer_address:address, customer_state:state, items:cart, total:total, payment_ref:ref, payment_proof_url:proofUrl, status:'pending'});
-    if(error) throw error;
-    const itemsRaw = cart.map(c=>`${c.name} x${c.qty} = ₦${(c.price*c.qty).toLocaleString()}`).join('\n');
-    const msgRaw = `*NEW MSEL ORDER*\n\n*Name:* ${name}\n*Phone:* ${phone}\n*Address:* ${address}\n*State:* ${state}\n*Ref:* ${ref}\n\n*Items:*\n${itemsRaw}\n\n*TOTAL: ₦${total.toLocaleString()}*\n\n*Receipt:* ${proofUrl}\n\n*Bank:* ACCESS 1817568677`;
-    const finalUrl = `https://api.whatsapp.com/send?phone=${ADMIN_WHATSAPP}&text=${encodeURIComponent(msgRaw)}`;
-    window.location.href = finalUrl;
-    alert('✅ Order Placed! Opening WhatsApp to notify admin...');
-    cart=[]; localStorage.setItem('msel_cart', JSON.stringify(cart)); updateCartCount();
-    document.getElementById('checkoutModal').style.display='none';
-    btn.innerText='I Have Paid - Place Order'; btn.disabled=false;
-    document.getElementById('custName').value=''; document.getElementById('custPhone').value=''; document.getElementById('custAddress').value=''; document.getElementById('custState').value=''; document.getElementById('paymentRef').value=''; document.getElementById('paymentProof').value='';
-    document.getElementById('uploadStatus').style.display='none'; document.getElementById('receiptPreview').style.display='none'; document.getElementById('reqText').style.display='block'; document.getElementById('paymentProof').style.border='2px solid #ef4444';
-  }catch(err){ alert('Order failed: '+err.message); btn.innerText='I Have Paid - Place Order'; btn.disabled=false; }
-}
+function handleReceiptUpload(input){const statusDiv = document.getElementById('uploadStatus');const fileNameSpan = document.getElementById('fileName');const fileSizeDiv = document.getElementById('fileSize');const preview = document.getElementById('receiptPreview');if(input.files && input.files[0]){const file = input.files[0];fileNameSpan.innerText = file.name;fileSizeDiv.innerText = (file.size/1024).toFixed(1) + ' KB';statusDiv.style.display = 'block';const reader = new FileReader();reader.onload = function(e){preview.src = e.target.result;preview.style.display = 'block';};reader.readAsDataURL(file);}else{statusDiv.style.display = 'none';preview.style.display = 'none';}}
+async function placeOrder(){const name = document.getElementById('custName').value.trim();const phone = document.getElementById('custPhone').value.trim();const address = document.getElementById('custAddress').value.trim();const state = document.getElementById('custState').value;const ref = document.getElementById('paymentRef').value.trim();const file = document.getElementById('paymentProof').files[0];if(!name ||!phone ||!address ||!state ||!ref){ alert('Fill all required fields'); return; }if(!file){ alert('Upload receipt'); return; }const btn = document.getElementById('placeOrderBtn'); btn.innerText='Processing...'; btn.disabled=true;let proofUrl='';try{const fileName = Date.now()+'_'+file.name.replace(/\s/g,'_');const {data, error} = await supabaseClient.storage.from('payment_proofs').upload(fileName, file);if(error) throw error;const {data: urlData} = supabaseClient.storage.from('payment_proofs').getPublicUrl(fileName);proofUrl = urlData.publicUrl;}catch(e){ alert('Upload failed: '+e.message); btn.innerText='I Have Paid - Place Order'; btn.disabled=false; return; }const total = cart.reduce((a,b)=>a + b.price*b.qty, 0);try{const {error} = await supabaseClient.from('msel_orders').insert({customer_name:name, customer_phone:phone, customer_address:address, customer_state:state, items:cart, total:total, payment_ref:ref, payment_proof_url:proofUrl, status:'pending'});if(error) throw error;const itemsRaw = cart.map(c=>`${c.name} x${c.qty} = ₦${(c.price*c.qty).toLocaleString()}`).join('\n');const msgRaw = `*NEW MSEL ORDER*\n\n*Name:* ${name}\n*Phone:* ${phone}\n*Address:* ${address}\n*State:* ${state}\n*Ref:* ${ref}\n\n*Items:*\n${itemsRaw}\n\n*TOTAL: ₦${total.toLocaleString()}*\n\n*Receipt:* ${proofUrl}`;const finalUrl = `https://api.whatsapp.com/send?phone=${ADMIN_WHATSAPP}&text=${encodeURIComponent(msgRaw)}`;window.location.href = finalUrl;alert('✅ Order Placed!');cart=[];localStorage.setItem('msel_cart', JSON.stringify(cart));updateCartCount();document.getElementById('checkoutModal').style.display='none';btn.innerText='I Have Paid - Place Order';btn.disabled=false;}catch(err){ alert('Order failed: '+err.message); btn.innerText='I Have Paid - Place Order'; btn.disabled=false; }}
 function logout(){ localStorage.removeItem('msel_role'); window.location.href='login.html'; }
 loadProducts();
 </script>
