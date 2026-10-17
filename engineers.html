@@ -8,10 +8,12 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
 body{background:#0f172a;color:#fff}
-.top{background:#00924C;padding:12px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+.top{background:#00924C;padding:10px 12px;display:flex;flex-direction:column;gap:8px;position:sticky;top:0;z-index:10}
+.top-main{width:100%;display:flex;justify-content:space-between;align-items:center}
 .top b{font-size:15px}
-.top a.home-link{background:#fff;color:#00924C;padding:6px 14px;border-radius:20px;text-decoration:none;font-weight:800;font-size:13px;white-space:nowrap;flex-shrink:0}
-.cart-btn{background:#000;color:#22c55e;padding:7px 14px;border-radius:20px;font-weight:800;font-size:13px;border:1px solid #22c55e;cursor:pointer;margin-right:6px;white-space:nowrap;flex-shrink:0}
+.top-actions{width:100%;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-start;background:rgba(0,0,0,0.15);padding:8px;border-radius:12px}
+.top a.home-link{background:#fff;color:#00924C;padding:7px 16px;border-radius:20px;text-decoration:none;font-weight:800;font-size:13px;white-space:nowrap;flex-shrink:0}
+.cart-btn{background:#000;color:#22c55e;padding:7px 14px;border-radius:20px;font-weight:800;font-size:13px;border:1px solid #22c55e;cursor:pointer;white-space:nowrap;flex-shrink:0}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
 .card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:10px;text-align:center;cursor:pointer}
 .card:active{transform:scale(0.97);border-color:#22c55e}
@@ -47,12 +49,14 @@ body{background:#0f172a;color:#fff}
 </head>
 <body>
 <div class="top">
+<div class="top-main">
 <div style="display:flex;align-items:center;gap:8px"><img src="logo.png" style="width:32px;height:32px;background:#fff;border-radius:6px"><div><b>MSEL MENTE</b><br><small>Engineers Private Shop</small></div></div>
-<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-<button class="cart-btn" onclick="openCheckout()">🛒 Cart (<span id="cartCount">0</span>)</button>
-<a href="mente-register.html" style="background:linear-gradient(90deg,#FFC72C,#FF8C00);color:#000;padding:6px 12px;border-radius:20px;text-decoration:none;font-weight:900;font-size:12px;border:2px solid #fff;box-shadow:0 0 10px rgba(255,199,44,.6);white-space:nowrap;flex-shrink:0">👤 Register 🆕</a>
-<a href="mente-chat.html" style="background:#FF00FF;color:#fff;padding:7px 16px;border-radius:20px;text-decoration:none;font-weight:900;font-size:13px;border:2px solid #fff;box-shadow:0 0 12px rgba(255,0,255,.7);white-space:nowrap;flex-shrink:0">💬 Chat</a>
 <a href="index.html" class="home-link">Home</a>
+</div>
+<div class="top-actions">
+<button class="cart-btn" onclick="openCheckout()">🛒 Cart (<span id="cartCount">0</span>)</button>
+<a href="mente-register.html" style="background:linear-gradient(90deg,#FFC72C,#FF8C00);color:#000;padding:7px 14px;border-radius:20px;text-decoration:none;font-weight:900;font-size:13px;border:2px solid #fff;white-space:nowrap;flex-shrink:0">👤 Register 🆕</a>
+<a href="mente-chat.html" style="background:#FF00FF;color:#fff;padding:8px 20px;border-radius:20px;text-decoration:none;font-weight:900;font-size:14px;border:2px solid #fff;box-shadow:0 0 12px rgba(255,0,255,.9);white-space:nowrap;flex-shrink:0">💬 Chat</a>
 </div>
 </div>
 
