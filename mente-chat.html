@@ -7,17 +7,18 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
-body{background:#0f172a;color:#fff;min-height:100vh;display:flex;flex-direction:column}
-header{background:#fff;color:#00924C;padding:10px 3%;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+body{background:#8B005C;color:#fff;min-height:100vh;display:flex;flex-direction:column}
+header{background:#8B005C;color:#fff;padding:10px 3%;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.3);border-bottom:1px solid rgba(255,255,255,.2)}
 .left{display:flex;align-items:center;gap:8px}
 header img{height:38px}
-header h1{font-size:16px;line-height:1.1}
+header h1{font-size:16px;line-height:1.1;color:#fff}
+#userLabel{color:#FFC72C !important}
 .badge-boss{background:linear-gradient(90deg,#FFC72C,#FF8C00);color:#000;font-size:9px;font-weight:900;padding:3px 8px;border-radius:12px;margin-left:5px;display:inline-flex;box-shadow:0 0 8px rgba(255,199,44,.6)}
 .badge-banned{background:#ef4444;color:#fff;font-size:9px;font-weight:900;padding:3px 7px;border-radius:12px;margin-left:5px}
 .badge-sus{background:#f59e0b;color:#000;font-size:9px;font-weight:900;padding:3px 7px;border-radius:12px;margin-left:5px}
 @keyframes highlight{0%{box-shadow:0 0 0 0 #22c55e}50%{box-shadow:0 0 0 10px rgba(34,197,94,.6);transform:scale(1.02)}100%{box-shadow:0 0 0 0 transparent}}
 .highlight{animation:highlight 1.2s ease 2}
-#chatBox{flex:1;overflow-y:auto;padding:15px 3%;display:flex;flex-direction:column;gap:12px;padding-bottom:180px}
+#chatBox{flex:1;overflow-y:auto;padding:15px 3%;display:flex;flex-direction:column;gap:12px;padding-bottom:180px;background:#8B005C}
 .msg{max-width:82%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.4;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.2);word-break:break-word;cursor:pointer;user-select:none}
 .msg.me{align-self:flex-end;background:#22c55e;color:#000;border-bottom-right-radius:4px}
 .msg.other{align-self:flex-start;background:#1e293b;border-bottom-left-radius:4px}
@@ -34,7 +35,7 @@ header h1{font-size:16px;line-height:1.1}
 .views{font-size:10px;opacity:.75;margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .saveBtn{font-size:11px;background:#0f172a;color:#22c55e;padding:4px 9px;border-radius:12px;margin-top:6px;display:inline-block;text-decoration:none;border:1px solid #22c55e;font-weight:900}
 .editBtn{font-size:11px;background:#FFC72C;color:#000;padding:4px 9px;border-radius:12px;margin-top:6px;display:inline-block;border:0;font-weight:900;cursor:pointer;margin-left:6px}
-.inputBar{position:fixed;bottom:0;left:0;right:0;background:#0f172a;padding:8px 8px calc(8px + env(safe-area-inset-bottom));display:flex;gap:6px;align-items:flex-end;border-top:1px solid #1e293b;z-index:50;width:100%}
+.inputBar{position:fixed;bottom:0;left:0;right:0;background:#8B005C;padding:8px 8px calc(8px + env(safe-area-inset-bottom));display:flex;gap:6px;align-items:flex-end;border-top:1px solid rgba(255,255,255,.2);z-index:50;width:100%}
 .iconBtn{background:#1e293b;color:#22c55e;border:1px solid #334155;min-width:40px;width:40px;height:40px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .textInput{flex:1;min-width:0;padding:11px 14px;border-radius:22px;border:1px solid #334155;background:#1e293b;color:#fff;outline:none;font-size:14px;resize:none;min-height:42px;max-height:120px;line-height:1.4;overflow-y:auto;white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word}
 .sendBtn{background:#22c55e;color:#000;font-weight:900;min-width:42px;width:42px;height:42px;border-radius:50%;border:0;cursor:pointer;font-size:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
@@ -49,9 +50,7 @@ header h1{font-size:16px;line-height:1.1}
 #adminPanel button{padding:8px 12px;border-radius:20px;border:0;font-weight:900;font-size:12px;cursor:pointer}
 .btnDel{background:#ef4444;color:#fff}.btnSus{background:#f59e0b;color:#000}.btnBan{background:#000;color:#ef4444;border:1px solid #ef4444!important}.btnRestore{background:#22c55e;color:#000}
 #tagList{position:fixed;bottom:65px;left:3%;right:3%;background:#1e293b;border:1px solid #334155;border-radius:14px;max-height:160px;overflow-y:auto;display:none;z-index:65}
-#tagList div{padding:10px 14px;border-bottom:1px solid #0f172a;cursor:pointer;font-size:13px;display:flex;justify-content:space-between}
 #replyPreview{display:none;position:fixed;bottom:60px;left:0;right:0;background:#1e293b;padding:8px 3%;border-top:1px solid #22c55e;z-index:55;font-size:12px}
-#replyPreview b{color:#22c55e}
 .avatar{width:20px;height:20px;border-radius:50%;background:#22c55e;color:#000;font-weight:900;font-size:10px;display:inline-flex;align-items:center;justify-content:center;margin-right:4px;vertical-align:middle}
 .avatar.bossAvatar{background:linear-gradient(90deg,#FFC72C,#FF8C00)}
 #banModal,#viewModal,#editModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:300;padding:12px;overflow:auto}
@@ -65,7 +64,7 @@ header h1{font-size:16px;line-height:1.1}
 </header>
 <div id="chatBox"></div>
 <div id="notifyToast"></div>
-<div id="recordingBar">🔴 Recording voice... Release mic to send</div>
+<div id="recordingBar">🔴 Recording...</div>
 <div id="reactionPicker">
 <span onclick="react('👍')">👍</span><span onclick="react('❤️')">❤️</span><span onclick="react('😂')">😂</span><span onclick="react('😮')">😮</span><span onclick="react('😢')">😢</span><span onclick="react('🙏')">🙏</span><span onclick="react('🔥')">🔥</span><span onclick="react('💯')">💯</span>
 <div style="width:1px;background:#334155;margin:0 4px"></div>
@@ -103,7 +102,7 @@ let myIsAdmin=myRole==='admin'||myName==='MSEL BOSS'||myName.toLowerCase().inclu
 document.getElementById('userLabel').innerText=myIsAdmin?'👑 MSEL BOSS (Admin)':myName+' ('+myCode+')';
 if(myIsAdmin) document.getElementById('adminListBtn').style.display='inline-block';
 let bannedMap=JSON.parse(localStorage.getItem('msel_banned_map')||'{}');
-let allMessages=[]; let selectedMsg=null; let replyToData=null; let accountsMap={};
+let allMessages=[]; let selectedMsg=null; let replyToData=null; let accountsMap={}; let accountsLoaded=false; let viewedOnce=false;
 function escapeHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function showToast(t){ let e=document.getElementById('notifyToast'); e.innerText=t; e.style.display='block'; setTimeout(()=>e.style.display='none',3000); }
 function formatNigeriaTime(d){
@@ -124,15 +123,10 @@ function scrollToBottom(){
   setTimeout(()=>{ box.scrollTop=box.scrollHeight; },600);
 }
 async function loadAccounts(){
+  if(accountsLoaded) return;
   try{
     let {data}=await supabaseClient.from('msel_mente_accounts').select('*');
-    if(data){
-      data.forEach(a=>{
-        accountsMap[a.name]=a;
-        if(a.code) accountsMap[a.code]=a;
-        if(a.full_name) accountsMap[a.full_name]=a;
-      });
-    }
+    if(data){ data.forEach(a=>{ accountsMap[a.name]=a; if(a.code) accountsMap[a.code]=a; if(a.full_name) accountsMap[a.full_name]=a; }); accountsLoaded=true; }
   }catch(e){}
   try{ let {data}=await supabaseClient.from('msel_mente_bans').select('*'); if(data){ data.forEach(b=>bannedMap[b.name]=b); localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); } }catch(e){}
 }
@@ -158,19 +152,14 @@ function renderMessages(data){
     let nameLine = (codeVal && realName.toUpperCase()!==codeVal.toUpperCase()) ? `${displayName} • ${codeVal}` : displayName;
     let initial=realName.charAt(0).toUpperCase();
     let viewed=m.viewed_by||[]; let viewCount=Array.isArray(viewed)?viewed.length:0;
-    let viewedHtml='';
-    if(isMe || myIsAdmin){
-      viewedHtml=`<span onclick="event.stopPropagation();showViewers('${m.id}')" style="color:#22c55e;font-weight:900;cursor:pointer">👁️ ${viewCount} viewed</span>`;
-    }else{
-      viewedHtml=``;
-    }
+    let viewedHtml=(isMe || myIsAdmin) ? `<span onclick="event.stopPropagation();showViewers('${m.id}')" style="color:#FFC72C;font-weight:900;cursor:pointer">👁️ ${viewCount} viewed</span>` : ``;
     let canEdit = isMe && (Date.now() - new Date(m.created_at).getTime()) < 5*60*60*1000;
     let editBtn = canEdit ? `<button class="editBtn" onclick="event.stopPropagation();quickEdit('${m.id}')">✏️ Edit</button>` : '';
     let editedTag = m.is_edited ? '<small style="opacity:.6"> (edited)</small>' : '';
     let html=`<div style="font-weight:900;font-size:11px;margin-bottom:4px"><span class="avatar ${admin?'bossAvatar':''}">${admin?'👑':initial}</span>${nameLine} ${bossBadge} ${banBadge}${editedTag}</div>${replyHtml}`;
-    if(type==='image'&&mediaUrl) html+=`<img src="${mediaUrl}" class="chat-img" onload="scrollToBottom()" onclick="event.stopPropagation();window.open('${mediaUrl}')"><br><a href="${mediaUrl}" download target="_blank" class="saveBtn" onclick="event.stopPropagation()">💾 Save Image</a>`;
-    else if(type==='video'&&mediaUrl) html+=`<video src="${mediaUrl}" class="chat-video" controls playsinline onloadedmetadata="scrollToBottom()" onclick="event.stopPropagation()"></video><br><a href="${mediaUrl}" download target="_blank" class="saveBtn" onclick="event.stopPropagation()">💾 Save Video</a>`;
-    else if(type==='voice'&&mediaUrl) html+=`<audio src="${mediaUrl}" controls onclick="event.stopPropagation()"></audio><br><a href="${mediaUrl}" download target="_blank" class="saveBtn" onclick="event.stopPropagation()">💾 Save Voice</a>`;
+    if(type==='image'&&mediaUrl) html+=`<img src="${mediaUrl}" class="chat-img" loading="lazy" decoding="async" onload="scrollToBottom()" onclick="event.stopPropagation();window.open('${mediaUrl}')"><br><a href="${mediaUrl}" download target="_blank" class="saveBtn" onclick="event.stopPropagation()">💾 Save Image</a>`;
+    else if(type==='video'&&mediaUrl) html+=`<video src="${mediaUrl}" class="chat-video" controls playsinline preload="none" onloadedmetadata="scrollToBottom()" onclick="event.stopPropagation()"></video><br><a href="${mediaUrl}" download target="_blank" class="saveBtn" onclick="event.stopPropagation()">💾 Save Video</a>`;
+    else if(type==='voice'&&mediaUrl) html+=`<audio src="${mediaUrl}" controls preload="none" onclick="event.stopPropagation()"></audio><br><a href="${mediaUrl}" download target="_blank" class="saveBtn" onclick="event.stopPropagation()">💾 Save Voice</a>`;
     else if((type==='file'||type==='document')&&mediaUrl) html+=`<a href="${mediaUrl}" target="_blank" style="color:${isMe?'#000':'#22c55e'};font-weight:900">📄 Open File</a><br><a href="${mediaUrl}" download target="_blank" class="saveBtn">💾 Save File</a>`;
     if(txt){ html+=`<div style="margin-top:4px;white-space:pre-wrap;word-break:break-word">${escapeHtml(txt)}</div>`; }
     html+=`${reactsHtml}<div class="views"><span>🕒 ${formatNigeriaTime(m.created_at)}</span>${viewedHtml}</div>${editBtn}`;
@@ -179,24 +168,36 @@ function renderMessages(data){
   scrollToBottom();
   trackViews();
 }
-async function loadMessages(){ try{ await loadAccounts(); let {data,error}=await supabaseClient.from('msel_mente_messages').select('*').order('created_at',{ascending:true}).limit(500); if(error) throw error; if(data) renderMessages(data); }catch(e){} }
+async function loadMessages(){ try{ await loadAccounts(); let {data,error}=await supabaseClient.from('msel_mente_messages').select('*').order('created_at',{ascending:true}).limit(100); if(error) throw error; if(data) renderMessages(data); }catch(e){} }
 loadMessages();
-supabaseClient.channel('mente-chat-final-all').on('postgres_changes',{event:'*',schema:'public',table:'msel_mente_messages'},()=>loadMessages()).subscribe();
+// LOW-DATA FAST REALTIME
+supabaseClient.channel('mente-low-fast')
+.on('postgres_changes',{event:'INSERT',schema:'public',table:'msel_mente_messages'},payload=>{
+  allMessages.push(payload.new); renderMessages(allMessages); scrollToBottom();
+})
+.on('postgres_changes',{event:'UPDATE',schema:'public',table:'msel_mente_messages'},payload=>{
+  let i=allMessages.findIndex(m=>m.id===payload.new.id); if(i>-1){ allMessages[i]=payload.new; renderMessages(allMessages); }
+})
+.on('postgres_changes',{event:'DELETE',schema:'public',table:'msel_mente_messages'},payload=>{
+  allMessages=allMessages.filter(m=>m.id!==payload.old.id); renderMessages(allMessages);
+})
+.subscribe();
 window.addEventListener('load',()=>{ setTimeout(scrollToBottom,700); });
-
 async function trackViews(){
-  for(let m of allMessages){
+  if(viewedOnce) return; viewedOnce=true;
+  for(let m of allMessages.slice(-20)){
     if(m.name===myName) continue;
     let viewed=m.viewed_by||[]; if(!Array.isArray(viewed)) viewed=[];
     if(!viewed.includes(myName)){
       viewed.push(myName);
       try{ await supabaseClient.from('msel_mente_messages').update({viewed_by:viewed}).eq('id',m.id); }catch(e){}
+      await new Promise(r=>setTimeout(r,400));
     }
   }
 }
 function showViewers(id){
   let msg=allMessages.find(x=>x.id==id);
-  if(msg.name!==myName && !myIsAdmin){ showToast('Only owner can see viewers'); return; }
+  if(msg.name!==myName && !myIsAdmin){ showToast('Only owner can see'); return; }
   let viewed=msg?.viewed_by||[];
   let list=document.getElementById('viewList');
   if(!viewed.length) list.innerHTML='<p style="opacity:.6;text-align:center">No views yet</p>';
@@ -224,28 +225,44 @@ function tagUser(){ if(!selectedMsg) return; insertTag(selectedMsg.name); closeA
 function insertTag(n){ let i=document.getElementById('msgInput'); i.value+=(i.value?' ':'')+'@'+n+' '; i.focus(); autoResize(); }
 function quickEdit(id){ selectedMsg=allMessages.find(m=>m.id==id); if(selectedMsg) openEdit(); }
 function openEdit(){
-  if(!selectedMsg || selectedMsg.name!==myName){ showToast('Can edit your own only'); return; }
-  if((Date.now() - new Date(selectedMsg.created_at).getTime()) > 5*60*60*1000){ showToast('Edit expired (5hrs)'); return; }
+  if(!selectedMsg || selectedMsg.name!==myName){ showToast('Own only'); return; }
+  if((Date.now() - new Date(selectedMsg.created_at).getTime()) > 5*60*60*1000){ showToast('Edit expired'); return; }
   document.getElementById('editInput').value=selectedMsg.message||''; document.getElementById('editModal').style.display='block'; closeAdminPanel();
 }
 async function saveEdit(){
   let newText=document.getElementById('editInput').value.trim(); if(!newText) return;
   try{ await supabaseClient.from('msel_mente_messages').update({message:newText,is_edited:true}).eq('id',selectedMsg.id); showToast('✏️ Edited'); document.getElementById('editModal').style.display='none'; loadMessages(); }catch(e){ showToast(e.message); }
 }
+async function compressImage(file){
+  if(!file.type.startsWith('image/')) return file;
+  if(file.size < 500*1024) return file;
+  return new Promise(res=>{
+    let img=new Image(); img.src=URL.createObjectURL(file);
+    img.onload=()=>{
+      let canvas=document.createElement('canvas');
+      let max=1024; let w=img.width, h=img.height;
+      if(w>max||h>max){ if(w>h){ h*=max/w; w=max; } else { w*=max/h; h=max; } }
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      canvas.toBlob(b=>{ res(new File([b],file.name,{type:'image/jpeg'})); },'image/jpeg',0.6);
+    };
+    img.onerror=()=>res(file);
+  });
+}
 async function uploadMedia(f){ let ext=f.name.split('.').pop(); let name=`chat/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`; let {error}=await supabaseClient.storage.from(BUCKET).upload(name,f); if(error) throw error; let {data}=supabaseClient.storage.from(BUCKET).getPublicUrl(name); return data.publicUrl; }
 async function saveBan(name,status,until=null){ let p={name,status,banned_by:myName,until}; bannedMap[name]=p; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); try{ await supabaseClient.from('msel_mente_bans').upsert(p,{onConflict:'name'}); }catch(e){} }
-async function deleteMsg(){ if(!selectedMsg||!myIsAdmin) return; if(!confirm('Remove this message?')) return; try{ await supabaseClient.from('msel_mente_messages').delete().eq('id',selectedMsg.id); showToast('🗑️ Removed'); closeAdminPanel(); loadMessages(); }catch(e){ showToast(e.message); } }
-async function suspendUser(){ if(!selectedMsg||!myIsAdmin) return; let until=new Date(Date.now()+86400000).toISOString(); await saveBan(selectedMsg.name,'suspended',until); showToast('⏸️ Suspended'); closeAdminPanel(); loadMessages(); }
-async function banUserForever(){ if(!selectedMsg||!myIsAdmin) return; if(!confirm('BAN '+selectedMsg.name+' FOREVER?')) return; await saveBan(selectedMsg.name,'banned',null); showToast('🚫 Banned'); closeAdminPanel(); loadMessages(); }
-async function restoreUser(){ if(!selectedMsg||!myIsAdmin) return; let n=selectedMsg.name; delete bannedMap[n]; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); try{ await supabaseClient.from('msel_mente_bans').delete().eq('name',n); }catch(e){} showToast('✅ Restored'); closeAdminPanel(); loadMessages(); }
+async function deleteMsg(){ if(!selectedMsg||!myIsAdmin) return; if(!confirm('Remove?')) return; try{ await supabaseClient.from('msel_mente_messages').delete().eq('id',selectedMsg.id); showToast('🗑️ Removed'); closeAdminPanel(); }catch(e){ showToast(e.message); } }
+async function suspendUser(){ if(!selectedMsg||!myIsAdmin) return; let until=new Date(Date.now()+86400000).toISOString(); await saveBan(selectedMsg.name,'suspended',until); showToast('⏸️ Suspended'); closeAdminPanel(); }
+async function banUserForever(){ if(!selectedMsg||!myIsAdmin) return; if(!confirm('BAN '+selectedMsg.name+' FOREVER?')) return; await saveBan(selectedMsg.name,'banned',null); showToast('🚫 Banned'); closeAdminPanel(); }
+async function restoreUser(){ if(!selectedMsg||!myIsAdmin) return; let n=selectedMsg.name; delete bannedMap[n]; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); try{ await supabaseClient.from('msel_mente_bans').delete().eq('name',n); }catch(e){} showToast('✅ Restored'); closeAdminPanel(); }
 function openBanList(){ let list=document.getElementById('banList'); let keys=Object.keys(bannedMap); if(!keys.length) list.innerHTML='<p style="text-align:center;opacity:.6">No banned</p>'; else list.innerHTML=keys.map(k=>{ let b=bannedMap[k]; let until=b.until? new Date(b.until).toLocaleString(): 'Forever'; return `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #1e3a5f"><div><b>${k}</b><br><small style="color:${b.status==='banned'?'#ef4444':'#f59e0b'}">${b.status} - ${until}</small></div><button onclick="quickRestore('${k}')" style="background:#22c55e;border:0;padding:6px 12px;border-radius:20px;font-weight:900">Restore</button></div>`; }).join(''); document.getElementById('banModal').style.display='block'; }
-async function quickRestore(name){ delete bannedMap[name]; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); try{ await supabaseClient.from('msel_mente_bans').delete().eq('name',name); }catch(e){} showToast('✅ Restored'); openBanList(); loadMessages(); }
+async function quickRestore(name){ delete bannedMap[name]; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); try{ await supabaseClient.from('msel_mente_bans').delete().eq('name',name); }catch(e){} showToast('✅ Restored'); openBanList(); }
 async function sendMsg(mediaUrl=null,mediaType='text'){
   let myBan=getBanStatus(myName); if(myBan){ showToast(myBan.status==='banned'?'🚫 BANNED':'⏸️ SUSPENDED'); return; }
   let input=document.getElementById('msgInput'); let text=input.value.trim(); if(!text&&!mediaUrl) return; if(!mediaUrl) input.value=''; autoResize();
   let sendName=myIsAdmin?'MSEL BOSS':myName; let sendCode=myIsAdmin?'MSEL-BOSS-001':myCode;
   let payload={name:sendName,code:sendCode,message:text||`[${mediaType}]`,viewed_by:[myName]}; if(mediaUrl){ payload.media_url=mediaUrl; payload.type=mediaType; } if(replyToData) payload.reply_to=replyToData;
-  try{ await supabaseClient.from('msel_mente_messages').insert(payload); }catch(e){ showToast(e.message); return; } loadMessages(); toggleSendMic(); cancelReply(); setTimeout(()=>scrollToBottom(),200);
+  try{ await supabaseClient.from('msel_mente_messages').insert(payload); }catch(e){ showToast(e.message); return; } toggleSendMic(); cancelReply(); setTimeout(()=>scrollToBottom(),100);
 }
 function autoResize(){ let i=document.getElementById('msgInput'); i.style.height='auto'; i.style.height=Math.min(i.scrollHeight,120)+'px'; }
 function toggleSendMic(){ let i=document.getElementById('msgInput'); let m=document.getElementById('micBtn'); if(i.value.trim().length>0) m.style.display='none'; else m.style.display='flex'; }
@@ -255,10 +272,10 @@ document.getElementById('msgInput').addEventListener('keypress',e=>{ if(e.key===
 document.getElementById('attachBtn').addEventListener('click',()=>document.getElementById('fileInput').click());
 document.getElementById('fileInput').addEventListener('change',async e=>{
   let files=Array.from(e.target.files||[]); if(!files.length) return;
-  if(files.length>10){ alert('Max 10 at once'); files=files.slice(0,10); }
+  if(files.length>10){ alert('Max 10'); files=files.slice(0,10); }
   for(let f of files){
     if(f.size>15*1024*1024){ showToast(f.name+' too big'); continue; }
-    try{ showToast('⏳ Uploading '+f.name+'...'); let type='file'; if(f.type.startsWith('image/')) type='image'; else if(f.type.startsWith('video/')) type='video'; else if(f.type.startsWith('audio/')) type='voice'; let url=await uploadMedia(f); await sendMsg(url,type); }catch(err){ showToast(err.message); }
+    try{ showToast('⏳ Uploading '+f.name+'...'); let type='file'; if(f.type.startsWith('image/')) type='image'; else if(f.type.startsWith('video/')) type='video'; else if(f.type.startsWith('audio/')) type='voice'; let toUp = await compressImage(f); let url=await uploadMedia(toUp); await sendMsg(url,type); }catch(err){ showToast(err.message); }
   }
   e.target.value=''; showToast('✅ '+files.length+' sent!');
 });
