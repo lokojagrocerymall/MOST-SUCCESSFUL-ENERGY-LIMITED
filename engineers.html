@@ -8,12 +8,12 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
 body{background:#0f172a;color:#fff}
-.top{background:#00924C;padding:10px 12px;display:flex;flex-direction:column;gap:8px;position:sticky;top:0;z-index:10}
+.top{background:#00924C;padding:10px 12px;display:flex;flex-direction:column;gap:10px;position:sticky;top:0;z-index:9999}
 .top-main{width:100%;display:flex;justify-content:space-between;align-items:center}
 .top b{font-size:15px}
-.top-actions{width:100%;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-start;background:rgba(0,0,0,0.15);padding:8px;border-radius:12px}
+.top-actions{width:100%;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-start;background:#004d29;padding:10px;border-radius:12px;border:1px solid #00b85c}
 .top a.home-link{background:#fff;color:#00924C;padding:7px 16px;border-radius:20px;text-decoration:none;font-weight:800;font-size:13px;white-space:nowrap;flex-shrink:0}
-.cart-btn{background:#000;color:#22c55e;padding:7px 14px;border-radius:20px;font-weight:800;font-size:13px;border:1px solid #22c55e;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.cart-btn{background:#000;color:#22c55e;padding:8px 16px;border-radius:20px;font-weight:800;font-size:13px;border:1px solid #22c55e;cursor:pointer;white-space:nowrap;flex-shrink:0}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
 .card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:10px;text-align:center;cursor:pointer}
 .card:active{transform:scale(0.97);border-color:#22c55e}
@@ -26,7 +26,7 @@ body{background:#0f172a;color:#fff}
 .btn2{background:#334155;color:#fff}
 .view-cart-btn{width:90%;max-width:340px;margin:16px auto;display:block;background:#00C853!important;color:#000!important;font-weight:900!important;padding:14px!important;border-radius:12px!important;border:0!important;font-size:15px!important;box-shadow:0 4px 15px rgba(0,200,83,0.5)}
 .logout{display:block;margin:10px auto;background:#ef4444;color:#fff;border:0;padding:10px 24px;border-radius:20px;font-weight:800}
-#productModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:1000;overflow:auto;padding:12px}
+#productModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;overflow:auto;padding:12px}
 .modal-box{background:#1e293b;max-width:500px;margin:20px auto;border-radius:16px;overflow:hidden;border:1px solid #334155}
 .modal-img-wrap{position:relative;background:#fff}
 .modal-img-wrap img{width:100%;max-height:380px;object-fit:contain;display:block}
@@ -36,7 +36,7 @@ body{background:#0f172a;color:#fff}
 .close-btn{position:absolute;top:10px;left:10px;background:#ef4444;color:#fff;border:0;width:32px;height:32px;border-radius:50%;font-weight:800;cursor:pointer}
 .dots{text-align:center;padding:8px;background:#fff}
 .dots span{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 4px;cursor:pointer}
-#checkoutModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:2000;overflow:auto;padding:12px}
+#checkoutModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:100000;overflow:auto;padding:12px}
 .checkout-box{background:#0f1a2e;color:#fff;max-width:520px;margin:15px auto;border-radius:16px;padding:18px;border:1px solid #1e3a5f}
 .bank-box{background:#162a4a;border:1px dashed #22c55e;padding:14px;border-radius:12px;margin:12px 0}
 .inp{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:0;font-size:14px}
@@ -56,7 +56,7 @@ body{background:#0f172a;color:#fff}
 <div class="top-actions">
 <button class="cart-btn" onclick="openCheckout()">🛒 Cart (<span id="cartCount">0</span>)</button>
 <a href="mente-register.html" style="background:linear-gradient(90deg,#FFC72C,#FF8C00);color:#000;padding:7px 14px;border-radius:20px;text-decoration:none;font-weight:900;font-size:13px;border:2px solid #fff;white-space:nowrap;flex-shrink:0">👤 Register 🆕</a>
-<a href="mente-chat.html" style="background:#FF00FF;color:#fff;padding:8px 20px;border-radius:20px;text-decoration:none;font-weight:900;font-size:14px;border:2px solid #fff;box-shadow:0 0 12px rgba(255,0,255,.9);white-space:nowrap;flex-shrink:0">💬 Chat</a>
+<a href="mente-chat.html" style="background:#FF00FF!important;color:#fff!important;padding:8px 20px!important;border-radius:20px!important;text-decoration:none!important;font-weight:900!important;font-size:14px!important;border:3px solid #fff!important;box-shadow:0 0 12px rgba(255,0,255,.9)!important;white-space:nowrap!important;flex-shrink:0!important;display:inline-block!important">💬 Chat</a>
 </div>
 </div>
 
@@ -70,7 +70,7 @@ body{background:#0f172a;color:#fff}
 <button class="view-cart-btn" onclick="openCheckout()">View Cart & Checkout</button>
 <button class="logout" onclick="logout()">Logout</button>
 
-<div id="productModal">
+<div id="productModal" onclick="if(event.target.id==='productModal')closeProduct()">
   <div class="modal-box">
     <div class="modal-img-wrap">
       <button class="close-btn" onclick="closeProduct()">X</button>
@@ -106,12 +106,10 @@ body{background:#0f172a;color:#fff}
     <input id="custName" class="inp" placeholder="Full Name *">
     <input id="custPhone" class="inp" placeholder="WhatsApp Number *">
     <input id="custAddress" class="inp" placeholder="Delivery Address (Street) *">
-
     <select id="custState" class="inp" style="background:white">
       <option value="">Select State *</option>
       <option>Abia</option><option>Adamawa</option><option>Akwa Ibom</option><option>Anambra</option><option>Bauchi</option><option>Bayelsa</option><option>Benue</option><option>Borno</option><option>Cross River</option><option>Delta</option><option>Ebonyi</option><option>Edo</option><option>Ekiti</option><option>Enugu</option><option>FCT Abuja</option><option>Gombe</option><option>Imo</option><option>Jigawa</option><option>Kaduna</option><option>Kano</option><option>Katsina</option><option>Kebbi</option><option>Kogi</option><option>Kwara</option><option>Lagos</option><option>Nasarawa</option><option>Niger</option><option>Ogun</option><option>Ondo</option><option>Osun</option><option>Oyo</option><option>Plateau</option><option>Rivers</option><option>Sokoto</option><option>Taraba</option><option>Yobe</option><option>Zamfara</option>
     </select>
-
     <input id="paymentRef" class="inp" placeholder="Transfer Reference / Sender Name *">
     <label style="font-size:12px;font-weight:800;color:#f87171">Upload Payment Proof * (Required):</label>
     <input id="paymentProof" type="file" accept="image/*" class="inp" style="background:white;border:2px solid #ef4444" onchange="handleReceiptUpload(this)">
@@ -122,7 +120,6 @@ body{background:#0f172a;color:#fff}
       <img id="receiptPreview" src="" style="display:none;width:100%;max-height:200px;object-fit:contain;margin-top:8px;border-radius:8px;background:#fff;padding:4px">
     </div>
     <span id="reqText" class="req-label">* You must upload receipt to place order</span>
-
     <button id="placeOrderBtn" onclick="placeOrder()" style="width:100%;padding:14px;background:#22c55e;color:#000;font-weight:900;border:0;border-radius:10px;margin-top:12px;font-size:16px;cursor:pointer">I Have Paid - Place Order</button>
     <button onclick="document.getElementById('checkoutModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:white;border:0;border-radius:10px;margin-top:8px;cursor:pointer">Cancel</button>
   </div>
@@ -133,13 +130,9 @@ const SUPABASE_URL='https://rsnsciisycruhxtvfhwb.supabase.co';
 const SUPABASE_KEY='sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const ADMIN_WHATSAPP='2348052941223';
-
-let allProducts=[];
-let currentProduct=null;
-let currentImages=[];
-let currentIdx=0;
+let allProducts=[];let currentProduct=null;let currentImages=[];let currentIdx=0;
 let cart = JSON.parse(localStorage.getItem('msel_cart')||'[]');
-
+function escapeHtml(s){return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 async function loadProducts(){
  let grid=document.getElementById('grid');
  let products=[];
@@ -152,19 +145,18 @@ async function loadProducts(){
  if(products.length===0){
    try{
      let local=JSON.parse(localStorage.getItem('msel_products')||'[]');
-     if(local && local.length>0) products=local.map((p,i)=>({id:p.id||i,...p}));
+     if(local && local.length>0) products=local.map((p,i)=>({id:p.id||i,name:p.name,price:p.price,desc:p.description||p.desc||'',badge:p.badge||'NEW',img:p.img,imgs:p.imgs||[]}));
    }catch{}
  }
  if(products.length===0){
-   grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px 10px;opacity:.6">No products yet</div>';
-   return;
+   grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px 10px;opacity:.6">No products yet</div>';return;
  }
  allProducts=products;
  let h='';
  products.forEach((p, idx)=>{
    let mainImg = p.img || (p.imgs && p.imgs[0]) || 'logo.png';
-   let count = p.imgs? p.imgs.length : 0;
-   h+=`<div class="card" onclick="openProductByIndex(${idx})"><img src="${mainImg}" onerror="this.src='logo.png'"><div class="badge">${p.badge||'NEW'}${count>1?' ('+count+')':''}</div><div class="name">${p.name}</div><div class="desc">${p.desc||''}</div><div class="price">₦${Number(p.price).toLocaleString()}</div><button class="btn" onclick="event.stopPropagation(); addToCartByIndex(${idx})">Add to Cart</button><button class="btn btn2" onclick="event.stopPropagation(); openProductByIndex(${idx})">View (${count>1?count:1} - )</button></div>`;
+   let count = p.imgs? p.imgs.length : (p.img?1:0);
+   h+=`<div class="card" onclick="openProductByIndex(${idx})"><img src="${mainImg}" onerror="this.src='logo.png'"><div class="badge">${escapeHtml(p.badge||'NEW')}${count>1?' ('+count+')':''}</div><div class="name">${escapeHtml(p.name)}</div><div class="desc">${escapeHtml(p.desc||'')}</div><div class="price">₦${Number(p.price).toLocaleString()}</div><button class="btn" onclick="event.stopPropagation(); addToCartByIndex(${idx})">Add to Cart</button><button class="btn btn2" onclick="event.stopPropagation(); openProductByIndex(${idx})">View (${count} pics)</button></div>`;
  });
  grid.innerHTML=h;
  updateCartCount();
@@ -177,13 +169,14 @@ function openProductByIndex(i){
   else currentImages = ['logo.png'];
   currentIdx=0;
   document.getElementById('productModal').style.display='block';
+  document.body.style.overflow='hidden';
   document.getElementById('modalTitle').innerText = p.name;
   document.getElementById('modalDesc').innerText = p.desc||'';
   document.getElementById('modalPrice').innerText = '₦' + Number(p.price).toLocaleString();
   document.getElementById('modalBadge').innerText = (p.badge||'NEW') + (currentImages.length>1? ' ('+currentImages.length+')' : '');
   showImage(0);
 }
-function closeProduct(){ document.getElementById('productModal').style.display='none'; }
+function closeProduct(){ document.getElementById('productModal').style.display='none'; document.body.style.overflow='auto'; }
 function showImage(idx){
   currentIdx=idx;
   document.getElementById('modalImage').src = currentImages[idx] || 'logo.png';
@@ -212,7 +205,7 @@ function openCheckout(){
   itemsDiv.innerHTML = cart.map((c, i)=>{
     total+= c.price*c.qty;
     return `<div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0;border-bottom:1px solid #1e3a5f;padding-bottom:8px">
-      <div style="flex:1"><div style="font-size:13px;font-weight:700">${c.name}</div><div style="font-size:12px;margin-top:4px"><button class="qty-btn" onclick="changeQty(${i},-1)">-</button><span class="qty-num">x${c.qty}</span><button class="qty-btn" onclick="changeQty(${i},1)">+</button></div></div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700">${escapeHtml(c.name)}</div><div style="font-size:12px;margin-top:4px"><button class="qty-btn" onclick="changeQty(${i},-1)">-</button><span class="qty-num">x${c.qty}</span><button class="qty-btn" onclick="changeQty(${i},1)">+</button></div></div>
       <div style="text-align:right"><div style="font-size:13px;color:#FF0000;font-weight:900">₦${(c.price*c.qty).toLocaleString()}</div><div style="color:#ef4444;cursor:pointer;font-size:12px;margin-top:4px" onclick="removeFromCart(${i})">✕ Remove</div></div>
     </div>`;
   }).join('');
@@ -228,44 +221,14 @@ function changeQty(i, delta){
   else openCheckout();
 }
 function removeFromCart(i){ cart.splice(i,1); localStorage.setItem('msel_cart', JSON.stringify(cart)); updateCartCount(); if(cart.length===0) document.getElementById('checkoutModal').style.display='none'; else openCheckout(); }
-
 function handleReceiptUpload(input){
-  const statusDiv = document.getElementById('uploadStatus');
-  const fileNameSpan = document.getElementById('fileName');
-  const fileSizeDiv = document.getElementById('fileSize');
-  const preview = document.getElementById('receiptPreview');
-  const reqText = document.getElementById('reqText');
-  if(input.files && input.files[0]){
-    const file = input.files[0];
-    fileNameSpan.innerText = file.name;
-    fileSizeDiv.innerText = (file.size/1024).toFixed(1) + ' KB - Ready to upload';
-    statusDiv.style.display = 'block';
-    input.style.border = '2px solid #22c55e';
-    reqText.style.display = 'none';
-    const reader = new FileReader();
-    reader.onload = function(e){
-      preview.src = e.target.result;
-      preview.style.display = 'block';
-    }
-    reader.readAsDataURL(file);
-  } else {
-    statusDiv.style.display = 'none';
-    preview.style.display = 'none';
-    input.style.border = '2px solid #ef4444';
-    reqText.style.display = 'block';
-  }
+  const statusDiv = document.getElementById('uploadStatus');const fileNameSpan = document.getElementById('fileName');const fileSizeDiv = document.getElementById('fileSize');const preview = document.getElementById('receiptPreview');const reqText = document.getElementById('reqText');
+  if(input.files && input.files[0]){const file = input.files[0];fileNameSpan.innerText = file.name;fileSizeDiv.innerText = (file.size/1024).toFixed(1) + ' KB - Ready';statusDiv.style.display = 'block';input.style.border = '2px solid #22c55e';reqText.style.display = 'none';const reader = new FileReader();reader.onload = function(e){preview.src = e.target.result;preview.style.display = 'block';};reader.readAsDataURL(file);}else{statusDiv.style.display = 'none';preview.style.display = 'none';input.style.border = '2px solid #ef4444';reqText.style.display = 'block';}
 }
-
 async function placeOrder(){
-  const name = document.getElementById('custName').value.trim();
-  const phone = document.getElementById('custPhone').value.trim();
-  const address = document.getElementById('custAddress').value.trim();
-  const state = document.getElementById('custState').value;
-  const ref = document.getElementById('paymentRef').value.trim();
-  const file = document.getElementById('paymentProof').files[0];
+  const name = document.getElementById('custName').value.trim();const phone = document.getElementById('custPhone').value.trim();const address = document.getElementById('custAddress').value.trim();const state = document.getElementById('custState').value;const ref = document.getElementById('paymentRef').value.trim();const file = document.getElementById('paymentProof').files[0];
   if(!name ||!phone ||!address ||!state ||!ref){ alert('Fill all required fields including State'); return; }
-  if(!file){ alert('❌ Please upload payment proof / receipt. This is now required!'); document.getElementById('paymentProof').focus(); return; }
-
+  if(!file){ alert('❌ Please upload payment proof'); return; }
   const btn = document.getElementById('placeOrderBtn'); btn.innerText='Processing...'; btn.disabled=true;
   let proofUrl='';
   try{
@@ -275,23 +238,15 @@ async function placeOrder(){
     const {data: urlData} = supabaseClient.storage.from('payment_proofs').getPublicUrl(fileName);
     proofUrl = urlData.publicUrl;
   }catch(e){ alert('Receipt upload failed: '+e.message); btn.innerText='I Have Paid - Place Order'; btn.disabled=false; return; }
-
   const total = cart.reduce((a,b)=>a + b.price*b.qty, 0);
   try{
     const {error} = await supabaseClient.from('msel_orders').insert({customer_name:name, customer_phone:phone, customer_address:address, customer_state:state, items:cart, total:total, payment_ref:ref, payment_proof_url:proofUrl, status:'pending'});
     if(error) throw error;
-
     const itemsRaw = cart.map(c=>`${c.name} x${c.qty} = ₦${(c.price*c.qty).toLocaleString()}`).join('\n');
     const msgRaw = `*NEW MSEL ORDER*\n\n*Name:* ${name}\n*Phone:* ${phone}\n*Address:* ${address}\n*State:* ${state}\n*Ref:* ${ref}\n\n*Items:*\n${itemsRaw}\n\n*TOTAL: ₦${total.toLocaleString()}*\n\n*Receipt:* ${proofUrl}\n\n*Bank:* ACCESS 1817568677`;
     const finalUrl = `https://api.whatsapp.com/send?phone=${ADMIN_WHATSAPP}&text=${encodeURIComponent(msgRaw)}`;
     window.location.href = finalUrl;
-
-    alert('✅ Order Placed! Opening WhatsApp to notify admin...');
-    cart=[]; localStorage.setItem('msel_cart', JSON.stringify(cart)); updateCartCount();
-    document.getElementById('checkoutModal').style.display='none';
-    btn.innerText='I Have Paid - Place Order'; btn.disabled=false;
-    document.getElementById('custName').value=''; document.getElementById('custPhone').value=''; document.getElementById('custAddress').value=''; document.getElementById('custState').value=''; document.getElementById('paymentRef').value=''; document.getElementById('paymentProof').value='';
-    document.getElementById('uploadStatus').style.display='none'; document.getElementById('receiptPreview').style.display='none'; document.getElementById('reqText').style.display='block'; document.getElementById('paymentProof').style.border='2px solid #ef4444';
+    alert('✅ Order Placed! Opening WhatsApp...');cart=[];localStorage.setItem('msel_cart', JSON.stringify(cart));updateCartCount();document.getElementById('checkoutModal').style.display='none';btn.innerText='I Have Paid - Place Order';btn.disabled=false;
   }catch(err){ alert('Order failed: '+err.message); btn.innerText='I Have Paid - Place Order'; btn.disabled=false; }
 }
 function logout(){ localStorage.removeItem('msel_role'); window.location.href='login.html'; }
