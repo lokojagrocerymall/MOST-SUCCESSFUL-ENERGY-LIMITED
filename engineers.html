@@ -40,7 +40,6 @@ body{background:#0f172a;color:#fff}
 </head>
 <body>
 
-<!-- NEW HEADER - ONE LINE TITLE, NO REGISTER -->
 <div style="background:#fff;padding:0;position:sticky;top:0;z-index:99999;display:block;border-bottom:3px solid #00924C">
   <div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;background:#fff">
     <div style="display:flex;align-items:center;gap:8px"><img src="logo.png" style="width:42px;height:42px;object-fit:contain"><div style="line-height:1.2"><b style="color:#00924C;font-size:16px;white-space:nowrap">MSEL MENTE</b><br><small style="color:#333;font-size:12px;white-space:nowrap">Engineers Private Shop</small></div></div>
@@ -127,14 +126,77 @@ function openCheckout(){if(cart.length===0){ alert('Cart is empty'); return; }co
 function changeQty(i, delta){ cart[i].qty += delta; if(cart[i].qty <=0){ cart.splice(i,1); } localStorage.setItem('msel_cart', JSON.stringify(cart)); updateCartCount(); if(cart.length===0) document.getElementById('checkoutModal').style.display='none'; else openCheckout();}
 function removeFromCart(i){ cart.splice(i,1); localStorage.setItem('msel_cart', JSON.stringify(cart)); updateCartCount(); if(cart.length===0) document.getElementById('checkoutModal').style.display='none'; else openCheckout(); }
 function handleReceiptUpload(input){const statusDiv = document.getElementById('uploadStatus');const fileNameSpan = document.getElementById('fileName');const fileSizeDiv = document.getElementById('fileSize');const preview = document.getElementById('receiptPreview');if(input.files && input.files[0]){const file = input.files[0];fileNameSpan.innerText = file.name;fileSizeDiv.innerText = (file.size/1024).toFixed(1) + ' KB';statusDiv.style.display = 'block';const reader = new FileReader();reader.onload = function(e){preview.src = e.target.result;preview.style.display = 'block';};reader.readAsDataURL(file);}else{statusDiv.style.display = 'none';preview.style.display = 'none';}}
-async function placeOrder(){const name = document.getElementById('custName').value.trim();const phone = document.getElementById('custPhone').value.trim();const address = document.getElementById('custAddress').value.trim();const state = document.getElementById('custState').value;const ref = document.getElementById('paymentRef').value.trim();const file = document.getElementById('paymentProof').files[0];if(!name ||!phone ||!address ||!state ||!ref){ alert('Fill all required fields'); return; }if(!file){ alert('Upload receipt'); return; }const btn = document.getElementById('placeOrderBtn'); btn.innerText='Processing...'; btn.disabled=true;let proofUrl='';try{const fileName = Date.now()+'_'+file.name.replace(/\s/g,'_');const {data, error} = await supabaseClient.storage.from('payment_proofs').upload(fileName, file);if(error) throw error;const {data: urlData} = supabaseClient.storage.from('payment_proofs').getPublicUrl(fileName);proofUrl = urlData.publicUrl;}catch(e){ alert('Upload failed: '+e.message); btn.innerText='I Have Paid - Place Order'; btn.disabled=false; return; }const total = cart.reduce((a,b)=>a + b.price*b.qty, 0);try{const {error} = await supabaseClient.from('msel_orders').insert({customer_name:name, customer_phone:phone, customer_address:address, customer_state:state, items:cart, total:total, payment_ref:ref, payment_proof_url:proofUrl, status:'pending'});if(error) throw error;
 
-// === ADMIN DASHBOARD LINK FIX - ONLY THIS PART CHANGED ===
-const adminDashboardLink = `https://most-successful-energy-limited.vercel.app/admin.html?ref=${encodeURIComponent(ref)}&name=${encodeURIComponent(name)}&total=${total}`;
-const itemsRaw = cart.map(c=>`${c.name} x${c.qty} = ₦${(c.price*c.qty).toLocaleString()}`).join('\n');
-const msgRaw = `*NEW MSEL ORDER*\n\n*Name:* ${name}\n*Phone:* ${phone}\n*Address:* ${address}\n*State:* ${state}\n*Ref:* ${ref}\n\n*Items:*\n${itemsRaw}\n\n*TOTAL: ₦${total.toLocaleString()}*\n\n👉 *APPROVE ORDER AND PRINT RECEIPT HERE:*\n${adminDashboardLink}\n\n_Proof is inside dashboard_`;
+// === FIXED placeOrder - ADMIN LINK + NO FETCH FAIL ===
+async function placeOrder(){
+  const name = document.getElementById('custName').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
+  const address = document.getElementById('custAddress').value.trim();
+  const state = document.getElementById('custState').value;
+  const ref = document.getElementById('paymentRef').value.trim();
+  const file = document.getElementById('paymentProof').files[0];
+  if(!name ||!phone ||!address ||!state ||!ref){ alert('Fill all required fields'); return; }
+  if(!file){ alert('Upload receipt'); return; }
+  const btn = document.getElementById('placeOrderBtn'); 
+  btn.innerText='Processing...'; 
+  btn.disabled=true;
+  
+  let proofUrl='pending';
+  
+  // 1. Compress receipt to avoid Failed to fetch
+  let uploadFile = file;
+  try{
+    const img = await new Promise((resolve, reject)=>{
+      const i = new Image();
+      i.onload = ()=>resolve(i);
+      i.onerror = reject;
+      i.src = URL.createObjectURL(file);
+    });
+    const canvas = document.createElement('canvas');
+    const MAX = 1000;
+    let w = img.width, h = img.height;
+    if(w>MAX || h>MAX){
+      if(w>h){ h*=MAX/w; w=MAX; } else { w*=MAX/h; h=MAX; }
+    }
+    canvas.width=w; canvas.height=h;
+    canvas.getContext('2d').drawImage(img,0,0,w,h);
+    const blob = await new Promise(r=>canvas.toBlob(r,'image/jpeg',0.65));
+    if(blob) uploadFile = new File([blob], file.name.replace(/\.\w+$/,'')+'.jpg', {type:'image/jpeg'});
+  }catch(e){ console.log('Compress skipped', e); }
 
-const finalUrl = `https://api.whatsapp.com/send?phone=${ADMIN_WHATSAPP}&text=${encodeURIComponent(msgRaw)}`;window.location.href = finalUrl;alert('✅ Order Placed!');cart=[];localStorage.setItem('msel_cart', JSON.stringify(cart));updateCartCount();document.getElementById('checkoutModal').style.display='none';btn.innerText='I Have Paid - Place Order';btn.disabled=false;}catch(err){ alert('Order failed: '+err.message); btn.innerText='I Have Paid - Place Order'; btn.disabled=false; }}
+  // 2. Try upload - but NEVER block order if it fails
+  try{
+    const fileName = Date.now()+'_'+uploadFile.name.replace(/\s/g,'_');
+    const {data, error} = await supabaseClient.storage.from('payment_proofs').upload(fileName, uploadFile, {cacheControl:'3600', upsert:true});
+    if(error) throw error;
+    const {data: urlData} = supabaseClient.storage.from('payment_proofs').getPublicUrl(fileName);
+    proofUrl = urlData.publicUrl;
+  }catch(e){
+    console.warn('Upload failed but order will still go:', e.message);
+    proofUrl = 'pending - file:'+file.name;
+  }
+
+  const total = cart.reduce((a,b)=>a + b.price*b.qty, 0);
+  try{
+    const {error} = await supabaseClient.from('msel_orders').insert({customer_name:name, customer_phone:phone, customer_address:address, customer_state:state, items:cart, total:total, payment_ref:ref, payment_proof_url:proofUrl, status:'pending'});
+    if(error) throw error;
+
+    const adminDashboardLink = `https://most-successful-energy-limited.vercel.app/admin.html?ref=${encodeURIComponent(ref)}&name=${encodeURIComponent(name)}&total=${total}`;
+    const itemsRaw = cart.map(c=>`${c.name} x${c.qty} = ₦${(c.price*c.qty).toLocaleString()}`).join('\n');
+    const msgRaw = `*NEW MSEL ORDER*\n\n*Name:* ${name}\n*Phone:* ${phone}\n*Address:* ${address}\n*State:* ${state}\n*Ref:* ${ref}\n\n*Items:*\n${itemsRaw}\n\n*TOTAL: ₦${total.toLocaleString()}*\n\n👉 *APPROVE ORDER AND PRINT RECEIPT HERE:*\n${adminDashboardLink}\n\n_Proof is inside dashboard_`;
+
+    const finalUrl = `https://api.whatsapp.com/send?phone=${ADMIN_WHATSAPP}&text=${encodeURIComponent(msgRaw)}`;
+    window.location.href = finalUrl;
+    alert('✅ Order Placed!');
+    cart=[];localStorage.setItem('msel_cart', JSON.stringify(cart));updateCartCount();
+    document.getElementById('checkoutModal').style.display='none';
+    btn.innerText='I Have Paid - Place Order';btn.disabled=false;
+  }catch(err){ 
+    alert('Order failed: '+err.message); 
+    btn.innerText='I Have Paid - Place Order';btn.disabled=false; 
+  }
+}
+
 function logout(){ localStorage.removeItem('msel_role'); window.location.href='login.html'; }
 loadProducts();
 </script>
