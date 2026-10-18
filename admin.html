@@ -729,10 +729,43 @@ async function deleteOrder(id){
   }
  }catch(e){}
 })();
+  async function showPublicShopAdmin(){
+  document.getElementById('publicShopAdmin').style.display='block';
+  loadPublicAdminList();
+}
+async function uploadPublicMaterial(){
+  const name=document.getElementById('pubName').value.trim();
+  const price=parseFloat(document.getElementById('pubPrice').value);
+  const image=document.getElementById('pubImage').value.trim();
+  if(!name||!price) return alert('Enter name and price');
+  const {error}=await supabaseClient.from('msel_public_materials').insert([{name,price,image_url:image}]);
+  if(error) alert(error.message); else { alert('Added to Public Shop'); loadPublicAdminList(); }
+}
+async function loadPublicAdminList(){
+  const {data}=await supabaseClient.from('msel_public_materials').select('*').order('created_at',{ascending:false});
+  let html=''; (data||[]).forEach(p=>{
+    html+=`<div style="border:1px dashed #00924C;padding:8px;border-radius:8px;margin-top:8px;display:flex;justify-content:space-between"><span><b>${p.name}</b> - ₦${p.price}</span><button onclick="deletePub('${p.id}')" style="background:red;color:#fff;border:0;border-radius:6px;padding:4px 8px">Del</button></div>`;
+  });
+  document.getElementById('pubList').innerHTML=html;
+}
+async function deletePub(id){
+  if(!confirm('Delete?')) return;
+  await supabaseClient.from('msel_public_materials').delete().eq('id',id);
+  loadPublicAdminList();
+}
 let savedTab = localStorage.getItem('msel_admin_tab')||'orders';
 showTab(savedTab);
 loadOrders();
 setInterval(()=>{ loadOrders(); loadMenteAccounts(); }, 300000);
 </script>
+  <div id="publicShopAdmin" style="display:none;background:#fff;padding:16px;border-radius:12px;margin-top:15px;color:#111;position:fixed;top:10px;left:5%;right:5%;z-index:9999;max-height:90vh;overflow:auto;border:3px solid #f59e0b">
+  <h3>🏗️ PUBLIC Construction Materials</h3>
+  <button onclick="this.parentElement.style.display='none'" style="float:right;background:#000;color:#fff;border:0;padding:5px 10px;border-radius:6px">X Close</button>
+  <input id="pubName" placeholder="Product Name" style="width:100%;padding:12px;margin-top:8px;border-radius:8px;border:1px solid #ddd">
+  <input id="pubPrice" type="number" placeholder="Public Price e.g. 15000" style="width:100%;padding:12px;margin-top:8px;border-radius:8px;border:1px solid #ddd">
+  <input id="pubImage" placeholder="Image URL" style="width:100%;padding:12px;margin-top:8px;border-radius:8px;border:1px solid #ddd">
+  <button onclick="uploadPublicMaterial()" style="width:100%;padding:13px;background:#00924C;color:#fff;border:0;border-radius:10px;margin-top:10px;font-weight:900">Upload to Public Shop</button>
+  <div id="pubList" style="margin-top:15px"></div>
+</div>
 </body>
 </html>
