@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Create MENTE Account - MSEL</title>
-<link rel="icon" href="logo.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
@@ -12,21 +11,18 @@ body{background:#4a0a4a;color:#fff;min-height:100vh;padding:12px;display:flex;fl
 .top h2{font-size:14px}
 .top a{color:#fff;text-decoration:none;font-size:13px;background:#333;padding:6px 12px;border-radius:20px}
 .card{background:#fff;color:#111;border-radius:18px;padding:18px;margin:14px auto;max-width:400px;width:100%;box-shadow:0 8px 20px rgba(0,0,0,.4)}
-.card h1{text-align:center;color:#4a0a4a;font-size:20px;margin-bottom:4px}
-.card p.sub{text-align:center;font-size:12px;opacity:.7;margin-bottom:14px}
-label{font-size:12px;font-weight:800;margin-top:10px;display:block;color:#333}
+.card h1{text-align:center;color:#4a0a4a;font-size:20px;margin-bottom:14px}
+label{font-size:12px;font-weight:800;margin-top:12px;display:block;color:#333}
 input{width:100%;padding:13px;border-radius:10px;border:1.5px solid #ddd;margin-top:6px;outline:none;font-size:14px}
 input:focus{border-color:#4a0a4a}
-input.invalid{border-color:#ef4444;background:#fef2f2}
-button.main{width:100%;padding:14px;border-radius:12px;border:0;background:#22c55e;color:#000;font-weight:900;font-size:15px;margin-top:14px;cursor:pointer}
+button.main{width:100%;padding:14px;border-radius:12px;border:0;background:#22c55e;color:#000;font-weight:900;font-size:15px;margin-top:18px;cursor:pointer}
 button.main:disabled{opacity:.5}
-.error{background:#fee2e2;color:#991b1b;padding:10px;border-radius:8px;font-size:12px;margin-top:10px;display:none;border:1px solid #fecaca}
+.error{background:#fee2e2;color:#991b1b;padding:10px;border-radius:8px;font-size:12px;margin-top:10px;display:none}
 .success{background:#dcfce7;color:#14532d;padding:10px;border-radius:8px;font-size:12px;margin-top:10px;display:none}
-.hint{font-size:10px;color:#888;margin-top:4px}
-.bottom-links{text-align:center;margin-top:12px;font-size:12px}
-.bottom-links a{color:#4a0a4a;font-weight:800;text-decoration:none}
-.logo-wrap{text-align:center;margin-bottom:10px}
+.logo-wrap{text-align:center;margin-bottom:12px}
 .logo-wrap img{max-width:140px}
+.bottom-links{text-align:center;margin-top:16px;font-size:12px}
+.bottom-links a{color:#4a0a4a;font-weight:800;text-decoration:none}
 </style>
 </head>
 <body>
@@ -39,17 +35,12 @@ button.main:disabled{opacity:.5}
 <div class="card">
 <div class="logo-wrap"><img src="logo.png" alt="MSEL"></div>
 <h1>Create MENTE Account</h1>
-<p class="sub">Engineers Only - One account per phone number</p>
 
 <label>Full Name / Company Name</label>
-<input type="text" id="fullName" placeholder="e.g. AFRICA BIOTECH EXPERTS" maxlength="60">
+<input type="text" id="fullName" placeholder="" maxlength="60">
 
-<label>Phone Number (Nigeria)</label>
-<input type="tel" id="phone" placeholder="e.g. 09139012927" inputmode="numeric" maxlength="11">
-<div class="hint">Only 11 digits, start with 0. No letters, no symbols.</div>
-
-<label>Password</label>
-<input type="text" id="password" placeholder="e.g. MSEL2026" maxlength="20">
+<label>Phone Number</label>
+<input type="tel" id="phone" placeholder="" inputmode="numeric" maxlength="11">
 
 <div id="errorMsg" class="error"></div>
 <div id="successMsg" class="success"></div>
@@ -57,8 +48,7 @@ button.main:disabled{opacity:.5}
 <button id="createBtn" class="main" onclick="createAccount()">Create Account & Enter Chat</button>
 
 <div class="bottom-links">
-Already have account? <a href="mente-login.html">Login Here</a><br><br>
-<a href="engineers.html">← Back to Engineers Shop</a>
+Already have account? <a href="mente-login.html">Login Here</a>
 </div>
 </div>
 
@@ -69,149 +59,57 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const fullNameEl = document.getElementById('fullName');
 const phoneEl = document.getElementById('phone');
-const passEl = document.getElementById('password');
 const errorMsg = document.getElementById('errorMsg');
 const successMsg = document.getElementById('successMsg');
 const btn = document.getElementById('createBtn');
 
-// Live filter phone input - block non-numbers instantly
 phoneEl.addEventListener('input', ()=>{
-  let v = phoneEl.value.replace(/[^0-9]/g,''); // remove anything not digit
+  let v = phoneEl.value.replace(/[^0-9]/g,'');
   if(v.length > 11) v = v.slice(0,11);
   phoneEl.value = v;
-  if(/[^0-9]/.test(phoneEl.value) || phoneEl.value.length>11){
-    phoneEl.classList.add('invalid');
-  } else {
-    phoneEl.classList.remove('invalid');
-  }
 });
 
-function showError(txt){
-  errorMsg.innerText = txt;
-  errorMsg.style.display='block';
-  successMsg.style.display='none';
-}
-function showSuccess(txt){
-  successMsg.innerText = txt;
-  successMsg.style.display='block';
-  errorMsg.style.display='none';
-}
+function showError(txt){ errorMsg.innerText=txt; errorMsg.style.display='block'; successMsg.style.display='none'; }
+function showSuccess(txt){ successMsg.innerText=txt; successMsg.style.display='block'; errorMsg.style.display='none'; }
 
 async function createAccount(){
   let full_name = fullNameEl.value.trim();
   let phone = phoneEl.value.trim().replace(/\s+/g,'');
-  let password = passEl.value.trim();
 
-  // RESET
   errorMsg.style.display='none';
 
-  // === 1. NAME CHECK ===
-  if(full_name.length < 3){
-    showError('❌ Enter full name (minimum 3 letters)');
-    return;
-  }
-  if(full_name.length > 60){
-    showError('❌ Name too long (max 60)');
-    return;
-  }
-  // Block SQL injection in name
-  const blockedWords = ['SELECT','ALTER','DROP','TABLE','INSERT','DELETE','UPDATE','--',';','<','>','SCRIPT'];
-  let upName = full_name.toUpperCase();
-  for(let w of blockedWords){
-    if(upName.includes(w)){
-      showError('❌ Invalid text in name');
-      return;
-    }
-  }
+  if(full_name.length < 3){ showError('❌ Enter full name'); return; }
+  if(!/^[0-9]+$/.test(phone)){ showError('❌ Phone must be numbers only'); return; }
+  if(phone.length < 10 || phone.length > 11){ showError('❌ Phone must be 10 or 11 digits'); return; }
+  if(!phone.startsWith('0')){ showError('❌ Phone must start with 0'); return; }
 
-  // === 2. PHONE CHECK - STRICT ===
-  if(!phone){
-    showError('❌ Enter phone number');
-    return;
-  }
-  // Only digits
-  if(!/^[0-9]+$/.test(phone)){
-    showError('❌ Phone must be numbers only. No letters or symbols.');
-    return;
-  }
-  // Length 10 or 11
-  if(phone.length < 10 || phone.length > 11){
-    showError('❌ Phone must be 10 or 11 digits e.g. 09139012927');
-    return;
-  }
-  // Must start with 0
-  if(!phone.startsWith('0')){
-    showError('❌ Phone must start with 0 e.g. 09139012927');
-    return;
-  }
-  // Block common fake
-  if(/^0+$/.test(phone) || /^123/.test(phone)){
-    showError('❌ Enter real phone number');
-    return;
-  }
-
-  // === 3. PASSWORD CHECK ===
-  if(password.length < 4){
-    showError('❌ Password must be at least 4 characters e.g. MSEL2026');
-    return;
-  }
-  if(password.length > 20){
-    showError('❌ Password too long');
-    return;
-  }
-
-  btn.disabled=true;
-  btn.innerText='⏳ Checking duplicate...';
+  btn.disabled=true; btn.innerText='⏳ Checking...';
 
   try{
-    // === 4. CHECK DUPLICATE IN DB ===
-    const {data: existing, error: checkErr} = await supabaseClient
-      .from('msel_mente_accounts')
-      .select('phone')
-      .eq('phone', phone)
-      .limit(1);
-
-    if(checkErr) throw checkErr;
-
-    if(existing && existing.length > 0){
-      showError('❌ This phone  ' + phone + ' already registered. Click Login instead.');
-      btn.disabled=false;
-      btn.innerText='Create Account & Enter Chat';
-      return;
+    const {data: existing} = await supabaseClient.from('msel_mente_accounts').select('phone').eq('phone', phone).limit(1);
+    if(existing && existing.length>0){
+      showError('❌ This phone already registered. Use Login.');
+      btn.disabled=false; btn.innerText='Create Account & Enter Chat'; return;
     }
 
-    btn.innerText='⏳ Creating account...';
-
-    // === 5. CREATE ===
+    btn.innerText='⏳ Creating...';
     const {error} = await supabaseClient.from('msel_mente_accounts').insert({
+      name: full_name,
       full_name: full_name,
       phone: phone,
-      password: password,
       status: 'pending',
       approval_status: 'pending',
       created_at: new Date().toISOString()
     });
-
     if(error) throw error;
 
-    showSuccess('✅ Account created! Redirecting to Awaiting Approval...');
-    btn.innerText='✅ Created!';
-
-    setTimeout(()=>{
-      window.location.href = 'mente-chat.html?phone=' + encodeURIComponent(phone);
-    }, 800);
+    showSuccess('✅ Account created! Redirecting...');
+    setTimeout(()=>{ window.location.href='mente-chat.html?phone='+encodeURIComponent(phone); }, 800);
 
   }catch(e){
-    console.log(e);
-    if(e.message && (e.message.includes('unique_phone') || e.message.includes('duplicate') || e.message.includes('Unique') )){
-      showError('❌ This phone already exists. Use Login page.');
-    } else if(e.message.includes('schema cache')){
-      showError('⚠️ System updating, wait 30 secs and retry. ' + e.message);
-    } else {
-      showError('❌ ' + e.message);
-    }
-    btn.disabled=false;
-    btn.innerText='Create Account & Enter Chat';
+    if(e.message.includes('unique_phone') || e.message.includes('duplicate')){ showError('❌ Phone already exists. Use Login.'); }
+    else { showError('❌ '+e.message); }
+    btn.disabled=false; btn.innerText='Create Account & Enter Chat';
   }
 }
 </script>
