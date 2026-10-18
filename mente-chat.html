@@ -238,21 +238,37 @@ function doSearch(){
 function renderMessages(data){
   allMessages=data; let box=document.getElementById('chatBox'); box.innerHTML='';
   data.forEach(m=>{
-    let type=(m.type||'text').toLowerCase(); if(type==='system'){ box.innerHTML+=`<div class="msg system" data-id="${m.id}">${escapeHtml(m.message||'')} • ${formatNigeriaTime(m.created_at)}</div>`; return; }
-    let isMe=m.name===myName; let admin=isAdminMsg(m); let ban=getBanStatus(m.name); let bossBadge=admin?'<span class="badge-boss">👑 MSEL BOSS</span>':''; let banBadge=ban?(ban.status==='banned'?'<span class="badge-banned">🚫 BANNED</span>':'<span class="badge-sus">⏸️ SUSPENDED</span>'):''; let mediaUrl=m.media_url||''; let txt=m.message||''; let reactsHtml=''; let reacts=m.reactions||{}; if(Object.keys(reacts).length){ reactsHtml='<div class="reactions">'; for(let e in reacts){ let u=reacts[e]||[]; reactsHtml+=`<span class="react ${u.includes(myName)?'me':''}">${e} ${u.length}</span>`; } reactsHtml+='</div>'; }
-    let replyHtml=''; if(m.reply_to){ replyHtml=`<div class="replyBox ${admin?'bossReply':''}" onclick="event.stopPropagation();scrollToMsg('${m.reply_to.id}')">${escapeHtml(m.reply_to.name)}: ${escapeHtml((m.reply_to.message||'').substring(0,80))} 👆</div>`; }
-    let realName=getRealName(m); let displayName=admin?'MSEL BOSS':escapeHtml(realName); let codeVal=escapeHtml(m.code||''); let nameLine=(codeVal && realName.toUpperCase()!==codeVal.toUpperCase())?`${displayName} • ${codeVal}`:displayName; let initial=realName.charAt(0).toUpperCase(); let editedTag=m.is_edited?'<small style="opacity:.6"> (edited)</small>':''; let pinnedTag=(m.is_pinned||m.pinned||(pinnedMessage&&pinnedMessage.id===m.id))?'<span style="background:#FFC72C;color:#000;font-size:8px;padding:2px 5px;border-radius:6px;margin-left:4px">📌 PINNED</span>':''; let mediaHtml='';
-    if(type==='image'&&mediaUrl) mediaHtml=`<img src="${mediaUrl}" class="chat-img" loading="lazy" decoding="async" onload="scrollToBottom(true)" onclick="event.stopPropagation();window.open('${mediaUrl}','_blank')">`;
-    else if(type==='video'&&mediaUrl) mediaHtml=`<video src="${mediaUrl}" class="chat-video" controls playsinline preload="metadata" onloadeddata="scrollToBottom(true)"></video>`;
-    else if(type==='voice'&&mediaUrl) mediaHtml=`<audio src="${mediaUrl}" controls preload="metadata" onloadeddata="scrollToBottom(true)" style="width:260px"></audio>`;
-    else if((type==='file'||type==='document')&&mediaUrl) mediaHtml=`<a href="${mediaUrl}" target="_blank" style="color:#FFC72C;font-weight:900">📄 Open File</a>`;
+    let type=(m.type||'').toLowerCase(); 
+    if(type==='system'){ box.innerHTML+=`<div class="msg system" data-id="${m.id}">${escapeHtml(m.message||'')} • ${formatNigeriaTime(m.created_at)}</div>`; return; }
+    let isMe=m.name===myName; let admin=isAdminMsg(m); let ban=getBanStatus(m.name); 
+    let bossBadge=admin?'<span class="badge-boss">👑 MSEL BOSS</span>':''; 
+    let banBadge=ban?(ban.status==='banned'?'<span class="badge-banned">🚫 BANNED</span>':'<span class="badge-sus">⏸️ SUSPENDED</span>'):''; 
+    let mediaUrl=m.media_url||''; 
+    let txt=m.message||''; 
+    let lowerUrl=(mediaUrl||'').toLowerCase();
+    let isImageUrl=lowerUrl.includes('.jpg')||lowerUrl.includes('.png')||lowerUrl.includes('.jpeg')||lowerUrl.includes('wa_')||lowerUrl.includes('webp');
+    let isVideoUrl=lowerUrl.includes('.mp4')||lowerUrl.includes('.webm')||lowerUrl.includes('.mov');
+    let reactsHtml=''; let reacts=m.reactions||{}; 
+    if(Object.keys(reacts).length){ reactsHtml='<div class="reactions">'; for(let e in reacts){ let u=reacts[e]||[]; reactsHtml+=`<span class="react ${u.includes(myName)?'me':''}">${e} ${u.length}</span>`; } reactsHtml+='</div>'; }
+    let replyHtml=''; if(m.reply_to){ replyHtml=`<div class="replyBox" onclick="event.stopPropagation();scrollToMsg('${m.reply_to.id}')">${escapeHtml(m.reply_to.name)}: ${escapeHtml((m.reply_to.message||'').substring(0,80))} 👆</div>`; }
+    let realName=getRealName(m); let displayName=admin?'MSEL BOSS':escapeHtml(realName); 
+    let codeVal=escapeHtml(m.code||''); 
+    let nameLine=(codeVal && realName.toUpperCase()!==codeVal.toUpperCase())?`${displayName} • ${codeVal}`:displayName; 
+    let initial=realName.charAt(0).toUpperCase(); 
+    let editedTag=m.is_edited?'<small style="opacity:.6"> (edited)</small>':''; 
+    let pinnedTag=(m.is_pinned||m.pinned||(pinnedMessage&&pinnedMessage.id===m.id))?'<span style="background:#FFC72C;color:#000;font-size:8px;padding:2px 5px;border-radius:6px;margin-left:4px">📌 PINNED</span>':'';
+    let mediaHtml='';
+    if(mediaUrl && (type==='image' || isImageUrl)) mediaHtml=`<img src="${mediaUrl}" class="chat-img" loading="lazy" onload="scrollToBottom(true)" onclick="event.stopPropagation();window.open('${mediaUrl}','_blank')">`;
+    else if(mediaUrl && (type==='video' || isVideoUrl)) mediaHtml=`<video src="${mediaUrl}" class="chat-video" controls playsinline preload="metadata" onloadeddata="scrollToBottom(true)"></video>`;
+    else if(mediaUrl && type==='voice') mediaHtml=`<audio src="${mediaUrl}" controls preload="metadata" style="width:260px"></audio>`;
+    else if(mediaUrl) mediaHtml=`<a href="${mediaUrl}" target="_blank" style="color:#FFC72C;font-weight:900">📎 View File</a>`;
     let html=`<div style="font-weight:900;font-size:11px;margin-bottom:4px"><span class="avatar ${admin?'bossAvatar':''}">${admin?'👑':initial}</span>${nameLine} ${bossBadge} ${banBadge} ${pinnedTag}${editedTag}</div>${replyHtml}${mediaHtml}`;
-    if(txt) html+=`<div style="margin-top:4px;white-space:pre-wrap;word-break:break-word">${escapeHtml(txt)}</div>`;
+    if(txt && txt!=='[image]' && txt!=='[video]' && txt!=='[voice]' && txt!=='[file]') html+=`<div style="margin-top:4px;white-space:pre-wrap;word-break:break-word">${escapeHtml(txt)}</div>`;
     html+=`${reactsHtml}<div class="views"><span>🕒 ${formatNigeriaTime(m.created_at)}</span></div>`;
     box.innerHTML+=`<div class="msg ${isMe?'me':'other'} ${admin?'boss':''} ${ban?'bannedMsg':''}" data-id="${m.id}"><div class="bubble">${html}</div></div>`;
   });
   box.innerHTML+=`<div id="bottomAnchor" style="height:1px;"></div>`;
-  attachLongPress(); setTimeout(()=>scrollToBottom(true),10); setTimeout(()=>scrollToBottom(true),600); trackViews(); loadPinned(); updateOnlineCount();
+  attachLongPress(); setTimeout(()=>scrollToBottom(true),10); trackViews(); loadPinned(); updateOnlineCount();
 }
 function attachLongPress(){ let timer; document.querySelectorAll('.msg').forEach(el=>{ const start=(e)=>{ timer=setTimeout(()=>{ selectMsgLong(el.dataset.id); },600); }; const clear=()=>clearTimeout(timer); el.addEventListener('touchstart',start,{passive:true}); el.addEventListener('touchend',clear); el.addEventListener('mousedown',start); el.addEventListener('mouseup',clear); el.addEventListener('mouseleave',clear); }); }
 function selectMsgLong(id){
