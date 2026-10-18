@@ -122,6 +122,25 @@ button:disabled{opacity:.5}
 <a href="index.html" style="display:block;text-align:center;background:#fff;color:#00924C;padding:12px;border-radius:10px;text-decoration:none;font-weight:800">🏠 Go to Homepage</a>
 
 <script>
+// === SECURITY FIX - THIS IS THE ONLY NEW PART AT TOP ===
+(function(){
+  try{
+    const adminFlag = localStorage.getItem('msel_admin');
+    const role = localStorage.getItem('msel_role');
+    const sessRaw = localStorage.getItem('msel_mente_session');
+    let sess = null;
+    try{ sess = JSON.parse(sessRaw); }catch{}
+    // Must be admin=yes AND role=admin AND session role admin
+    if(adminFlag !== 'yes' || role !== 'admin' || !sess || sess.role !== 'admin'){
+      alert('⛔ ADMIN LOGIN REQUIRED - Please login with admin code');
+      window.location.replace('login.html');
+      return;
+    }
+  }catch(e){
+    window.location.replace('login.html');
+  }
+})();
+
 const SUPABASE_URL = 'https://rsnsciisycruhxtvfhwb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -533,7 +552,12 @@ async function clearGallery(){
   save();
  }catch(e){ alert('Clear failed: '+e.message); }
 }
-function logout(){localStorage.removeItem('msel_admin');localStorage.removeItem('msel_role');window.location.href='login.html';}
+function logout(){
+  localStorage.removeItem('msel_admin');
+  localStorage.removeItem('msel_role');
+  localStorage.removeItem('msel_mente_session');
+  window.location.href='login.html';
+}
 let allOrders=[];
 async function loadOrders(){
   const div=document.getElementById('orderList');
@@ -543,6 +567,15 @@ async function loadOrders(){
     if(error) throw error;
     allOrders=data||[];
     renderOrders(allOrders);
+    // Auto scroll to order if ref in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const ref = urlParams.get('ref');
+    if(ref){
+      setTimeout(()=>{
+        const el = document.getElementById('orderList');
+        if(el) el.scrollIntoView({behavior:'smooth'});
+      },800);
+    }
   }catch(e){
     div.innerHTML=`<div style="text-align:center;padding:20px;color:#f87171">Error: ${e.message}</div>`;
   }
