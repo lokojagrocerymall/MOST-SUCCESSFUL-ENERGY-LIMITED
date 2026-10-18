@@ -109,7 +109,7 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <button id="ctxSave" style="display:none" class="save" onclick="saveMedia()">💾 Save Media</button>
 <button id="ctxView" onclick="showViewersFromMenu()">👁️ Viewed By</button><button id="ctxCopy" onclick="copyText()">📋 Copy Text</button>
 <button id="ctxEdit" style="display:none" onclick="openEdit()">✏️ Edit (5h)</button><button id="ctxDel" style="display:none" class="del" onclick="deleteOwnMsg()">🗑️ Delete My Chat / Media</button>
-<div id="ctxAdmin" style="display:none;flex-direction:column;gap:6px;border-top:1px solid #334155;padding-top:6px;margin-top:4px">
+<div id="ctxAdmin" style="display:none;flex-direction:column;gap:6px;border-top:1px solid #334155;padding-top:4px;margin-top:4px">
 <button class="del" onclick="deleteMsgAdmin()">🗑️ Admin Remove</button><button style="background:#f59e0b;color:#000" onclick="suspendUser()">⏸️ Suspend 24h</button><button style="background:#000;color:#ef4444;border:1px solid #ef4444" onclick="banUserForever()">🚫 Ban Forever</button><button style="background:#22c55e;color:#000" onclick="restoreUser()">✅ Restore User</button>
 </div><button style="background:#334155" onclick="closeCtx()">✕ Close</button></div>
 
@@ -303,7 +303,35 @@ function tagUser(){ if(!selectedMsg) return; insertTag(selectedMsg.name); closeC
 function insertTag(n){ let i=document.getElementById('msgInput'); i.value+=(i.value?' ':'')+'@'+n+' '; i.focus(); autoResize(); }
 function openEdit(){ if(!selectedMsg || selectedMsg.name!==myName){ showToast('Own only'); return; } if((Date.now() - new Date(selectedMsg.created_at).getTime()) > 5*60*60*1000){ showToast('Edit expired'); return; } document.getElementById('editInput').value=selectedMsg.message||''; document.getElementById('editModal').style.display='block'; closeCtx(); }
 async function saveEdit(){ let newText=document.getElementById('editInput').value.trim(); if(!newText) return; try{ await supabaseClient.from('msel_mente_messages').update({message:newText,is_edited:true}).eq('id',selectedMsg.id); showToast('✏️ Edited'); document.getElementById('editModal').style.display='none'; loadMessages(); }catch(e){ showToast(e.message); } }
-async function compressImage(file){ if(!file.type.startsWith('image/')) return file; if(file.size < 500*1024) return file; return new Promise(res=>{ let img=new Image(); img.src=URL.createObjectURL(file); img.onload=()=>{ let canvas=document.createElement('canvas'); let max=1024; let w=img.width,h=img.height; if(w>max||h>max){ if(w>h){ h*=max/w; w=max; } else { w*=max/h; h=max; } } canvas.width=w; canvas.height=h; canvas.getContext('2d').drawImage(img,0,0,w,h); canvas.toBlob(b=>{ res(new File([b],file.name,{type:'image/jpeg'})); },'image/jpeg',0.6); }; img.onerror=()=>res(file); }); }
+
+// === DATA SAVER v2.0 - FIXED ONLY THIS FUNCTION - NOTHING ELSE REMOVED ===
+async function compressImage(file){
+  if(!file.type.startsWith('image/')) return file;
+  if(file.size < 80*1024) return file; // skip tiny images <80KB
+  return new Promise(res=>{
+    let img=new Image();
+    img.src=URL.createObjectURL(file);
+    img.onload=()=>{
+      let canvas=document.createElement('canvas');
+      let max=800;
+      let w=img.width,h=img.height;
+      if(w>max||h>max){
+        if(w>h){ h*=max/w; w=max; }
+        else { w*=max/h; h=max; }
+      }
+      canvas.width=w; canvas.height=h;
+      let ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+      canvas.toBlob(b=>{
+        let newFile=new File([b], file.name.replace(/\.\w+$/,'.jpg'), {type:'image/jpeg'});
+        console.log(`DATA SAVER: ${(file.size/1024/1024).toFixed(2)}MB -> ${(newFile.size/1024).toFixed(0)}KB`);
+        res(newFile);
+      },'image/jpeg',0.60);
+    };
+    img.onerror=()=>res(file);
+  });
+}
+
 async function uploadMedia(f){ let ext=f.name.split('.').pop(); let name=`chat/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`; let {error}=await supabaseClient.storage.from(BUCKET).upload(name,f); if(error) throw error; let {data}=supabaseClient.storage.from(BUCKET).getPublicUrl(name); return data.publicUrl; }
 async function saveBan(name,status,until=null){ let p={name,status,banned_by:myName,until}; bannedMap[name]=p; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); try{ await supabaseClient.from('msel_mente_bans').upsert(p,{onConflict:'name'}); }catch(e){} }
 async function deleteMsgAdmin(){ if(!selectedMsg||!myIsAdmin) return; if(!confirm('Remove?')) return; try{ await supabaseClient.from('msel_mente_messages').delete().eq('id',selectedMsg.id); showToast('🗑️ Removed'); closeCtx(); }catch(e){ showToast(e.message); } }
