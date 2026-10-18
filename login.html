@@ -24,16 +24,15 @@ button{width:100%;padding:15px;border-radius:12px;border:0;background:#00924C;co
 <img src="logo.png" class="logo" alt="MSEL">
 <h2>🔒 MSEL BOSS ONLY</h2>
 <div class="input-wrap">
-<input id="codeInput" type="password" placeholder="07011620564 ONLY" maxlength="11" inputmode="numeric">
+<input id="codeInput" type="password" placeholder="Enter Access Code" maxlength="11" inputmode="numeric">
 <span class="eye" onclick="toggleEye()" id="eyeIcon">👁️</span>
 </div>
 <div id="error" class="error"></div>
 <button onclick="smartLogin()">Login Now →</button>
 <a href="index.html" class="back">← Back to Homepage</a>
-<p style="font-size:11px;color:#64748b;margin-top:10px">Only 07011620564 is authorized</p>
 </div>
 <script>
-const BOSS_PHONE = '07011620564'; // STRICT - ONLY THIS NUMBER
+const BOSS_PHONE = '07011620564';
 
 function toggleEye(){
  let i=document.getElementById('codeInput');
@@ -48,25 +47,19 @@ function smartLogin(){
  let errBox = document.getElementById('error');
 
  if(!cleaned){
-   errBox.innerText='❌ Enter Boss Phone!';
+   errBox.innerText='❌ Enter Access Code!';
    errBox.style.display='block';
    return;
  }
 
- // === STRICT CHECK - ONLY 07011620564 ===
  if(cleaned !== BOSS_PHONE){
-   errBox.innerHTML='❌ INTRUDER REJECTED!<br>Only '+BOSS_PHONE+' allowed.<br>You entered: '+raw;
+   errBox.innerText='❌ Access Denied! Intruder Rejected.';
    errBox.style.display='block';
-   localStorage.removeItem('msel_mente_session');
-   localStorage.removeItem('msel_role');
-   localStorage.removeItem('msel_engineer');
-   localStorage.removeItem('msel_admin');
-   localStorage.removeItem('msel_admin_auth');
+   localStorage.clear();
    setTimeout(()=>{ window.location.href='index.html'; }, 2000);
    return;
  }
 
- // SUCCESS - ONLY BOSS
  localStorage.setItem('msel_mente_session', JSON.stringify({
    name: 'MSEL BOSS',
    code: cleaned,
@@ -77,7 +70,6 @@ function smartLogin(){
  localStorage.setItem('msel_admin_auth','true');
  localStorage.setItem('msel_admin_phone', BOSS_PHONE);
  localStorage.setItem('msel_role','admin');
-
  window.location.href='admin.html';
 }
 document.getElementById('codeInput').addEventListener('input', e=>{
