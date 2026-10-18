@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>MSEL MENTE Chat v1005 - 3 Updates</title>
+<title>MSEL MENTE CHAT</title>
 <link rel="icon" href="logo.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -302,9 +302,31 @@ async function sendMsg(mediaUrl=null,mediaType='text'){
   let tempId='temp-'+Date.now()+'-'+Math.random();
   let optimisticMsg={id:tempId,name:sendName,code:sendCode,message:text||`[${mediaType}]`,media_url:mediaUrl||null,type:mediaUrl?mediaType:'text',created_at:new Date().toISOString(),viewed_by:[myName],reactions:{},reply_to:replyToData};
   allMessages.push(optimisticMsg); renderMessages(allMessages); scrollToBottom(true);
-  if(!mediaUrl) input.value=''; autoResize(); toggleSendMic();
-  let payload={name:sendName,code:sendCode,message:text||`[${mediaType}]`,viewed_by:[myName]}; if(mediaUrl){ payload.media_url=mediaUrl; payload.type=mediaType; } if(replyToData) payload.reply_to=replyToData;
-  try{ let {data,error}=await supabaseClient.from('msel_mente_messages').insert(payload).select().single(); if(error) throw error; allMessages=allMessages.filter(m=>m.id!==tempId); allMessages.push(data); renderMessages(allMessages); scrollToBottom(true); }catch(e){ showToast('❌ '+e.message); allMessages=allMessages.filter(m=>m.id!==tempId); renderMessages(allMessages); return; } cancelReply();
+  if(!mediaUrl){ input.value=''; autoResize(); toggleSendMic(); }
+  let payload={name:sendName,code:sendCode,message:text||`[${mediaType}]`,viewed_by:[myName]}; 
+  if(mediaUrl){ payload.media_url=mediaUrl; payload.type=mediaType; }
+  if(replyToData) payload.reply_to=replyToData;
+  try{
+    let {error}=await supabaseClient.from('msel_mente_messages').insert(payload);
+    if(error) throw error;
+    showToast('✅ Sent');
+  }catch(e){
+    if(replyToData){
+      try{
+        delete payload.reply_to;
+        let {error:e2}=await supabaseClient.from('msel_mente_messages').insert(payload);
+        if(e2) throw e2;
+        showToast('✅ Sent');
+      }catch(err2){
+        showToast('❌ '+err2.message);
+        return;
+      }
+    }else{
+      showToast('❌ '+e.message);
+      return;
+    }
+  }
+  cancelReply();
 }
 function autoResize(){ let i=document.getElementById('msgInput'); i.style.height='auto'; i.style.height=Math.min(i.scrollHeight,120)+'px'; }
 function toggleSendMic(){ let i=document.getElementById('msgInput'); let m=document.getElementById('micBtn'); if(i.value.trim().length>0) m.style.display='none'; else m.style.display='flex'; }
