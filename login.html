@@ -16,75 +16,73 @@ h2{color:#00924C;margin-bottom:20px;font-size:24px}
 .eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:20px;user-select:none}
 button{width:100%;padding:15px;border-radius:12px;border:0;background:#00924C;color:#fff;font-weight:800;font-size:16px;margin-top:18px;cursor:pointer}
 .back{display:block;margin-top:18px;color:#00924C;text-decoration:none;font-size:14px;font-weight:bold}
-.error{color:#ef4444;font-size:12px;margin-top:10px;display:none}
+.error{color:#ef4444;font-size:12px;margin-top:10px;display:none;background:#fee2e2;padding:10px;border-radius:8px}
 </style>
 </head>
 <body>
 <div class="card">
 <img src="logo.png" class="logo" alt="MSEL">
-<h2>🔒 MSEL Smart Login</h2>
+<h2>🔒 MSEL BOSS ONLY</h2>
 <div class="input-wrap">
-<input id="codeInput" type="password" placeholder="Enter Access Code">
+<input id="codeInput" type="password" placeholder="07011620564 ONLY" maxlength="11" inputmode="numeric">
 <span class="eye" onclick="toggleEye()" id="eyeIcon">👁️</span>
 </div>
-<div id="error" class="error">❌ Wrong code!</div>
+<div id="error" class="error"></div>
 <button onclick="smartLogin()">Login Now →</button>
 <a href="index.html" class="back">← Back to Homepage</a>
+<p style="font-size:11px;color:#64748b;margin-top:10px">Only 07011620564 is authorized</p>
 </div>
 <script>
-const adminCodes=['MSELADMIN2026','MSEL2024','07011620564','ADMIN2026'];
+const BOSS_PHONE = '07011620564'; // STRICT - ONLY THIS NUMBER
+
 function toggleEye(){
  let i=document.getElementById('codeInput');
  let e=document.getElementById('eyeIcon');
  if(i.type==='password'){i.type='text';e.textContent='🙈';}
  else{i.type='password';e.textContent='👁️';}
 }
+
 function smartLogin(){
  let raw=document.getElementById('codeInput').value.trim();
- let code=raw.toUpperCase();
- if(!code){
-   document.getElementById('error').innerText='❌ Enter code!';
-   document.getElementById('error').style.display='block';
+ let cleaned = raw.replace(/\D/g,'').slice(-11);
+ let errBox = document.getElementById('error');
+
+ if(!cleaned){
+   errBox.innerText='❌ Enter Boss Phone!';
+   errBox.style.display='block';
    return;
  }
 
- // === SECURE FIX - ADMIN ONLY ===
- let isAdmin=adminCodes.includes(code)||adminCodes.includes(raw)||code.includes('ADMIN')||code.includes('MSELADMIN');
-
- if(!isAdmin){
-   // BLOCK RANDOM CODES LIKE stegpig
-   document.getElementById('error').innerText='⛔ ADMIN ONLY! Engineers must use phone registration at mente-register.html';
-   document.getElementById('error').style.display='block';
-   // Clear any fake session
+ // === STRICT CHECK - ONLY 07011620564 ===
+ if(cleaned !== BOSS_PHONE){
+   errBox.innerHTML='❌ INTRUDER REJECTED!<br>Only '+BOSS_PHONE+' allowed.<br>You entered: '+raw;
+   errBox.style.display='block';
    localStorage.removeItem('msel_mente_session');
    localStorage.removeItem('msel_role');
    localStorage.removeItem('msel_engineer');
+   localStorage.removeItem('msel_admin');
+   localStorage.removeItem('msel_admin_auth');
+   setTimeout(()=>{ window.location.href='index.html'; }, 2000);
    return;
  }
 
- // Admin allowed
- let userName='MSEL BOSS';
- if(code==='07011620564') userName='MSEL BOSS';
- else if(code.includes('ADMIN')) userName='Admin';
-
+ // SUCCESS - ONLY BOSS
  localStorage.setItem('msel_mente_session', JSON.stringify({
-   name: userName,
-   code: code,
+   name: 'MSEL BOSS',
+   code: cleaned,
    role: 'admin',
    loginTime: new Date().toISOString()
  }));
-
- // Mark for badge
- let users=JSON.parse(localStorage.getItem('msel_mente_users')||'{}');
- if(!users[userName]){
-   users[userName]=new Date().toISOString();
-   localStorage.setItem('msel_mente_users', JSON.stringify(users));
- }
-
  localStorage.setItem('msel_admin','yes');
+ localStorage.setItem('msel_admin_auth','true');
+ localStorage.setItem('msel_admin_phone', BOSS_PHONE);
  localStorage.setItem('msel_role','admin');
+
  window.location.href='admin.html';
 }
+document.getElementById('codeInput').addEventListener('input', e=>{
+  e.target.value = e.target.value.replace(/[^0-9]/g,'').slice(0,11);
+});
 document.getElementById('codeInput').addEventListener('keypress',e=>{if(e.key==='Enter')smartLogin();});
 </script>
 </body>
