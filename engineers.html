@@ -185,7 +185,7 @@ async function placeOrder(){
     const itemsRaw = cart.map(c=>`${c.name} x${c.qty} = ₦${(c.price*c.qty).toLocaleString()}`).join('\n');
     const msgRaw = `*NEW MSEL ORDER*\n\n*Name:* ${name}\n*Phone:* ${phone}\n*Address:* ${address}\n*State:* ${state}\n*Ref:* ${ref}\n\n*Items:*\n${itemsRaw}\n\n*TOTAL: ₦${total.toLocaleString()}*\n\n👉 *APPROVE ORDER AND PRINT RECEIPT HERE:*\n${adminDashboardLink}\n\n_Proof is inside dashboard_`;
 
-    const finalUrl = `https://api.whatsapp.com/send?phone=${ADMIN_WHATSAPP}&text=${encodeURIComponent(msgRaw)}`;
+    const finalUrl = `https://api.whatsapp.com/send?phone=2347011620564&text=${encodeURIComponent(msgRaw)}`;
     window.location.href = finalUrl;
     alert('✅ Order Placed!');
     cart=[];localStorage.setItem('msel_cart', JSON.stringify(cart));updateCartCount();
