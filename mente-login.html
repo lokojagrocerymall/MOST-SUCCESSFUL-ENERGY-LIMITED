@@ -8,25 +8,22 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
 body{background:#0f172a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:15px;color:#fff}
-.card{background:#1e293b;width:100%;max-width:400px;padding:22px;border-radius:18px;border:2px solid #334155;box-shadow:0 10px 40px rgba(0,0,0,.5);text-align:center}
+.card{background:#1e293b;width:100%;max-width:400px;padding:22px;border-radius:18px;border:2px solid #334155;text-align:center}
 .card img{height:55px;margin-bottom:10px}
 .card h2{color:#22c55e;margin:10px 0;font-size:18px}
-.card p{color:#94a3b8;font-size:13px;margin-bottom:15px}
-input{width:100%;padding:13px 14px;border-radius:12px;border:1px solid #334155;background:#0f172a;color:#fff;outline:none;margin-bottom:12px;font-size:14px}
+input{width:100%;padding:13px;border-radius:12px;border:1px solid #334155;background:#0f172a;color:#fff;outline:none;margin-bottom:12px;font-size:14px}
 button{width:100%;padding:14px;background:#22c55e;color:#000;border:0;border-radius:12px;font-weight:900;font-size:15px;cursor:pointer}
 a{color:#22c55e;text-decoration:none;font-weight:900}
-small{font-size:12px;color:#94a3b8}
 </style>
 </head>
 <body>
 <div class="card">
 <img src="logo.png" alt="MSEL">
 <h2>Login to MENTE Chat</h2>
-<p>Use your MSEL WhatsApp Number</p>
-<input id="loginInput" type="text" placeholder="WhatsApp No / Phone / Username">
-<button id="loginBtn" onclick="login()">Login & Enter Chat</button>
-<p style="margin-top:14px"><small>Don't have account? <a href="mente-register.html">Create Account</a></small></p>
-<p id="msg" style="margin-top:12px;font-size:13px;color:#FFC72C;line-height:1.4"></p>
+<input id="loginInput" type="text" placeholder="WhatsApp / Username">
+<button id="loginBtn" onclick="login()">Login</button>
+<p style="margin-top:14px;font-size:12px"><a href="mente-register.html">Create Account</a></p>
+<p id="msg" style="margin-top:10px;font-size:13px;color:#FFC72C"></p>
 </div>
 <script>
 const SUPABASE_URL='https://rsnsciisycruhxtvfhwb.supabase.co';
@@ -34,76 +31,30 @@ const SUPABASE_KEY='sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 async function login(){
-  let raw = document.getElementById('loginInput').value.trim();
-  let msg = document.getElementById('msg');
-  let btn = document.getElementById('loginBtn');
-  if(!raw){ msg.innerText='❌ Enter your WhatsApp login number'; return; }
-  
-  btn.innerText='Checking...';
-  msg.innerText='';
-
-  try{
-    let input = raw.toLowerCase().replace(/\s+/g,'');
-    
-    // Search by msel_whatsapp, phone, or username
-    let {data, error} = await supabaseClient.from('msel_mente_accounts')
-      .select('*')
-      .or(`msel_whatsapp.eq.${input},phone.eq.${input},username.eq.${input},msel_whatsapp.ilike.%${input}%,phone.ilike.%${input}%`);
-
-    if(error) throw error;
-
-    // Try 0 vs 234 format
-    if(!data || data.length===0){
-      let alt = input.startsWith('0') ? input.slice(1) : '0'+input;
-      let {data:d2} = await supabaseClient.from('msel_mente_accounts').select('*').or(`msel_whatsapp.eq.${alt},phone.eq.${alt}`);
-      data=d2;
-    }
-
-    if(!data || data.length===0){
-      msg.innerHTML='❌ Account not found.<br>Please <a href="mente-register.html">Create MENTE Account</a> first.';
-      btn.innerText='Login & Enter Chat';
-      return;
-    }
-
-    let acc = data[0];
-
-    // CHECK ADMIN APPROVAL - THIS IS THE KYC LOGIC
-    let status = (acc.approval_status || acc.status || 'pending').toLowerCase();
-    
-    if(status === 'pending'){
-      msg.innerHTML='⏳ <b style="color:#fbbf24">KYC Awaiting Approval</b><br>Your account is submitted. Admin will approve you soon. Contact MSEL Admin.';
-      btn.innerText='Login & Enter Chat';
-      return;
-    }
-    if(status === 'rejected'){
-      msg.innerHTML='❌ <b style="color:#ef4444">KYC Rejected</b><br>Contact MSEL Admin for review.';
-      btn.innerText='Login & Enter Chat';
-      return;
-    }
-
-    // APPROVED - ALLOW LOGIN
-    let session={
-      name: acc.full_name || acc.name,
-      full_name: acc.full_name,
-      display_name: acc.full_name,
-      phone: acc.phone,
-      msel_whatsapp: acc.msel_whatsapp,
-      email: acc.email,
-      business_name: acc.business_name,
-      username: acc.username,
-      state: acc.state,
-      address: acc.address,
-      role: acc.role || 'mente',
-      approval_status: 'approved'
-    };
-    localStorage.setItem('msel_mente_session', JSON.stringify(session));
-    msg.innerText='✅ Welcome '+ (acc.full_name||acc.name) +' - Entering chat...';
-    setTimeout(()=>{ location.href='mente-chat.html'; },900);
-
-  }catch(e){
-    msg.innerText='Error: '+e.message;
-    btn.innerText='Login & Enter Chat';
+ let raw=document.getElementById('loginInput').value.trim().replace(/\s+/g,'').toLowerCase();
+ let msg=document.getElementById('msg');
+ let btn=document.getElementById('loginBtn');
+ if(!raw){ msg.innerText='Enter WhatsApp / Username'; return; }
+ btn.innerText='Checking...';
+ try{
+  let {data,error}=await supabaseClient.from('msel_mente_accounts').select('*').or(`msel_whatsapp.eq.${raw},username.eq.${raw},msel_whatsapp.ilike.%${raw}%,username.ilike.%${raw}%`);
+  if(error) throw error;
+  if(!data||data.length===0){
+   let alt=raw.startsWith('0')?raw.slice(1):'0'+raw;
+   let {data:d2}=await supabaseClient.from('msel_mente_accounts').select('*').or(`msel_whatsapp.eq.${alt},username.eq.${alt}`);
+   data=d2;
   }
+  if(!data||data.length===0){ msg.innerText='Account not found'; btn.innerText='Login'; return; }
+  let acc=data[0];
+  let status=(acc.approval_status||'pending').toLowerCase();
+  if(status==='pending'){ msg.innerText='Awaiting Approval'; btn.innerText='Login'; return; }
+  if(status==='rejected'){ msg.innerText='Rejected'; btn.innerText='Login'; return; }
+  localStorage.setItem('msel_mente_session', JSON.stringify({
+    name:acc.full_name||acc.name, full_name:acc.full_name, phone:acc.phone, msel_whatsapp:acc.msel_whatsapp, username:acc.username, role:acc.role||'mente'
+  }));
+  msg.innerText='Welcome '+ (acc.full_name||acc.name);
+  setTimeout(()=>{ location.href='mente-chat.html'; },800);
+ }catch(e){ msg.innerText='Error: '+e.message; btn.innerText='Login'; }
 }
 </script>
 </body>
