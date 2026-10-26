@@ -565,7 +565,7 @@ function logout(){
   window.location.href='login.html';
 }
 
-// === MENTE APPROVAL SYSTEM - NEW ===
+// === MENTE APPROVAL SYSTEM - FULL KYC FIXED ===
 async function loadMenteAccounts(){
   const div=document.getElementById('menteApprovalList');
   if(!div) return;
@@ -574,19 +574,32 @@ async function loadMenteAccounts(){
     const {data, error}=await supabaseClient.from('msel_mente_accounts').select('*').order('created_at',{ascending:false});
     if(error) throw error;
     if(!data || data.length===0){ div.innerHTML='<div style="opacity:.6;font-size:12px">No mente accounts yet</div>'; return; }
-    div.innerHTML=data.map(m=>`
-      <div style="background:#0f172a;border:1px solid #334155;border-left:5px solid ${m.approval_status==='approved'?'#22c55e':m.approval_status==='rejected'?'#ef4444':'#facc15'};border-radius:8px;padding:10px;margin:8px 0">
-        <div style="font-size:12px"><b>${m.full_name||m.name||''}</b> - ${m.phone||''}</div>
-        <div style="font-size:10px;opacity:.7">Pass: ${m.password||''} | Status: <b style="color:${m.approval_status==='approved'?'#22c55e':'#facc15'}">${(m.approval_status||'pending').toUpperCase()}</b> | ${new Date(m.created_at||Date.now()).toLocaleString()}</div>
-        <div style="margin-top:6px">
+    div.innerHTML=data.map(m=>{
+      let borderColor = m.approval_status==='approved'?'#22c55e':m.approval_status==='rejected'?'#ef4444':'#facc15';
+      let wa = (m.msel_whatsapp||m.phone||'').replace(/[^0-9]/g,'').replace(/^0/,'234');
+      return `
+      <div style="background:#0f172a;border:1px solid #334155;border-left:5px solid ${borderColor};border-radius:10px;padding:12px;margin:10px 0;text-align:left">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:13px"><b style="color:#fff">${m.full_name||m.name||'No Name'}</b> <span style="font-size:9px;background:${borderColor};color:#000;padding:2px 8px;border-radius:10px;font-weight:900">${(m.approval_status||'pending').toUpperCase()}</span></div>
+          <div style="font-size:9px;opacity:.5">${new Date(m.created_at||Date.now()).toLocaleString()}</div>
+        </div>
+        <div style="font-size:11px;margin-top:8px;line-height:1.6;background:#1e293b;padding:8px;border-radius:8px">
+          <div>📍 <b>Address:</b> ${m.address||'-'}</div>
+          <div>🗺️ <b>State:</b> ${m.state||'-'}</div>
+          <div>📞 <b>Phone:</b> ${m.phone||'-'} | 💬 <b>WhatsApp Login:</b> <span style="color:#22c55e;font-weight:900">${m.msel_whatsapp||'-'}</span></div>
+          <div>📧 <b>Email:</b> ${m.email||'-'}</div>
+          <div>🏢 <b>Business:</b> ${m.business_name||'-'} | 👤 <b>Username:</b> @${m.username||'-'}</div>
+        </div>
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap">
           ${m.approval_status!=='approved'?`<button class="btn-small" style="background:#22c55e;color:#000" onclick="approveMente('${m.id}')">✅ Approve</button>`:''}
           ${m.approval_status!=='rejected'?`<button class="btn-small" style="background:#ef4444;color:#fff" onclick="rejectMente('${m.id}')">❌ Reject</button>`:''}
           <button class="btn-small" style="background:#334155;color:#fff" onclick="deleteMente('${m.id}')">🗑️ Delete</button>
+          <a class="btn-small" style="background:#25D366;color:#000;text-decoration:none;font-weight:800" href="https://wa.me/${wa}" target="_blank">💬 WhatsApp Chat</a>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   }catch(e){
-    div.innerHTML=`<div style="color:#f87171;font-size:11px">Error: ${e.message}<br>Run SQL: ALTER TABLE msel_mente_accounts ADD COLUMN approval_status TEXT DEFAULT 'pending'</div>`;
+    div.innerHTML=`<div style="color:#f87171;font-size:11px">Error: ${e.message}</div>`;
   }
 }
 async function approveMente(id){
