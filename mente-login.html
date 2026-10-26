@@ -22,54 +22,79 @@ small{font-size:12px;color:#94a3b8}
 <div class="card">
 <img src="logo.png" alt="MSEL">
 <h2>Login to MENTE Chat</h2>
-<p>One phone = One account</p>
-<input id="phone" type="tel" placeholder="Enter Registered Phone">
+<p>Use your MSEL WhatsApp Number</p>
+<input id="loginInput" type="text" placeholder="WhatsApp No / Phone / Username">
 <button id="loginBtn" onclick="login()">Login & Enter Chat</button>
 <p style="margin-top:14px"><small>Don't have account? <a href="mente-register.html">Create Account</a></small></p>
-<p id="msg" style="margin-top:10px;font-size:13px;color:#FFC72C"></p>
+<p id="msg" style="margin-top:12px;font-size:13px;color:#FFC72C;line-height:1.4"></p>
 </div>
 <script>
 const SUPABASE_URL='https://rsnsciisycruhxtvfhwb.supabase.co';
 const SUPABASE_KEY='sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-function cleanPhone(p){
-  return p.replace(/\s+/g,'').replace(/\+/g,'').trim();
-}
-
 async function login(){
-  let rawPhone=document.getElementById('phone').value.trim();
-  let msg=document.getElementById('msg');
-  if(!rawPhone){ msg.innerText='❌ Enter your phone number'; return; }
-  let phone=cleanPhone(rawPhone);
-  document.getElementById('loginBtn').innerText='Checking...';
+  let raw = document.getElementById('loginInput').value.trim();
+  let msg = document.getElementById('msg');
+  let btn = document.getElementById('loginBtn');
+  if(!raw){ msg.innerText='❌ Enter your WhatsApp login number'; return; }
+  
+  btn.innerText='Checking...';
+  msg.innerText='';
 
   try{
-    // Search by phone ONLY - exact and like
-    let {data,error}=await supabaseClient.from('msel_mente_accounts').select('*').or(`phone.eq.${phone},phone.ilike.%${phone}%`);
+    let input = raw.toLowerCase().replace(/\s+/g,'');
+    
+    // Search by msel_whatsapp, phone, or username
+    let {data, error} = await supabaseClient.from('msel_mente_accounts')
+      .select('*')
+      .or(`msel_whatsapp.eq.${input},phone.eq.${input},username.eq.${input},msel_whatsapp.ilike.%${input}%,phone.ilike.%${input}%`);
+
     if(error) throw error;
 
+    // Try 0 vs 234 format
     if(!data || data.length===0){
-      // Try cleaning +234 vs 0 format
-      let alt = phone.startsWith('0') ? phone.slice(1) : '0'+phone;
-      let {data:d2}=await supabaseClient.from('msel_mente_accounts').select('*').or(`phone.eq.${alt},phone.ilike.%${alt}%`);
+      let alt = input.startsWith('0') ? input.slice(1) : '0'+input;
+      let {data:d2} = await supabaseClient.from('msel_mente_accounts').select('*').or(`msel_whatsapp.eq.${alt},phone.eq.${alt}`);
       data=d2;
     }
 
     if(!data || data.length===0){
-      msg.innerText='❌ Phone not found. Create account first.';
-      document.getElementById('loginBtn').innerText='Login & Enter Chat';
+      msg.innerHTML='❌ Account not found.<br>Please <a href="mente-register.html">Create MENTE Account</a> first.';
+      btn.innerText='Login & Enter Chat';
       return;
     }
 
-    let acc=data[0];
+    let acc = data[0];
+
+    // CHECK ADMIN APPROVAL - THIS IS THE KYC LOGIC
+    let status = (acc.approval_status || acc.status || 'pending').toLowerCase();
+    
+    if(status === 'pending'){
+      msg.innerHTML='⏳ <b style="color:#fbbf24">KYC Awaiting Approval</b><br>Your account is submitted. Admin will approve you soon. Contact MSEL Admin.';
+      btn.innerText='Login & Enter Chat';
+      return;
+    }
+    if(status === 'rejected'){
+      msg.innerHTML='❌ <b style="color:#ef4444">KYC Rejected</b><br>Contact MSEL Admin for review.';
+      btn.innerText='Login & Enter Chat';
+      return;
+    }
+
+    // APPROVED - ALLOW LOGIN
     let session={
-      name: acc.name,
-      code: acc.code || 'MSEL2026',
-      full_name: acc.full_name || acc.name,
-      display_name: acc.full_name || acc.name,
+      name: acc.full_name || acc.name,
+      full_name: acc.full_name,
+      display_name: acc.full_name,
       phone: acc.phone,
-      role: acc.role || 'mente'
+      msel_whatsapp: acc.msel_whatsapp,
+      email: acc.email,
+      business_name: acc.business_name,
+      username: acc.username,
+      state: acc.state,
+      address: acc.address,
+      role: acc.role || 'mente',
+      approval_status: 'approved'
     };
     localStorage.setItem('msel_mente_session', JSON.stringify(session));
     msg.innerText='✅ Welcome '+ (acc.full_name||acc.name) +' - Entering chat...';
@@ -77,7 +102,7 @@ async function login(){
 
   }catch(e){
     msg.innerText='Error: '+e.message;
-    document.getElementById('loginBtn').innerText='Login & Enter Chat';
+    btn.innerText='Login & Enter Chat';
   }
 }
 </script>
