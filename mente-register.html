@@ -51,7 +51,7 @@ button.main:disabled{opacity:.5}
 <label>4. Phone Number</label>
 <input type="tel" id="phone" placeholder="080..." inputmode="numeric" maxlength="11">
 
-<label>5. MSEL WhatsApp Number (For Login)</label>
+<label>5. MSEL WhatsApp Number</label>
 <input type="tel" id="whatsapp" placeholder="080... login number" inputmode="numeric" maxlength="11">
 
 <label>6. Email Address</label>
@@ -61,12 +61,12 @@ button.main:disabled{opacity:.5}
 <input type="text" id="business" placeholder="Your business name">
 
 <label>8. Username</label>
-<input type="text" id="username" placeholder="choose username" maxlength="30">
+<input type="text" id="username" placeholder="username" maxlength="30" oninput="this.value=this.value.replace(/\s+/g,'').toLowerCase()">
 
 <div id="errorMsg" class="error"></div>
 <div id="successMsg" class="success"></div>
 
-<button id="createBtn" class="main" onclick="createAccount()">Submit KYC For Approval</button>
+<button id="createBtn" class="main" onclick="createAccount()">Submit For Approval</button>
 
 <div class="bottom-links">
 Already have account? <a href="mente-login.html">Login Here</a>
@@ -107,7 +107,7 @@ async function createAccount(){
   let msel_whatsapp = whatsappEl.value.trim();
   let email = emailEl.value.trim().toLowerCase();
   let business_name = businessEl.value.trim();
-  let username = usernameEl.value.trim().toLowerCase();
+  let username = usernameEl.value.trim().toLowerCase().replace(/\s+/g,'');
 
   if(full_name.length < 3){ showError('❌ Enter full name'); return; }
   if(address.length < 5){ showError('❌ Enter valid address'); return; }
@@ -117,13 +117,14 @@ async function createAccount(){
   if(!email.includes('@')){ showError('❌ Enter valid email'); return; }
   if(business_name.length < 2){ showError('❌ Enter business name'); return; }
   if(username.length < 3){ showError('❌ Username must be at least 3 chars'); return; }
+  if(username.includes(' ')){ showError('❌ Username cannot have space'); return; }
 
   btn.disabled=true; btn.innerText='⏳ Checking...';
   try{
     const {data: existing} = await supabaseClient.from('msel_mente_accounts').select('phone,msel_whatsapp,username').or(`phone.eq.${phone},msel_whatsapp.eq.${msel_whatsapp},username.eq.${username}`).limit(1);
-    if(existing && existing.length>0){ showError('❌ Phone / WhatsApp / Username already exists. Use Login.'); btn.disabled=false; btn.innerText='Submit KYC For Approval'; return; }
+    if(existing && existing.length>0){ showError('❌ Phone / WhatsApp / Username already exists. Use Login.'); btn.disabled=false; btn.innerText='Submit For Approval'; return; }
 
-    btn.innerText='⏳ Submitting KYC...';
+    btn.innerText='⏳ Submitting...';
     const {error} = await supabaseClient.from('msel_mente_accounts').insert({
       name: full_name,
       full_name: full_name,
@@ -140,10 +141,10 @@ async function createAccount(){
     });
     if(error) throw error;
 
-    showSuccess('✅ KYC Submitted! Awaiting Admin approval. Admin dashboard updated.');
+    showSuccess('✅ Submitted! Awaiting Admin approval.');
     setTimeout(()=>{ window.location.href='mente-login.html'; }, 1500);
 
-  }catch(e){ showError('❌ '+e.message); btn.disabled=false; btn.innerText='Submit KYC For Approval'; }
+  }catch(e){ showError('❌ '+e.message); btn.disabled=false; btn.innerText='Submit For Approval'; }
 }
 </script>
 </body>
