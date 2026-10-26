@@ -10,11 +10,11 @@ body{background:#4a0a4a;color:#fff;min-height:100vh;padding:12px;display:flex;fl
 .top{background:#000;color:#fff;padding:10px 14px;border-radius:10px;display:flex;justify-content:space-between;align-items:center}
 .top h2{font-size:14px}
 .top a{color:#fff;text-decoration:none;font-size:13px;background:#333;padding:6px 12px;border-radius:20px}
-.card{background:#fff;color:#111;border-radius:18px;padding:18px;margin:14px auto;max-width:400px;width:100%;box-shadow:0 8px 20px rgba(0,0,0,.4)}
+.card{background:#fff;color:#111;border-radius:18px;padding:18px;margin:14px auto;max-width:440px;width:100%;box-shadow:0 8px 20px rgba(0,0,0,.4)}
 .card h1{text-align:center;color:#4a0a4a;font-size:20px;margin-bottom:14px}
 label{font-size:12px;font-weight:800;margin-top:12px;display:block;color:#333}
-input{width:100%;padding:13px;border-radius:10px;border:1.5px solid #ddd;margin-top:6px;outline:none;font-size:14px}
-input:focus{border-color:#4a0a4a}
+input,select,textarea{width:100%;padding:13px;border-radius:10px;border:1.5px solid #ddd;margin-top:6px;outline:none;font-size:14px}
+input:focus,select:focus,textarea:focus{border-color:#4a0a4a}
 button.main{width:100%;padding:14px;border-radius:12px;border:0;background:#22c55e;color:#000;font-weight:900;font-size:15px;margin-top:18px;cursor:pointer}
 button.main:disabled{opacity:.5}
 .error{background:#fee2e2;color:#991b1b;padding:10px;border-radius:8px;font-size:12px;margin-top:10px;display:none}
@@ -36,16 +36,37 @@ button.main:disabled{opacity:.5}
 <div class="logo-wrap"><img src="logo.png" alt="MSEL"></div>
 <h1>Create MENTE Account</h1>
 
-<label>Full Name / Company Name</label>
-<input type="text" id="fullName" placeholder="" maxlength="60">
+<label>1. Full Name</label>
+<input type="text" id="fullName" placeholder="John Musa Peter" maxlength="80">
 
-<label>Phone Number</label>
-<input type="tel" id="phone" placeholder="" inputmode="numeric" maxlength="11">
+<label>2. Address</label>
+<textarea id="address" rows="2" placeholder="House address" style="width:100%;padding:13px;border-radius:10px;border:1.5px solid #ddd;margin-top:6px"></textarea>
+
+<label>3. State</label>
+<select id="state">
+<option value="">-- Select State --</option>
+<option>Abia</option><option>Adamawa</option><option>Akwa Ibom</option><option>Anambra</option><option>Bauchi</option><option>Bayelsa</option><option>Benue</option><option>Borno</option><option>Cross River</option><option>Delta</option><option>Ebonyi</option><option>Edo</option><option>Ekiti</option><option>Enugu</option><option>FCT - Abuja</option><option>Gombe</option><option>Imo</option><option>Jigawa</option><option>Kaduna</option><option>Kano</option><option>Katsina</option><option>Kebbi</option><option>Kogi</option><option>Kwara</option><option>Lagos</option><option>Nasarawa</option><option>Niger</option><option>Ogun</option><option>Ondo</option><option>Osun</option><option>Oyo</option><option>Plateau</option><option>Rivers</option><option>Sokoto</option><option>Taraba</option><option>Yobe</option><option>Zamfara</option>
+</select>
+
+<label>4. Phone Number</label>
+<input type="tel" id="phone" placeholder="080..." inputmode="numeric" maxlength="11">
+
+<label>5. MSEL WhatsApp Number (For Login)</label>
+<input type="tel" id="whatsapp" placeholder="080... login number" inputmode="numeric" maxlength="11">
+
+<label>6. Email Address</label>
+<input type="email" id="email" placeholder="example@gmail.com">
+
+<label>7. Business / Company Name</label>
+<input type="text" id="business" placeholder="Your business name">
+
+<label>8. Username</label>
+<input type="text" id="username" placeholder="choose username" maxlength="30">
 
 <div id="errorMsg" class="error"></div>
 <div id="successMsg" class="success"></div>
 
-<button id="createBtn" class="main" onclick="createAccount()">Create Account & Enter Chat</button>
+<button id="createBtn" class="main" onclick="createAccount()">Submit KYC For Approval</button>
 
 <div class="bottom-links">
 Already have account? <a href="mente-login.html">Login Here</a>
@@ -58,59 +79,71 @@ const SUPABASE_KEY = 'sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const fullNameEl = document.getElementById('fullName');
+const addressEl = document.getElementById('address');
+const stateEl = document.getElementById('state');
 const phoneEl = document.getElementById('phone');
+const whatsappEl = document.getElementById('whatsapp');
+const emailEl = document.getElementById('email');
+const businessEl = document.getElementById('business');
+const usernameEl = document.getElementById('username');
 const errorMsg = document.getElementById('errorMsg');
 const successMsg = document.getElementById('successMsg');
 const btn = document.getElementById('createBtn');
 
-phoneEl.addEventListener('input', ()=>{
-  let v = phoneEl.value.replace(/[^0-9]/g,'');
-  if(v.length > 11) v = v.slice(0,11);
-  phoneEl.value = v;
-});
-
 function showError(txt){ errorMsg.innerText=txt; errorMsg.style.display='block'; successMsg.style.display='none'; }
 function showSuccess(txt){ successMsg.innerText=txt; successMsg.style.display='block'; errorMsg.style.display='none'; }
 
+[phoneEl, whatsappEl].forEach(el=>{
+  el.addEventListener('input', ()=>{
+    let v = el.value.replace(/[^0-9]/g,''); if(v.length>11) v=v.slice(0,11); el.value=v;
+  });
+});
+
 async function createAccount(){
   let full_name = fullNameEl.value.trim();
-  let phone = phoneEl.value.trim().replace(/\s+/g,'');
-
-  errorMsg.style.display='none';
+  let address = addressEl.value.trim();
+  let state = stateEl.value;
+  let phone = phoneEl.value.trim();
+  let msel_whatsapp = whatsappEl.value.trim();
+  let email = emailEl.value.trim().toLowerCase();
+  let business_name = businessEl.value.trim();
+  let username = usernameEl.value.trim().toLowerCase();
 
   if(full_name.length < 3){ showError('❌ Enter full name'); return; }
-  if(!/^[0-9]+$/.test(phone)){ showError('❌ Phone must be numbers only'); return; }
-  if(phone.length < 10 || phone.length > 11){ showError('❌ Phone must be 10 or 11 digits'); return; }
-  if(!phone.startsWith('0')){ showError('❌ Phone must start with 0'); return; }
+  if(address.length < 5){ showError('❌ Enter valid address'); return; }
+  if(!state){ showError('❌ Select state'); return; }
+  if(phone.length < 10 || !phone.startsWith('0')){ showError('❌ Enter valid phone number'); return; }
+  if(msel_whatsapp.length < 10 || !msel_whatsapp.startsWith('0')){ showError('❌ Enter valid WhatsApp login number'); return; }
+  if(!email.includes('@')){ showError('❌ Enter valid email'); return; }
+  if(business_name.length < 2){ showError('❌ Enter business name'); return; }
+  if(username.length < 3){ showError('❌ Username must be at least 3 chars'); return; }
 
   btn.disabled=true; btn.innerText='⏳ Checking...';
-
   try{
-    const {data: existing} = await supabaseClient.from('msel_mente_accounts').select('phone').eq('phone', phone).limit(1);
-    if(existing && existing.length>0){
-      showError('❌ This phone already registered. Use Login.');
-      btn.disabled=false; btn.innerText='Create Account & Enter Chat'; return;
-    }
+    const {data: existing} = await supabaseClient.from('msel_mente_accounts').select('phone,msel_whatsapp,username').or(`phone.eq.${phone},msel_whatsapp.eq.${msel_whatsapp},username.eq.${username}`).limit(1);
+    if(existing && existing.length>0){ showError('❌ Phone / WhatsApp / Username already exists. Use Login.'); btn.disabled=false; btn.innerText='Submit KYC For Approval'; return; }
 
-    btn.innerText='⏳ Creating...';
+    btn.innerText='⏳ Submitting KYC...';
     const {error} = await supabaseClient.from('msel_mente_accounts').insert({
       name: full_name,
       full_name: full_name,
+      address: address,
+      state: state,
       phone: phone,
+      msel_whatsapp: msel_whatsapp,
+      email: email,
+      business_name: business_name,
+      username: username,
       status: 'pending',
       approval_status: 'pending',
       created_at: new Date().toISOString()
     });
     if(error) throw error;
 
-    showSuccess('✅ Account created! Redirecting...');
-    setTimeout(()=>{ window.location.href='mente-chat.html?phone='+encodeURIComponent(phone); }, 800);
+    showSuccess('✅ KYC Submitted! Awaiting Admin approval. Admin dashboard updated.');
+    setTimeout(()=>{ window.location.href='mente-login.html'; }, 1500);
 
-  }catch(e){
-    if(e.message.includes('unique_phone') || e.message.includes('duplicate')){ showError('❌ Phone already exists. Use Login.'); }
-    else { showError('❌ '+e.message); }
-    btn.disabled=false; btn.innerText='Create Account & Enter Chat';
-  }
+  }catch(e){ showError('❌ '+e.message); btn.disabled=false; btn.innerText='Submit KYC For Approval'; }
 }
 </script>
 </body>
