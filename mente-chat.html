@@ -103,7 +103,7 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <div id="ctxAdmin" style="display:none;flex-direction:column;gap:6px;border-top:1px solid #334155;padding-top:4px;margin-top:4px">
 <button class="del" onclick="deleteMsgAdmin()">🗑️ Admin Remove</button><button style="background:#f59e0b;color:#000" onclick="suspendUser()">⏸️ Suspend 24h</button><button style="background:#000;color:#ef4444;border:1px solid #ef4444" onclick="banUserForever()">🚫 Ban Forever</button><button style="background:#22c55e;color:#000" onclick="restoreUser()">✅ Restore User</button>
 </div><button style="background:#334155" onclick="closeCtx()">✕ Close</button></div>
-<div id="membersModal"><div class="banBox" style="max-width:600px"><h2 style="color:#FFC72C;text-align:center">👥 MENTE Members</h2><p id="membersCount" style="text-align:center;opacity:0.7;margin:8px 0;font-size:12px"></p><div id="membersList" style="margin:14px 0;max-height:70vh;overflow:auto"></div><button onclick="document.getElementById('membersModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:#fff;border:0;border-radius:10px;font-weight:900">Close</button></div></div>
+<div id="membersModal"><div class="banBox" style="max-width:600px"><h2 style="color:#FFC72C;text-align:center">👥 MENTE Members</h2><p id="membersCount" style="text-align:center;opacity:0.7;margin:8px 0;font-size:12px;display:none"></p><div id="membersList" style="margin:14px 0;max-height:70vh;overflow:auto"></div><button onclick="document.getElementById('membersModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:#fff;border:0;border-radius:10px;font-weight:900">Close</button></div></div>
 <div id="banModal"><div class="banBox"><h2 style="color:#FFC72C;text-align:center">👑 Banned List</h2><div id="banList" style="margin:14px 0"></div><button onclick="document.getElementById('banModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:#fff;border:0;border-radius:10px;font-weight:900">Close</button></div></div>
 <div id="viewModal"><div class="banBox"><h3 style="color:#22c55e;text-align:center">👁️ Viewed</h3><div id="viewList" style="margin:14px 0"></div><button onclick="document.getElementById('viewModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:#fff;border:0;border-radius:10px;font-weight:900">Close</button></div></div>
 <div id="editModal"><div class="banBox"><h3 style="color:#FFC72C;text-align:center">✏️ Edit Your Message</h3><textarea id="editInput" style="width:100%;min-height:90px;margin:12px 0;padding:12px;border-radius:10px;background:#1e293b;color:#fff;border:1px solid #334155"></textarea><div style="display:flex;gap:8px"><button onclick="saveEdit()" style="flex:1;padding:12px;background:#22c55e;color:#000;border:0;border-radius:12px;font-weight:900">Save Edit</button><button onclick="document.getElementById('editModal').style.display='none'" style="flex:1;padding:12px;background:#334155;color:#fff;border:0;border-radius:12px;font-weight:900">Cancel</button></div></div></div>
@@ -201,7 +201,6 @@ function getRealName(m){ let acc=accountsMap[m.name]||accountsMap[m.code]; let r
 function openMembers(){
   if(!allAccountsList.length){ showToast('Loading...'); loadAccounts().then(()=>openMembers()); return; }
   let approved = allAccountsList.filter(a=>{ let s=(a.status||a.approval_status||'').toLowerCase(); return s==='approved'||s==='active'; });
-  document.getElementById('membersCount').innerText= approved.length + ' approved members (Total: '+allAccountsList.length+') - Approved from main admin dashboard only';
   document.getElementById('membersList').innerHTML= approved.map(a=>{
     let name=a.full_name||a.name||'Unknown'; let phone=a.phone||a.whatsapp||'—'; let code=a.code||''; let role=a.role||'mente'; let joined=a.created_at?new Date(a.created_at).toLocaleDateString():''; let isBoss=role==='admin'||name.toLowerCase().includes('boss');
     return `<div style="display:flex;gap:10px;align-items:center;padding:12px;border-bottom:1px solid #1e3a5f"><div style="width:36px;height:36px;border-radius:50%;background:${isBoss?'linear-gradient(90deg,#FFC72C,#FF8C00)':'#22c55e'};display:flex;align-items:center;justify-content:center;font-weight:900;color:#000">${escapeHtml(name.charAt(0).toUpperCase())}</div><div style="flex:1"><div style="font-weight:900;font-size:13px">${escapeHtml(name)} ${isBoss?'<span style="font-size:9px;background:gold;color:#000;padding:2px 6px;border-radius:8px">BOSS</span>':''}</div><div style="font-size:11px;opacity:0.8">📞 ${escapeHtml(phone)} • ${escapeHtml(code)}</div><div style="font-size:10px;opacity:0.5">Joined: ${joined} • approved</div></div></div>`;
@@ -229,7 +228,6 @@ function renderMessages(data){
     let lowerUrl=(mediaUrl||'').toLowerCase();
     let isImageUrl=lowerUrl.includes('.jpg')||lowerUrl.includes('.png')||lowerUrl.includes('.jpeg')||lowerUrl.includes('wa_')||lowerUrl.includes('webp');
     let isVideoUrl=lowerUrl.includes('.mp4')||lowerUrl.includes('.webm')||lowerUrl.includes('.mov');
-    // MERGE LOCAL BACKUP REACTIONS SO IT STAYS AFTER REFRESH
     let backup=localStorage.getItem('reaction_backup_'+m.id);
     if(backup){ try{ let b=JSON.parse(backup); if(Object.keys(b).length>0 && (!m.reactions || Object.keys(m.reactions).length===0)) m.reactions=b; }catch(e){} }
     let reactsHtml=''; let reacts=m.reactions||{}; 
@@ -275,7 +273,7 @@ async function loadMessages(){
   }catch(e){ console.log(e); }
 }
 loadMessages();
-supabaseClient.channel('mente-fixed-v5').on('postgres_changes',{event:'INSERT',schema:'public',table:'msel_mente_messages'},payload=>{
+supabaseClient.channel('mente-fixed-v6').on('postgres_changes',{event:'INSERT',schema:'public',table:'msel_mente_messages'},payload=>{
   allMessages = allMessages.filter(m=>!String(m.id).startsWith('temp-'));
   allMessages.push(payload.new);
   renderMessages(allMessages);
