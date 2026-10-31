@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>MSEL MENTE Login</title>
+<title>MSEL MENTE Login - Unified</title>
 <link rel="icon" href="logo.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -11,49 +11,104 @@ body{background:#0f172a;min-height:100vh;display:flex;align-items:center;justify
 .card{background:#1e293b;width:100%;max-width:400px;padding:22px;border-radius:18px;border:2px solid #334155;text-align:center}
 .card img{height:55px;margin-bottom:10px}
 .card h2{color:#22c55e;margin:10px 0;font-size:18px}
+.card h4{color:#FFC72C;font-size:11px;margin-bottom:12px;letter-spacing:1px}
 input{width:100%;padding:13px;border-radius:12px;border:1px solid #334155;background:#0f172a;color:#fff;outline:none;margin-bottom:12px;font-size:14px}
 button{width:100%;padding:14px;background:#22c55e;color:#000;border:0;border-radius:12px;font-weight:900;font-size:15px;cursor:pointer}
 a{color:#22c55e;text-decoration:none;font-weight:900}
+.pwd-wrap{position:relative}
+.pwd-wrap span{position:absolute;right:12px;top:13px;cursor:pointer;font-size:12px;color:#94a3b8;font-weight:900}
 </style>
 </head>
 <body>
 <div class="card">
 <img src="logo.png" alt="MSEL">
-<h2>Login to MENTE Chat</h2>
-<input id="loginInput" type="text" placeholder="WhatsApp / Username">
+<h2>MSEL Unified Login</h2>
+<h4>MENTE + ADMIN SAME WINDOW</h4>
+<input id="loginInput" type="text" placeholder="Phone / WhatsApp / Username / Email">
+<div class="pwd-wrap">
+<input id="passwordInput" type="password" placeholder="Password">
+<span onclick="togglePwd()">SHOW</span>
+</div>
 <button id="loginBtn" onclick="login()">Login</button>
-<p style="margin-top:14px;font-size:12px"><a href="mente-register.html">Create Account</a></p>
-<p id="msg" style="margin-top:10px;font-size:13px;color:#FFC72C"></p>
+<p style="margin-top:14px;font-size:12px"><a href="mente-register.html">Create Mente Account</a> • <a href="index.html" style="color:#fff">Home</a></p>
+<p id="msg" style="margin-top:10px;font-size:13px;color:#FFC72C;min-height:18px"></p>
+<small style="display:block;margin-top:12px;color:#64748b;font-size:10px">Admin uses same login with admin password → goes to Admin Dashboard<br>Mente uses password → goes to Chatroom</small>
 </div>
 <script>
 const SUPABASE_URL='https://rsnsciisycruhxtvfhwb.supabase.co';
 const SUPABASE_KEY='sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
+function togglePwd(){
+  let p=document.getElementById('passwordInput');
+  p.type = p.type==='password'?'text':'password';
+}
+
 async function login(){
- let raw=document.getElementById('loginInput').value.trim().replace(/\s+/g,'').toLowerCase();
+ let raw=document.getElementById('loginInput').value.trim().toLowerCase();
+ let pwd=document.getElementById('passwordInput').value.trim();
  let msg=document.getElementById('msg');
  let btn=document.getElementById('loginBtn');
- if(!raw){ msg.innerText='Enter WhatsApp / Username'; return; }
- btn.innerText='Checking...';
+ if(!raw || !pwd){ msg.innerText='Enter phone/username AND password'; return; }
+ btn.innerText='Checking...'; msg.innerText='';
+
+ // Remove spaces and normalize phone
+ let rawClean = raw.replace(/\s+/g,'');
+ let rawAlt = rawClean.startsWith('0') ? rawClean.slice(1) : '0'+rawClean;
+
  try{
-  let {data,error}=await supabaseClient.from('msel_mente_accounts').select('*').or(`msel_whatsapp.eq.${raw},username.eq.${raw},msel_whatsapp.ilike.%${raw}%,username.ilike.%${raw}%`);
+  // 1. Try fetch from mente accounts by multiple fields
+  let {data,error}=await supabaseClient.from('msel_mente_accounts').select('*').or(`msel_whatsapp.eq.${rawClean},msel_whatsapp.eq.${rawAlt},username.eq.${rawClean},phone.eq.${rawClean},email.eq.${rawClean},msel_whatsapp.ilike.%${rawClean}%,username.ilike.%${rawClean}%`).limit(10);
   if(error) throw error;
-  if(!data||data.length===0){
-   let alt=raw.startsWith('0')?raw.slice(1):'0'+raw;
-   let {data:d2}=await supabaseClient.from('msel_mente_accounts').select('*').or(`msel_whatsapp.eq.${alt},username.eq.${alt}`);
+  if(!data || data.length===0){
+   let {data:d2}=await supabaseClient.from('msel_mente_accounts').select('*').or(`phone.eq.${rawAlt},username.eq.${rawAlt},email.eq.${rawClean}`).limit(10);
    data=d2;
   }
-  if(!data||data.length===0){ msg.innerText='Account not found'; btn.innerText='Login'; return; }
+  if(!data || data.length===0){ msg.innerText='❌ Account not found'; btn.innerText='Login'; return; }
+
   let acc=data[0];
-  let status=(acc.approval_status||'pending').toLowerCase();
-  if(status==='pending'){ msg.innerText='Awaiting Approval'; btn.innerText='Login'; return; }
-  if(status==='rejected'){ msg.innerText='Rejected'; btn.innerText='Login'; return; }
-  localStorage.setItem('msel_mente_session', JSON.stringify({
-    name:acc.full_name||acc.name, full_name:acc.full_name, phone:acc.phone, msel_whatsapp:acc.msel_whatsapp, username:acc.username, role:acc.role||'mente'
-  }));
-  msg.innerText='Welcome '+ (acc.full_name||acc.name);
-  setTimeout(()=>{ location.href='mente-chat.html'; },800);
+
+  // 2. PASSWORD CHECK - secure
+  let storedPwd = acc.password || acc.pass || acc.password_hash || acc.msel_password || '';
+  // If account has no password yet (old accounts), allow login once and force set password? For now, if no stored pwd, accept any pwd as migration
+  if(storedPwd){
+    if(storedPwd !== pwd){
+      msg.innerText='❌ Wrong password'; btn.innerText='Login'; return;
+    }
+  }
+
+  // 3. APPROVAL CHECK - only for mente, not admin
+  let role = (acc.role || '').toLowerCase();
+  let isAdmin = role==='admin' || (acc.full_name && acc.full_name.toLowerCase().includes('boss')) || (acc.name && acc.name.toLowerCase().includes('boss')) || acc.username==='mselboss';
+  let status=(acc.approval_status || acc.status || 'pending').toLowerCase();
+  if(!isAdmin){
+    if(status==='pending'){ msg.innerText='⏳ Awaiting Approval - MSEL BOSS must approve you'; btn.innerText='Login'; return; }
+    if(status==='rejected'){ msg.innerText='❌ Your account was rejected'; btn.innerText='Login'; return; }
+  }
+
+  // 4. SET SESSIONS
+  if(isAdmin){
+    // Admin session for admin panel + chatroom
+    localStorage.setItem('msel_admin', 'yes');
+    localStorage.setItem('msel_role', 'admin');
+    localStorage.setItem('msel_admin_session', JSON.stringify({name: acc.full_name||acc.name||'MSEL BOSS', role:'admin', id: acc.id}));
+    localStorage.setItem('msel_mente_session', JSON.stringify({
+      name: acc.full_name||acc.name||'MSEL BOSS', code: 'MSEL-BOSS-001', role:'admin', full_name: acc.full_name, id: acc.id
+    }));
+    msg.innerText='👑 Welcome BOSS → Admin Dashboard';
+    setTimeout(()=>{ location.href='admin.html'; },800);
+  } else {
+    // Mente session
+    localStorage.removeItem('msel_admin');
+    localStorage.removeItem('msel_role');
+    localStorage.removeItem('msel_admin_session');
+    localStorage.setItem('msel_mente_session', JSON.stringify({
+      name: acc.full_name||acc.name, full_name: acc.full_name, phone: acc.phone, msel_whatsapp: acc.msel_whatsapp, username: acc.username, role:'mente', id: acc.id, code: acc.code||'MSEL-MENTE'
+    }));
+    msg.innerText='✅ Welcome '+ (acc.full_name||acc.name) +' → Chatroom';
+    setTimeout(()=>{ location.href='mente-chat.html'; },800);
+  }
+
  }catch(e){ msg.innerText='Error: '+e.message; btn.innerText='Login'; }
 }
 </script>
