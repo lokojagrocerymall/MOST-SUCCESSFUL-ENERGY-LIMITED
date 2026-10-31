@@ -23,6 +23,8 @@ button.main:disabled{opacity:.5}
 .logo-wrap img{max-width:140px}
 .bottom-links{text-align:center;margin-top:16px;font-size:12px}
 .bottom-links a{color:#4a0a4a;font-weight:800;text-decoration:none}
+.pwd-wrap{position:relative}
+.pwd-wrap span{position:absolute;right:12px;top:18px;cursor:pointer;font-size:11px;color:#666;font-weight:900}
 </style>
 </head>
 <body>
@@ -42,9 +44,9 @@ button.main:disabled{opacity:.5}
 <label>2. Address</label>
 <textarea id="address" rows="2" placeholder="House address" style="width:100%;padding:13px;border-radius:10px;border:1.5px solid #ddd;margin-top:6px"></textarea>
 
-<label>3. State</label>
+<label>3. State of Residence (Current)</label>
 <select id="state">
-<option value="">-- Select State --</option>
+<option value="">-- Select State of Residence (Current) --</option>
 <option>Abia</option><option>Adamawa</option><option>Akwa Ibom</option><option>Anambra</option><option>Bauchi</option><option>Bayelsa</option><option>Benue</option><option>Borno</option><option>Cross River</option><option>Delta</option><option>Ebonyi</option><option>Edo</option><option>Ekiti</option><option>Enugu</option><option>FCT - Abuja</option><option>Gombe</option><option>Imo</option><option>Jigawa</option><option>Kaduna</option><option>Kano</option><option>Katsina</option><option>Kebbi</option><option>Kogi</option><option>Kwara</option><option>Lagos</option><option>Nasarawa</option><option>Niger</option><option>Ogun</option><option>Ondo</option><option>Osun</option><option>Oyo</option><option>Plateau</option><option>Rivers</option><option>Sokoto</option><option>Taraba</option><option>Yobe</option><option>Zamfara</option>
 </select>
 
@@ -62,6 +64,18 @@ button.main:disabled{opacity:.5}
 
 <label>8. Username</label>
 <input type="text" id="username" placeholder="username" maxlength="30" oninput="this.value=this.value.replace(/\s+/g,'').toLowerCase()">
+
+<label>9. Password (for secure login)</label>
+<div class="pwd-wrap">
+<input type="password" id="password" placeholder="Min 6 characters">
+<span onclick="togglePwd('password')">SHOW</span>
+</div>
+
+<label>10. Confirm Password</label>
+<div class="pwd-wrap">
+<input type="password" id="confirmPassword" placeholder="Repeat password">
+<span onclick="togglePwd('confirmPassword')">SHOW</span>
+</div>
 
 <div id="errorMsg" class="error"></div>
 <div id="successMsg" class="success"></div>
@@ -86,10 +100,16 @@ const whatsappEl = document.getElementById('whatsapp');
 const emailEl = document.getElementById('email');
 const businessEl = document.getElementById('business');
 const usernameEl = document.getElementById('username');
+const passwordEl = document.getElementById('password');
+const confirmPasswordEl = document.getElementById('confirmPassword');
 const errorMsg = document.getElementById('errorMsg');
 const successMsg = document.getElementById('successMsg');
 const btn = document.getElementById('createBtn');
 
+function togglePwd(id){
+  let el=document.getElementById(id);
+  el.type = el.type==='password'?'text':'password';
+}
 function showError(txt){ errorMsg.innerText=txt; errorMsg.style.display='block'; successMsg.style.display='none'; }
 function showSuccess(txt){ successMsg.innerText=txt; successMsg.style.display='block'; errorMsg.style.display='none'; }
 
@@ -108,16 +128,19 @@ async function createAccount(){
   let email = emailEl.value.trim().toLowerCase();
   let business_name = businessEl.value.trim();
   let username = usernameEl.value.trim().toLowerCase().replace(/\s+/g,'');
+  let password = passwordEl.value.trim();
+  let confirmPassword = confirmPasswordEl.value.trim();
 
   if(full_name.length < 3){ showError('❌ Enter full name'); return; }
   if(address.length < 5){ showError('❌ Enter valid address'); return; }
-  if(!state){ showError('❌ Select state'); return; }
+  if(!state){ showError('❌ Select State of Residence (Current)'); return; }
   if(phone.length < 10 || !phone.startsWith('0')){ showError('❌ Enter valid phone number'); return; }
   if(msel_whatsapp.length < 10 || !msel_whatsapp.startsWith('0')){ showError('❌ Enter valid WhatsApp login number'); return; }
   if(!email.includes('@')){ showError('❌ Enter valid email'); return; }
   if(business_name.length < 2){ showError('❌ Enter business name'); return; }
   if(username.length < 3){ showError('❌ Username must be at least 3 chars'); return; }
-  if(username.includes(' ')){ showError('❌ Username cannot have space'); return; }
+  if(password.length < 6){ showError('❌ Password must be at least 6 characters'); return; }
+  if(password !== confirmPassword){ showError('❌ Passwords do not match'); return; }
 
   btn.disabled=true; btn.innerText='⏳ Checking...';
   try{
@@ -135,13 +158,15 @@ async function createAccount(){
       email: email,
       business_name: business_name,
       username: username,
+      password: password,
       status: 'pending',
       approval_status: 'pending',
+      role: 'mente',
       created_at: new Date().toISOString()
     });
     if(error) throw error;
 
-    showSuccess('✅ Submitted! Awaiting Admin approval.');
+    showSuccess('✅ Submitted! Awaiting Admin approval. You will login with phone + password.');
     setTimeout(()=>{ window.location.href='mente-login.html'; }, 1500);
 
   }catch(e){ showError('❌ '+e.message); btn.disabled=false; btn.innerText='Submit For Approval'; }
