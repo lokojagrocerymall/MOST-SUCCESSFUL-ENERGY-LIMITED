@@ -67,9 +67,7 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <div class="left"><img src="logo.png" alt="MSEL"><div><h1>MSEL MENTE CHAT</h1><small id="userLabel" style="color:#64748b;font-size:11px">Loading...</small><br><small id="onlineCount" style="font-size:10px;color:#22c55e">● 0 members</small></div></div>
 <div style="display:flex;align-items:center"><button class="menuBtn" onclick="toggleMenu()">☰</button></div>
 </header>
-
 <div id="pinnedBanner" onclick="scrollToPinned()"></div>
-
 <div id="menuDropdown">
 <a href="#" onclick="openSearch();toggleMenu();return false" style="background:#22c55e;color:#000">🔍 Search Messages</a>
 <a href="engineers.html?v=1002" onclick="toggleMenu()">🛒 Shop</a>
@@ -78,7 +76,6 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <a href="index.html" style="background:#fff;color:#000">🏠 Home</a>
 <button onclick="logout()" style="background:#ef4444;color:#fff">🚪 Logout</button>
 </div>
-
 <div id="approvalBlock">
 <img src="logo.png" style="width:90px;height:90px;object-fit:contain;margin-bottom:20px">
 <h2 style="color:#FFC72C">⏳ Awaiting Approval</h2>
@@ -86,20 +83,16 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <button onclick="location.href='index.html'" style="margin-top:20px;padding:12px 24px;background:#fff;color:#000;border:0;border-radius:20px;font-weight:900">Home</button>
 <button onclick="location.reload()" style="margin-top:10px;padding:12px 24px;background:#22c55e;color:#000;border:0;border-radius:20px;font-weight:900">🔄 Check Again</button>
 </div>
-
 <div id="chatBox"></div>
 <div id="bottomAnchor" style="height:1px; width:100%;"></div>
 <div id="notifyToast"></div>
-
 <div id="recordingBar">
 <div style="display:flex;justify-content:space-between;align-items:center;width:100%"><span style="color:#ef4444">🔴 Recording</span><span id="recTimer" style="font-size:20px">00:00</span></div>
 <div style="height:6px;background:#334155;border-radius:6px;overflow:hidden"><div id="recProgress" style="height:100%;width:0%;background:#ef4444"></div></div>
 <div style="display:flex;gap:10px;margin-top:4px"><button onclick="cancelRecording()" style="flex:1;padding:10px;background:#334155;color:#fff;border:0;border-radius:12px;font-weight:900">✕ Cancel</button><button onclick="sendRecording()" style="flex:1;padding:10px;background:#22c55e;color:#000;border:0;border-radius:12px;font-weight:900">➤ Send</button></div>
 </div>
-
 <div id="searchModal"><div class="banBox"><h3 style="color:#22c55e;text-align:center">🔍 Search Messages</h3><input id="searchInput" placeholder="Type name or message..." style="width:100%;padding:12px;border-radius:12px;border:1px solid #334155;background:#0f172a;color:#fff;margin-top:12px;outline:none" oninput="doSearch()"><div id="searchResults" style="margin:14px 0;max-height:60vh;overflow:auto"></div><button onclick="document.getElementById('searchModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:#fff;border:0;border-radius:10px;font-weight:900">Close</button></div></div>
 <div id="mediaPreviewModal"><div class="banBox" style="max-width:600px"><h3 style="color:#22c55e;text-align:center">📎 Selected Media (<span id="previewCount">0</span>)</h3><div id="mediaPreviewGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;max-height:50vh;overflow:auto"></div><div style="display:flex;gap:8px"><button onclick="sendAllMedia()" style="flex:1;padding:12px;background:#22c55e;color:#000;border:0;border-radius:12px;font-weight:900">Send All</button><button onclick="document.getElementById('fileInput').click()" style="flex:1;padding:12px;background:#FFC72C;color:#000;border:0;border-radius:12px;font-weight:900">+ Add More</button><button onclick="closeMediaPreview()" style="flex:1;padding:12px;background:#334155;color:#fff;border:0;border-radius:12px;font-weight:900">Cancel</button></div></div></div>
-
 <div id="ctxMenu">
 <div class="mTitle" id="ctxTitle">Message</div>
 <div class="emoRow"><span onclick="react('👍')">👍</span><span onclick="react('❤️')">❤️</span><span onclick="react('😂')">😂</span><span onclick="react('😮')">😮</span><span onclick="react('🙏')">🙏</span><span onclick="react('🔥')">🔥</span><span onclick="react('💯')">💯</span></div>
@@ -112,12 +105,10 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <div id="ctxAdmin" style="display:none;flex-direction:column;gap:6px;border-top:1px solid #334155;padding-top:4px;margin-top:4px">
 <button class="del" onclick="deleteMsgAdmin()">🗑️ Admin Remove</button><button style="background:#f59e0b;color:#000" onclick="suspendUser()">⏸️ Suspend 24h</button><button style="background:#000;color:#ef4444;border:1px solid #ef4444" onclick="banUserForever()">🚫 Ban Forever</button><button style="background:#22c55e;color:#000" onclick="restoreUser()">✅ Restore User</button>
 </div><button style="background:#334155" onclick="closeCtx()">✕ Close</button></div>
-
 <div id="membersModal"><div class="banBox" style="max-width:600px"><h2 style="color:#FFC72C;text-align:center">👥 MENTE Members</h2><p id="membersCount" style="text-align:center;opacity:0.7;margin:8px 0;font-size:12px"></p><div id="membersList" style="margin:14px 0;max-height:70vh;overflow:auto"></div><button onclick="document.getElementById('membersModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:#fff;border:0;border-radius:10px;font-weight:900">Close</button></div></div>
 <div id="banModal"><div class="banBox"><h2 style="color:#FFC72C;text-align:center">👑 Banned List</h2><div id="banList" style="margin:14px 0"></div><button onclick="document.getElementById('banModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:#fff;border:0;border-radius:10px;font-weight:900">Close</button></div></div>
 <div id="viewModal"><div class="banBox"><h3 style="color:#22c55e;text-align:center">👁️ Viewed</h3><div id="viewList" style="margin:14px 0"></div><button onclick="document.getElementById('viewModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:#fff;border:0;border-radius:10px;font-weight:900">Close</button></div></div>
 <div id="editModal"><div class="banBox"><h3 style="color:#FFC72C;text-align:center">✏️ Edit Your Message (5 hours)</h3><textarea id="editInput" style="width:100%;min-height:90px;margin:12px 0;padding:12px;border-radius:10px;background:#1e293b;color:#fff;border:1px solid #334155"></textarea><div style="display:flex;gap:8px"><button onclick="saveEdit()" style="flex:1;padding:12px;background:#22c55e;color:#000;border:0;border-radius:12px;font-weight:900">Save Edit</button><button onclick="document.getElementById('editModal').style.display='none'" style="flex:1;padding:12px;background:#334155;color:#fff;border:0;border-radius:12px;font-weight:900">Cancel</button></div></div></div>
-
 <input type="file" id="fileInput" accept="image/*,video/*,audio/*,.pdf,.doc,.docx" multiple>
 <div class="inputBar">
 <label for="fileInput" class="iconBtn" style="cursor:pointer">📎</label>
@@ -125,14 +116,26 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <button class="iconBtn" id="micBtn">🎤</button>
 <button class="sendBtn" id="sendBtn">➤</button>
 </div>
-
 <script>
 const SUPABASE_URL='https://rsnsciisycruhxtvfhwb.supabase.co';
 const SUPABASE_KEY='sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
 const BUCKET='msel-project';
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+// ====== FIXED SESSION LOGIC FOR ADMIN BUTTON ======
 let session=JSON.parse(localStorage.getItem('msel_mente_session')||'null');
+let adminSession=JSON.parse(localStorage.getItem('msel_admin_session')||'null');
+// If admin came from admin dashboard button, auto-create mente session for chatroom
+if(!session && adminSession){
+  session = { 
+    name: adminSession.name || adminSession.full_name || 'MSEL BOSS', 
+    code: 'MSEL-BOSS-001', 
+    role: 'admin' 
+  };
+  localStorage.setItem('msel_mente_session', JSON.stringify(session));
+}
 if(!session){ alert('🔐 Create account first.'); location.href='mente-register.html'; }
+
 let myName=session?.name||'Guest'; let myCode=session?.code||'MSEL2026'; let myRole=session?.role||'mente';
 let myIsAdmin=myRole==='admin'||myName==='MSEL BOSS'||myName.toLowerCase().includes('boss')||myCode.toUpperCase().includes('BOSS');
 document.getElementById('userLabel').innerText=myIsAdmin?'👑 MSEL BOSS (Admin)':myName+' ('+myCode+')';
@@ -156,12 +159,33 @@ async function loadAccounts(){
   }catch(e){}
   try{ let {data}=await supabaseClient.from('msel_mente_bans').select('*'); if(data){ data.forEach(b=>bannedMap[b.name]=b); localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); } }catch(e){}
 }
+
+// ====== FIXED: 4 members, 7 online BUG ======
 function updateOnlineCount(){
-  let total=allAccountsList.length||0;
-  let last=allMessages.slice(-20); let viewers=new Set();
-  last.forEach(m=>{ (m.viewed_by||[]).forEach(v=>viewers.add(v)); });
+  let approvedMembers = allAccountsList.filter(a=>{
+    let s = (a.status || a.approval_status || '').toLowerCase();
+    return s === 'approved' || s === 'active';
+  });
+  let total = approvedMembers.length || 0;
+  if(total === 0) total = allAccountsList.length || 0;
+
+  let last = allMessages.slice(-30);
+  let viewers = new Set();
+  last.forEach(m=>{ (m.viewed_by||[]).forEach(v=> viewers.add(v) ); });
   viewers.add(myName);
-  let online=viewers.size;
+
+  // Only count viewers who are actually approved members - FIXES BUG
+  let memberNames = new Set(approvedMembers.map(a=> a.full_name || a.name));
+  if(memberNames.size === 0) memberNames = new Set(allAccountsList.map(a=> a.full_name || a.name));
+  
+  let onlineMembers = [...viewers].filter(v=> memberNames.has(v));
+  // Always include me if I am a member
+  if(memberNames.has(myName) || myIsAdmin){
+    if(!onlineMembers.includes(myName)) onlineMembers.push(myName);
+  }
+  let online = Math.min(onlineMembers.length, total);
+  if(total > 0 && online === 0) online = 1; // at least me
+
   document.getElementById('onlineCount').innerText=`● ${total} members, ${online} online`;
 }
 function checkApproval(){
@@ -179,7 +203,8 @@ function checkApproval(){
 function getRealName(m){ let acc=accountsMap[m.name]||accountsMap[m.code]; let real=acc?.full_name||acc?.display_name||acc?.name||m.name; if(!real||real===m.code) real=m.name; if(real&&real.toUpperCase()===m.code.toUpperCase()&&acc?.full_name) real=acc.full_name; return real; }
 function openMembers(){
   if(!allAccountsList.length){ showToast('Loading members...'); loadAccounts().then(()=>openMembers()); return; }
-  document.getElementById('membersCount').innerText=allAccountsList.length+' total members';
+  let approved = allAccountsList.filter(a=>{ let s=(a.status||a.approval_status||'').toLowerCase(); return s==='approved'||s==='active'; });
+  document.getElementById('membersCount').innerText=approved.length+' approved members (Total: '+allAccountsList.length+')';
   document.getElementById('membersList').innerHTML=allAccountsList.map(a=>{
     let name=a.full_name||a.name||'Unknown'; let phone=a.phone||a.whatsapp||a.phone_number||a.contact||'—'; let code=a.code||a.member_code||''; let role=a.role||'mente'; let status=(a.status||a.approval_status||'pending'); let joined=a.created_at?new Date(a.created_at).toLocaleDateString():''; let isBoss=role==='admin'||name.toLowerCase().includes('boss'); let pending=status.toLowerCase()!=='approved' && status.toLowerCase()!=='active';
     return `<div style="display:flex;gap:10px;align-items:center;padding:12px;border-bottom:1px solid #1e3a5f"><div style="width:36px;height:36px;border-radius:50%;background:${isBoss?'linear-gradient(90deg,#FFC72C,#FF8C00)':'#22c55e'};display:flex;align-items:center;justify-content:center;font-weight:900;color:#000;flex-shrink:0">${escapeHtml(name.charAt(0).toUpperCase())}</div><div style="flex:1;min-width:0"><div style="font-weight:900;font-size:13px">${escapeHtml(name)} ${isBoss?'<span style="font-size:9px;background:linear-gradient(90deg,#FFC72C,#FF8C00);color:#000;padding:2px 6px;border-radius:8px">BOSS</span>':''} ${pending?'<span style="font-size:9px;background:#f59e0b;color:#000;padding:2px 6px;border-radius:8px;margin-left:4px">PENDING</span>':''}</div><div style="font-size:11px;opacity:0.8;margin-top:2px">📞 ${escapeHtml(phone)} • ${escapeHtml(code)}</div><div style="font-size:10px;opacity:0.5">Joined: ${joined} • ${escapeHtml(status)}</div></div><div style="display:flex;flex-direction:column;gap:4px">${myIsAdmin && pending && !isBoss ? `<button onclick="approveMember('${a.id||a.name}')" style="background:#22c55e;color:#000;border:0;padding:6px 10px;border-radius:8px;font-weight:900;font-size:11px">✅ Approve</button>` : ''}</div></div>`;
@@ -190,7 +215,7 @@ async function approveMember(idOrName){
   try{
     let acc=allAccountsList.find(a=> (a.id==idOrName)||(a.name==idOrName)); if(!acc) return;
     await supabaseClient.from('msel_mente_accounts').update({status:'approved',approval_status:'approved'}).eq('id',acc.id);
-    showToast('✅ Approved '+acc.name); allAccountsList=allAccountsList.map(a=> a.id===acc.id ? {...a,status:'approved'} : a); openMembers();
+    showToast('✅ Approved '+acc.name); allAccountsList=allAccountsList.map(a=> a.id===acc.id ? {...a,status:'approved',approval_status:'approved'} : a); openMembers(); updateOnlineCount();
     await supabaseClient.from('msel_mente_messages').insert({name:'MSEL BOSS',code:'MSEL-BOSS-001',message:`✅ ${acc.name||acc.full_name} has been approved by Boss`,type:'system'});
   }catch(e){ showToast(e.message); }
 }
@@ -303,11 +328,9 @@ function tagUser(){ if(!selectedMsg) return; insertTag(selectedMsg.name); closeC
 function insertTag(n){ let i=document.getElementById('msgInput'); i.value+=(i.value?' ':'')+'@'+n+' '; i.focus(); autoResize(); }
 function openEdit(){ if(!selectedMsg || selectedMsg.name!==myName){ showToast('Own only'); return; } if((Date.now() - new Date(selectedMsg.created_at).getTime()) > 5*60*60*1000){ showToast('Edit expired'); return; } document.getElementById('editInput').value=selectedMsg.message||''; document.getElementById('editModal').style.display='block'; closeCtx(); }
 async function saveEdit(){ let newText=document.getElementById('editInput').value.trim(); if(!newText) return; try{ await supabaseClient.from('msel_mente_messages').update({message:newText,is_edited:true}).eq('id',selectedMsg.id); showToast('✏️ Edited'); document.getElementById('editModal').style.display='none'; loadMessages(); }catch(e){ showToast(e.message); } }
-
-// === DATA SAVER v2.0 - FIXED ONLY THIS FUNCTION - NOTHING ELSE REMOVED ===
 async function compressImage(file){
   if(!file.type.startsWith('image/')) return file;
-  if(file.size < 80*1024) return file; // skip tiny images <80KB
+  if(file.size < 80*1024) return file;
   return new Promise(res=>{
     let img=new Image();
     img.src=URL.createObjectURL(file);
@@ -324,14 +347,12 @@ async function compressImage(file){
       ctx.drawImage(img,0,0,w,h);
       canvas.toBlob(b=>{
         let newFile=new File([b], file.name.replace(/\.\w+$/,'.jpg'), {type:'image/jpeg'});
-        console.log(`DATA SAVER: ${(file.size/1024/1024).toFixed(2)}MB -> ${(newFile.size/1024).toFixed(0)}KB`);
         res(newFile);
       },'image/jpeg',0.60);
     };
     img.onerror=()=>res(file);
   });
 }
-
 async function uploadMedia(f){ let ext=f.name.split('.').pop(); let name=`chat/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`; let {error}=await supabaseClient.storage.from(BUCKET).upload(name,f); if(error) throw error; let {data}=supabaseClient.storage.from(BUCKET).getPublicUrl(name); return data.publicUrl; }
 async function saveBan(name,status,until=null){ let p={name,status,banned_by:myName,until}; bannedMap[name]=p; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); try{ await supabaseClient.from('msel_mente_bans').upsert(p,{onConflict:'name'}); }catch(e){} }
 async function deleteMsgAdmin(){ if(!selectedMsg||!myIsAdmin) return; if(!confirm('Remove?')) return; try{ await supabaseClient.from('msel_mente_messages').delete().eq('id',selectedMsg.id); showToast('🗑️ Removed'); closeCtx(); }catch(e){ showToast(e.message); } }
@@ -340,7 +361,6 @@ async function banUserForever(){ if(!selectedMsg||!myIsAdmin) return; if(!confir
 async function restoreUser(){ if(!selectedMsg||!myIsAdmin) return; let n=selectedMsg.name; delete bannedMap[n]; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); try{ await supabaseClient.from('msel_mente_bans').delete().eq('name',n); }catch(e){} showToast('✅ Restored'); closeCtx(); }
 function openBanList(){ let list=document.getElementById('banList'); let keys=Object.keys(bannedMap); if(!keys.length) list.innerHTML='<p style="text-align:center;opacity:.6">No banned</p>'; else list.innerHTML=keys.map(k=>{ let b=bannedMap[k]; let until=b.until? new Date(b.until).toLocaleString(): 'Forever'; return `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #1e3a5f"><div><b>${k}</b><br><small style="color:${b.status==='banned'?'#ef4444':'#f59e0b'}">${b.status} - ${until}</small></div><button onclick="quickRestore('${k}')" style="background:#22c55e;border:0;padding:6px 12px;border-radius:20px;font-weight:900">Restore</button></div>`; }).join(''); document.getElementById('banModal').style.display='block'; }
 async function quickRestore(name){ delete bannedMap[name]; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); try{ await supabaseClient.from('msel_mente_bans').delete().eq('name',name); }catch(e){} showToast('✅ Restored'); openBanList(); }
-// --- MESSAGES FIXED v1.0 FINAL ---
 async function sendMsg(mediaUrl=null,mediaType='text'){
   let myBan=getBanStatus(myName); if(myBan){ showToast(myBan.status==='banned'?'🚫 BANNED':'⏸️ SUSPENDED'); return; }
   let input=document.getElementById('msgInput'); let text=input.value.trim(); if(!text&&!mediaUrl) return;
@@ -377,7 +397,6 @@ function toggleSendMic(){ let i=document.getElementById('msgInput'); let m=docum
 document.getElementById('msgInput').addEventListener('input',()=>{ autoResize(); toggleSendMic(); });
 document.getElementById('sendBtn').addEventListener('click',()=>sendMsg());
 document.getElementById('msgInput').addEventListener('keydown',e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMsg(); } });
-
 document.getElementById('fileInput').addEventListener('change',async e=>{
   let files=Array.from(e.target.files||[]); if(!files.length) return;
   let newFiles=files.filter(f=>!selectedFiles.some(s=>s.name===f.name && s.size===f.size));
@@ -427,7 +446,7 @@ async function sendRecording(){
 let micBtn=document.getElementById('micBtn');
 micBtn.addEventListener('mousedown',e=>{e.preventDefault(); startRecording();});
 micBtn.addEventListener('touchstart',e=>{e.preventDefault(); startRecording();},{passive:false});
-function logout(){ try{ if(!myIsAdmin){ supabaseClient.from('msel_mente_messages').insert({name:myName,code:myCode,message:`👋 ${myName} left the chat`,type:'system'}).then(()=>{}); } }catch(e){} localStorage.removeItem('msel_mente_session'); location.href='index.html'; }
+function logout(){ try{ if(!myIsAdmin){ supabaseClient.from('msel_mente_messages').insert({name:myName,code:myCode,message:`👋 ${myName} left the chat`,type:'system'}).then(()=>{}); } }catch(e){} localStorage.removeItem('msel_mente_session'); localStorage.removeItem('msel_admin_session'); location.href='index.html'; }
 document.addEventListener('click',e=>{ if(!e.target.closest('#menuDropdown')&&!e.target.closest('.menuBtn')){ document.getElementById('menuDropdown').style.display='none'; } if(!e.target.closest('.msg')&&!e.target.closest('#ctxMenu')&&!e.target.closest('#banModal')&&!e.target.closest('#viewModal')&&!e.target.closest('#editModal')&&!e.target.closest('#membersModal')&&!e.target.closest('#mediaPreviewModal')&&!e.target.closest('#searchModal')){ document.getElementById('ctxMenu').style.display='none'; } });
 </script>
 </body>
