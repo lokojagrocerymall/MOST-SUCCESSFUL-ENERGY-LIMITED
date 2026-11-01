@@ -47,7 +47,7 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 #ctxMenu button.save{background:#22c55e;color:#000}
 #ctxMenu .emoRow{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:6px 0}
 #ctxMenu .emoRow span{font-size:26px;cursor:pointer;padding:6px 8px;background:#0f172a;border-radius:12px;border:1px solid #334155}
-#banModal,#viewModal,#editModal,#membersModal,#searchModal,#imgViewer{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:300;padding:12px;overflow:auto}
+#banModal,#viewModal,#editModal,#membersModal,#searchModal,#imgViewer,#waPicker{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:300;padding:12px;overflow:auto}
 .banBox{background:#0f1a2e;max-width:520px;margin:20px auto;border-radius:16px;padding:18px;border:2px solid #FFC72C}
 .avatar{width:20px;height:20px;border-radius:50%;background:#22c55e;color:#000;font-weight:900;font-size:10px;display:inline-flex;align-items:center;justify-content:center;margin-right:4px}
 .avatar.bossAvatar{background:linear-gradient(90deg,#FFC72C,#FF8C00)}
@@ -58,6 +58,17 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 .album-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;max-width:280px;margin-top:6px;border-radius:12px;overflow:hidden;background:#000}
 .album-grid img{width:100%;height:120px;object-fit:cover;display:block;background:#000;cursor:zoom-in}
 .album-grid video{width:100%;height:120px;object-fit:cover;display:block;background:#000}
+#waPicker{background:#111;z-index:500;padding:0;display:none;flex-direction:column}
+.waHeader{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#111;color:#fff}
+.waGrid{flex:1;overflow:auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;padding:2px;background:#000}
+.waThumb{position:relative;aspect-ratio:1;background:#222;overflow:hidden}
+.waThumb img,.waThumb video{width:100%;height:100%;object-fit:cover;display:block}
+.waNum{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:#000;color:#fff;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900}
+.waNum.sel{background:#22c55e;border-color:#22c55e;color:#000}
+.waBottom{display:flex;align-items:center;gap:10px;padding:10px;background:#1f2c34;border-top:1px solid #334155}
+.waCaption{flex:1;padding:12px 14px;border-radius:24px;border:0;background:#2a3942;color:#fff;outline:none}
+.waSend{width:48px;height:48px;border-radius:50%;background:#22c55e;color:#000;border:0;font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center;position:relative}
+.waSend span{position:absolute;top:-4px;right:-4px;background:#fff;color:#000;font-size:11px;font-weight:900;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center}
 </style>
 </head>
 <body>
@@ -94,6 +105,12 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <button onclick="nextViewerImg()" style="background:#1e293b;color:#fff;padding:10px 18px;border-radius:20px;font-weight:900;border:1px solid #334155;font-size:18px">▶</button>
 <button onclick="document.getElementById('imgViewer').style.display='none'" style="background:#fff;color:#000;padding:10px 20px;border-radius:20px;font-weight:900;border:0">✕</button>
 </div>
+</div>
+
+<div id="waPicker">
+<div class="waHeader"><div style="display:flex;align-items:center;gap:12px"><button onclick="closeWaPicker()" style="background:0;border:0;color:#fff;font-size:22px">✕</button><span style="font-weight:900">Recents • <span id="waCount">0</span> selected</span></div><button onclick="sendWaPicker()" style="background:#22c55e;color:#000;border:0;padding:6px 14px;border-radius:20px;font-weight:900">Send</button></div>
+<div id="waGrid" class="waGrid"></div>
+<div class="waBottom"><input id="waCaption" class="waCaption" placeholder="Add a caption..."><button class="waSend" onclick="sendWaPicker()">➤<span id="waSendCount">0</span></button></div>
 </div>
 
 <div id="recordingBar">
@@ -147,6 +164,7 @@ let bannedMap=JSON.parse(localStorage.getItem('msel_banned_map')||'{}');
 let allMessages=[]; let selectedMsg=null; let replyToData=null; let accountsMap={}; let accountsLoaded=false; let viewedOnce=false; let allAccountsList=[]; let recStartTime=null; let recInterval=null; let recordedBlob=null; let mediaRecorder=null; let audioChunks=[]; let isRecording=false; let pinnedMessage=null; 
 let isNearBottom=true; let isTyping=false;
 let currentAlbum=[]; let currentAlbumIndex=0;
+let waFiles=[];
 
 function toggleMenu(){ let d=document.getElementById('menuDropdown'); d.style.display=d.style.display==='flex'?'none':'flex'; }
 function escapeHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
@@ -174,7 +192,6 @@ function parseAlbumUrls(m){
   let url = m.media_url||'';
   if(!url) return [];
   if(url.includes('|')) return url.split('|').filter(u=>u.trim());
-  if(url.includes(',')) return url.split(',').filter(u=>u.trim());
   return [url];
 }
 function openImageViewer(url, albumUrls=null, startIndex=0){
@@ -182,22 +199,12 @@ function openImageViewer(url, albumUrls=null, startIndex=0){
     currentAlbum = albumUrls;
     currentAlbumIndex = startIndex;
   } else {
-    // try to get album from selected message
-    let msg = allMessages.find(x=> x.media_url===url || (x.media_urls&&x.media_urls.includes(url)) || (x.media_url&&x.media_url.includes(url)));
+    let msg = allMessages.find(x=> x.media_url===url || (x.media_url&&x.media_url.includes(url)));
     if(msg){
       let urls = parseAlbumUrls(msg);
-      if(urls.length>1){
-        currentAlbum = urls;
-        currentAlbumIndex = urls.indexOf(url);
-        if(currentAlbumIndex<0) currentAlbumIndex=0;
-      } else {
-        currentAlbum = [url];
-        currentAlbumIndex = 0;
-      }
-    } else {
-      currentAlbum = [url];
-      currentAlbumIndex = 0;
-    }
+      if(urls.length>1){ currentAlbum = urls; currentAlbumIndex = urls.indexOf(url); if(currentAlbumIndex<0) currentAlbumIndex=0; }
+      else { currentAlbum = [url]; currentAlbumIndex = 0; }
+    } else { currentAlbum = [url]; currentAlbumIndex = 0; }
   }
   updateViewer();
   document.getElementById('imgViewer').style.display='flex';
@@ -275,12 +282,12 @@ function renderMessages(data){
     if(type==='system'){ box.innerHTML+=`<div class="msg system" data-id="${m.id}">${escapeHtml(m.message||'')} • ${formatNigeriaTime(m.created_at)}</div>`; return; }
     let isMe=m.name===myName; let admin=isAdminMsg(m); let ban=getBanStatus(m.name); 
     let bossBadge=admin?'<span class="badge-boss">👑 MSEL BOSS</span>':''; 
-    let mediaUrl=m.media_url||''; 
     let albumUrls = parseAlbumUrls(m);
     let isAlbum = albumUrls.length>1;
+    let mediaUrl = m.media_url||'';
     let txt=m.message||''; 
     let lowerUrl=(mediaUrl||'').toLowerCase();
-    let isImageUrl=lowerUrl.includes('.jpg')||lowerUrl.includes('.png')||lowerUrl.includes('.jpeg')||lowerUrl.includes('wa_')||lowerUrl.includes('webp')||lowerUrl.includes('supabase');
+    let isImageUrl=lowerUrl.includes('.jpg')||lowerUrl.includes('.png')||lowerUrl.includes('.jpeg')||lowerUrl.includes('wa_')||lowerUrl.includes('supabase');
     let isVideoUrl=lowerUrl.includes('.mp4')||lowerUrl.includes('.webm')||lowerUrl.includes('.mov');
     let backup=localStorage.getItem('reaction_backup_'+m.id);
     if(backup){ try{ let b=JSON.parse(backup); if(Object.keys(b).length>0 && (!m.reactions || Object.keys(m.reactions).length===0)) m.reactions=b; }catch(e){} }
@@ -342,7 +349,7 @@ async function loadMessages(){
   }catch(e){ console.log(e); }
 }
 loadMessages();
-supabaseClient.channel('mente-no-media_urls-v3').on('postgres_changes',{event:'INSERT',schema:'public',table:'msel_mente_messages'},payload=>{
+supabaseClient.channel('mente-final-multi-v6').on('postgres_changes',{event:'INSERT',schema:'public',table:'msel_mente_messages'},payload=>{
   allMessages = allMessages.filter(m=>!String(m.id).startsWith('temp-'));
   allMessages.push(payload.new);
   renderMessages(allMessages);
@@ -393,7 +400,7 @@ async function restoreUser(){ if(!selectedMsg||!myIsAdmin) return; let n=selecte
 function openBanList(){ let list=document.getElementById('banList'); let keys=Object.keys(bannedMap); if(!keys.length) list.innerHTML='<p style="text-align:center;opacity:.6">No banned</p>'; else list.innerHTML=keys.map(k=>{ let b=bannedMap[k]; let until=b.until? new Date(b.until).toLocaleString(): 'Forever'; return `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #1e3a5f"><div><b>${k}</b><br><small style="color:${b.status==='banned'?'#ef4444':'#f59e0b'}">${b.status} - ${until}</small></div><button onclick="quickRestore('${k}')" style="background:#22c55e;border:0;padding:6px 12px;border-radius:20px;font-weight:900">Restore</button></div>`; }).join(''); document.getElementById('banModal').style.display='block'; }
 async function quickRestore(name){ delete bannedMap[name]; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); try{ await supabaseClient.from('msel_mente_bans').delete().eq('name',name); }catch(e){} showToast('✅ Restored'); openBanList(); }
 
-// FIXED: NO media_urls COLUMN - USE media_url WITH | SEPARATOR - NO WIPE AFTER REFRESH
+// FIXED: NO media_urls COLUMN - USE media_url WITH | SEPARATOR
 async function sendMsg(mediaUrl=null,mediaType='text'){
   let myBan=getBanStatus(myName); if(myBan){ showToast(myBan.status==='banned'?'🚫 BANNED':'⏸️ SUSPENDED'); return; }
   let input=document.getElementById('msgInput'); let text=input.value.trim(); if(!text&&!mediaUrl) return;
@@ -406,7 +413,7 @@ async function sendMsg(mediaUrl=null,mediaType='text'){
   if(mediaUrl){ payload.media_url=mediaUrl; payload.type=mediaType; }
   if(replyToData) payload.reply_to=replyToData;
   if(!text && !mediaUrl) return;
-  try{ let {error}=await supabaseClient.from('msel_mente_messages').insert(payload); if(error) throw error; input.value=''; }catch(e){ showToast('❌ '+e.message); console.log(e); }
+  try{ let {error}=await supabaseClient.from('msel_mente_messages').insert(payload); if(error) throw error; input.value=''; }catch(e){ showToast('❌ '+e.message); }
   cancelReply();
 }
 function autoResize(){ let i=document.getElementById('msgInput'); i.style.height='auto'; i.style.height=Math.min(i.scrollHeight,120)+'px'; }
@@ -421,26 +428,50 @@ document.getElementById('sendBtn').addEventListener('click',()=>sendMsg());
 msgInput.addEventListener('keydown',e=>{ if(e.key==='Enter' && e.shiftKey){ e.preventDefault(); sendMsg(); } });
 if(window.visualViewport){ window.visualViewport.addEventListener('resize',()=>{ if(isNearBottom || document.activeElement===msgInput) scrollToBottom(true); }); }
 
-// MULTIPLE PICKER FIX - SELECT MANY DIRECTLY FROM GALLERY
+// MULTIPLE PICKER FIXED - LIKE WHATSAPP SCREENSHOT 2
+function openWaPicker(files){
+  waFiles = files.slice(0,10);
+  let grid = document.getElementById('waGrid');
+  grid.innerHTML='';
+  waFiles.forEach((f,i)=>{
+    let url = URL.createObjectURL(f);
+    let isVid = f.type.startsWith('video/');
+    grid.innerHTML+=`<div class="waThumb"><div class="waNum sel" id="waNum${i}">${i+1}</div>${isVid?`<video src="${url}" muted></video>`:`<img src="${url}">`}</div>`;
+  });
+  document.getElementById('waPicker').style.display='flex';
+  updateWaCounts();
+}
+function closeWaPicker(){ document.getElementById('waPicker').style.display='none'; waFiles=[]; }
+function updateWaCounts(){ document.getElementById('waCount').innerText=waFiles.length; document.getElementById('waSendCount').innerText=waFiles.length; }
+async function sendWaPicker(){
+  let files = [...waFiles];
+  let caption = document.getElementById('waCaption').value.trim();
+  closeWaPicker();
+  if(!files.length) return;
+  let urls=[];
+  showToast('⏳ Uploading '+files.length+'...');
+  for(let f of files){
+    try{ let toUp=await compressImage(f); let url=await uploadMedia(toUp); urls.push(url); }catch(e){}
+  }
+  if(!urls.length) return;
+  let joined = urls.join('|');
+  let type = urls.length>1 ? 'album' : 'image';
+  document.getElementById('msgInput').value = caption;
+  await sendMsg(joined, type);
+  document.getElementById('waCaption').value='';
+}
+
 document.getElementById('fileInput').addEventListener('change',async e=>{
   let files=Array.from(e.target.files||[]); 
   if(!files.length) return;
   e.target.value='';
-  let urls=[];
-  showToast('⏳ Uploading '+files.length+' photos...');
-  for(let f of files.slice(0,10)){
-    if(f.size>25*1024*1024){ showToast(f.name+' too big'); continue; }
-    try{ 
-      let toUp=await compressImage(f); 
-      let url=await uploadMedia(toUp); 
-      urls.push(url);
-    }catch(err){ console.log(err); }
+  if(files.length>1){
+    openWaPicker(files); // Show WhatsApp picker like Screenshot 2 with numbers 1 2 3 4 5
+  } else {
+    let f = files[0];
+    let url = await uploadMedia(await compressImage(f));
+    await sendMsg(url, f.type.startsWith('video/')?'video':'image');
   }
-  if(!urls.length){ showToast('❌ Upload failed'); return; }
-  // SAVE AS ONE GROUP - JOINED WITH | - NO media_urls COLUMN NEEDED - FIXES WIPE BUG
-  let joined = urls.join('|');
-  let type = urls.length>1 ? 'album' : (urls[0].toLowerCase().includes('.mp4')?'video':'image');
-  await sendMsg(joined, type);
 });
 async function startRecording(){
   try{
@@ -465,7 +496,7 @@ let micBtn=document.getElementById('micBtn');
 micBtn.addEventListener('mousedown',e=>{e.preventDefault(); startRecording();});
 micBtn.addEventListener('touchstart',e=>{e.preventDefault(); startRecording();},{passive:false});
 function logout(){ try{ if(!myIsAdmin){ supabaseClient.from('msel_mente_messages').insert({name:myName,code:myCode,message:`👋 ${myName} left the chat`,type:'system'}).then(()=>{}); } }catch(e){} localStorage.removeItem('msel_mente_session'); localStorage.removeItem('msel_admin_session'); location.href='index.html'; }
-document.addEventListener('click',e=>{ if(!e.target.closest('#menuDropdown')&&!e.target.closest('.menuBtn')){ document.getElementById('menuDropdown').style.display='none'; } if(!e.target.closest('.msg')&&!e.target.closest('#ctxMenu')&&!e.target.closest('#banModal')&&!e.target.closest('#viewModal')&&!e.target.closest('#editModal')&&!e.target.closest('#membersModal')&&!e.target.closest('#searchModal')&&!e.target.closest('#imgViewer')){ document.getElementById('ctxMenu').style.display='none'; } });
+document.addEventListener('click',e=>{ if(!e.target.closest('#menuDropdown')&&!e.target.closest('.menuBtn')){ document.getElementById('menuDropdown').style.display='none'; } if(!e.target.closest('.msg')&&!e.target.closest('#ctxMenu')&&!e.target.closest('#banModal')&&!e.target.closest('#viewModal')&&!e.target.closest('#editModal')&&!e.target.closest('#membersModal')&&!e.target.closest('#searchModal')&&!e.target.closest('#imgViewer')&&!e.target.closest('#waPicker')){ document.getElementById('ctxMenu').style.display='none'; } });
 </script>
 </body>
 </html>
