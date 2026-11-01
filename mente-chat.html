@@ -57,6 +57,9 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 #pinnedBanner{display:none;position:fixed;top:62px;left:3%;right:3%;width:94%;z-index:98;background:linear-gradient(90deg,#FFC72C,#FF8C00);color:#000;padding:11px 14px;border-radius:0 0 14px 14px;font-size:12px;font-weight:900;cursor:pointer}
 #imgViewer{background:rgba(0,0,0,0.96);z-index:9999;display:none;justify-content:center;align-items:center;flex-direction:column}
 #imgViewer img{max-width:95%;max-height:80vh;border-radius:12px}
+.album-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;max-width:280px;margin-top:6px;border-radius:12px;overflow:hidden;background:#000}
+.album-grid img{width:100%;height:120px;object-fit:cover;display:block;background:#000;cursor:zoom-in}
+.album-grid video{width:100%;height:120px;object-fit:cover;display:block;background:#000}
 </style>
 </head>
 <body>
@@ -90,7 +93,7 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <div style="display:flex;gap:10px;margin-top:4px"><button onclick="cancelRecording()" style="flex:1;padding:10px;background:#334155;color:#fff;border:0;border-radius:12px;font-weight:900">✕ Cancel</button><button onclick="sendRecording()" style="flex:1;padding:10px;background:#22c55e;color:#000;border:0;border-radius:12px;font-weight:900">➤ Send</button></div>
 </div>
 <div id="searchModal"><div class="banBox"><h3 style="color:#22c55e;text-align:center">🔍 Search Messages</h3><input id="searchInput" placeholder="Type name or message..." style="width:100%;padding:12px;border-radius:12px;border:1px solid #334155;background:#0f172a;color:#fff;margin-top:12px;outline:none" oninput="doSearch()"><div id="searchResults" style="margin:14px 0;max-height:60vh;overflow:auto"></div><button onclick="document.getElementById('searchModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:#fff;border:0;border-radius:10px;font-weight:900">Close</button></div></div>
-<div id="mediaPreviewModal"><div class="banBox" style="max-width:600px"><h3 style="color:#22c55e;text-align:center">📎 Selected Media (<span id="previewCount">0</span>/10) - Long press to select many</h3><div id="mediaPreviewGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;max-height:50vh;overflow:auto"></div><div style="display:flex;gap:8px"><button onclick="sendAllMedia()" style="flex:1;padding:12px;background:#22c55e;color:#000;border:0;border-radius:12px;font-weight:900">Send All</button><button onclick="document.getElementById('fileInput').click()" style="flex:1;padding:12px;background:#FFC72C;color:#000;border:0;border-radius:12px;font-weight:900">+ Add More</button><button onclick="closeMediaPreview()" style="flex:1;padding:12px;background:#334155;color:#fff;border:0;border-radius:12px;font-weight:900">Cancel</button></div></div></div>
+<div id="mediaPreviewModal"><div class="banBox" style="max-width:600px"><h3 style="color:#22c55e;text-align:center">📎 Selected Media (<span id="previewCount">0</span>/10) - Will send as GROUP</h3><div id="mediaPreviewGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;max-height:50vh;overflow:auto"></div><div style="display:flex;gap:8px"><button onclick="sendAllMedia()" style="flex:1;padding:12px;background:#22c55e;color:#000;border:0;border-radius:12px;font-weight:900">Send as Group</button><button onclick="document.getElementById('fileInput').click()" style="flex:1;padding:12px;background:#FFC72C;color:#000;border:0;border-radius:12px;font-weight:900">+ Add More</button><button onclick="closeMediaPreview()" style="flex:1;padding:12px;background:#334155;color:#fff;border:0;border-radius:12px;font-weight:900">Cancel</button></div></div></div>
 <div id="ctxMenu">
 <div class="mTitle" id="ctxTitle">Message</div>
 <div class="emoRow"><span onclick="react('👍')">👍</span><span onclick="react('❤️')">❤️</span><span onclick="react('😂')">😂</span><span onclick="react('😮')">😮</span><span onclick="react('🙏')">🙏</span><span onclick="react('🔥')">🔥</span><span onclick="react('💯')">💯</span></div>
@@ -224,7 +227,9 @@ function renderMessages(data){
     if(type==='system'){ box.innerHTML+=`<div class="msg system" data-id="${m.id}">${escapeHtml(m.message||'')} • ${formatNigeriaTime(m.created_at)}</div>`; return; }
     let isMe=m.name===myName; let admin=isAdminMsg(m); let ban=getBanStatus(m.name); 
     let bossBadge=admin?'<span class="badge-boss">👑 MSEL BOSS</span>':''; 
-    let mediaUrl=m.media_url||''; let txt=m.message||''; 
+    let mediaUrl=m.media_url||''; 
+    let mediaUrls=m.media_urls||null;
+    let txt=m.message||''; 
     let lowerUrl=(mediaUrl||'').toLowerCase();
     let isImageUrl=lowerUrl.includes('.jpg')||lowerUrl.includes('.png')||lowerUrl.includes('.jpeg')||lowerUrl.includes('wa_')||lowerUrl.includes('webp');
     let isVideoUrl=lowerUrl.includes('.mp4')||lowerUrl.includes('.webm')||lowerUrl.includes('.mov');
@@ -239,12 +244,26 @@ function renderMessages(data){
     let editedTag=m.is_edited?'<small style="opacity:.6"> (edited)</small>':''; 
     let pinnedTag=(m.is_pinned||m.pinned||(pinnedMessage&&pinnedMessage.id===m.id))?'<span style="background:#FFC72C;color:#000;font-size:8px;padding:2px 5px;border-radius:6px;margin-left:4px">📌 PINNED</span>':'';
     let mediaHtml='';
-    if(mediaUrl && (type==='image' || isImageUrl)) mediaHtml=`<img src="${mediaUrl}" class="chat-img" loading="lazy" onload="scrollToBottom(false)" onclick="event.stopPropagation();openImageViewer('${mediaUrl}')">`;
-    else if(mediaUrl && (type==='video' || isVideoUrl)) mediaHtml=`<video src="${mediaUrl}" class="chat-video" controls playsinline></video>`;
-    else if(mediaUrl && type==='voice') mediaHtml=`<audio src="${mediaUrl}" controls style="width:260px"></audio>`;
-    else if(mediaUrl) mediaHtml=`<a href="${mediaUrl}" target="_blank" style="color:#FFC72C;font-weight:900">📎 View File</a>`;
+    if(mediaUrls && Array.isArray(mediaUrls) && mediaUrls.length>1){
+      mediaHtml=`<div class="album-grid">`+ mediaUrls.map(u=>{
+        let lu=(u||'').toLowerCase();
+        if(lu.includes('.mp4')||lu.includes('.webm')||lu.includes('.mov')){
+          return `<video src="${u}" controls playsinline muted></video>`;
+        } else {
+          return `<img src="${u}" loading="lazy" onclick="event.stopPropagation();openImageViewer('${u}')">`;
+        }
+      }).join('') + `</div><div style="font-size:10px;opacity:0.7;margin-top:4px">📦 ${mediaUrls.length} photos - tap to view</div>`;
+    } else if(mediaUrl && (type==='image' || type==='album' || isImageUrl)){
+      mediaHtml=`<img src="${mediaUrl}" class="chat-img" loading="lazy" onload="scrollToBottom(false)" onclick="event.stopPropagation();openImageViewer('${mediaUrl}')">`;
+    } else if(mediaUrl && (type==='video' || isVideoUrl)){
+      mediaHtml=`<video src="${mediaUrl}" class="chat-video" controls playsinline></video>`;
+    } else if(mediaUrl && type==='voice'){
+      mediaHtml=`<audio src="${mediaUrl}" controls style="width:260px"></audio>`;
+    } else if(mediaUrl){
+      mediaHtml=`<a href="${mediaUrl}" target="_blank" style="color:#FFC72C;font-weight:900">📎 View File</a>`;
+    }
     let html=`<div style="font-weight:900;font-size:11px;margin-bottom:4px"><span class="avatar ${admin?'bossAvatar':''}">${admin?'👑':initial}</span>${nameLine} ${bossBadge} ${pinnedTag}${editedTag}</div>${replyHtml}${mediaHtml}`;
-    if(txt && txt!=='[image]' && txt!=='[video]' && txt!=='[voice]' && txt!=='[file]') html+=`<div style="margin-top:4px;white-space:pre-wrap;word-break:break-word">${escapeHtml(txt)}</div>`;
+    if(txt && !txt.startsWith('📷') && txt!=='[image]' && txt!=='[video]' && txt!=='[voice]' && txt!=='[file]') html+=`<div style="margin-top:4px;white-space:pre-wrap;word-break:break-word">${escapeHtml(txt)}</div>`;
     html+=`${reactsHtml}<div class="views"><span>🕒 ${formatNigeriaTime(m.created_at)}</span></div>`;
     box.innerHTML+=`<div class="msg ${isMe?'me':'other'} ${admin?'boss':''} ${ban?'bannedMsg':''}" data-id="${m.id}"><div class="bubble">${html}</div></div>`;
   });
@@ -252,9 +271,9 @@ function renderMessages(data){
   attachLongPress(); if(isNearBottom) scrollToBottom(false); trackViews(); loadPinned(); updateOnlineCount();
 }
 function attachLongPress(){ let timer; document.querySelectorAll('.msg').forEach(el=>{ const start=(e)=>{ timer=setTimeout(()=>{ selectMsgLong(el.dataset.id); },600); }; const clear=()=>clearTimeout(timer); el.addEventListener('touchstart',start,{passive:true}); el.addEventListener('touchend',clear); el.addEventListener('mousedown',start); el.addEventListener('mouseup',clear); el.addEventListener('mouseleave',clear); }); }
-function selectMsgLong(id){ if(navigator.vibrate) navigator.vibrate(50); selectedMsg=allMessages.find(m=>m.id==id); if(!selectedMsg) return; if((selectedMsg.type||'').toLowerCase()==='system') return; document.getElementById('ctxTitle').innerText=selectedMsg.name + (selectedMsg.name===myName?' (You)':''); let isMe=selectedMsg.name===myName; let hasMedia=!!selectedMsg.media_url; document.getElementById('ctxSave').style.display=hasMedia?'block':'none'; document.getElementById('ctxEdit').style.display=(isMe && (Date.now()-new Date(selectedMsg.created_at).getTime())<5*60*60*1000)?'block':'none'; document.getElementById('ctxDel').style.display=isMe?'block':'none'; document.getElementById('ctxAdmin').style.display=(myIsAdmin && !isMe)?'flex':'none'; document.getElementById('ctxPin').style.display=myIsAdmin?'block':'none'; document.getElementById('ctxUnpin').style.display=(myIsAdmin && pinnedMessage)?'block':'none'; document.getElementById('ctxMenu').style.display='flex'; }
+function selectMsgLong(id){ if(navigator.vibrate) navigator.vibrate(50); selectedMsg=allMessages.find(m=>m.id==id); if(!selectedMsg) return; if((selectedMsg.type||'').toLowerCase()==='system') return; document.getElementById('ctxTitle').innerText=selectedMsg.name + (selectedMsg.name===myName?' (You)':''); let isMe=selectedMsg.name===myName; let hasMedia=!!(selectedMsg.media_url||selectedMsg.media_urls); document.getElementById('ctxSave').style.display=hasMedia?'block':'none'; document.getElementById('ctxEdit').style.display=(isMe && (Date.now()-new Date(selectedMsg.created_at).getTime())<5*60*60*1000)?'block':'none'; document.getElementById('ctxDel').style.display=isMe?'block':'none'; document.getElementById('ctxAdmin').style.display=(myIsAdmin && !isMe)?'flex':'none'; document.getElementById('ctxPin').style.display=myIsAdmin?'block':'none'; document.getElementById('ctxUnpin').style.display=(myIsAdmin && pinnedMessage)?'block':'none'; document.getElementById('ctxMenu').style.display='flex'; }
 function closeCtx(){ document.getElementById('ctxMenu').style.display='none'; }
-function saveMedia(){ if(!selectedMsg?.media_url) return; openImageViewer(selectedMsg.media_url); closeCtx(); }
+function saveMedia(){ if(!selectedMsg) return; let url=selectedMsg.media_urls ? selectedMsg.media_urls[0] : selectedMsg.media_url; if(!url) return; openImageViewer(url); closeCtx(); }
 function copyText(){ if(!selectedMsg) return; let t=selectedMsg.message||''; if(navigator.clipboard) navigator.clipboard.writeText(t); showToast('📋 Copied'); closeCtx(); }
 function showViewersFromMenu(){ if(!selectedMsg) return; showViewers(selectedMsg.id); closeCtx(); }
 async function deleteOwnMsg(){ if(!selectedMsg||selectedMsg.name!==myName) return; if(!confirm('Delete your chat/media?')) return; try{ await supabaseClient.from('msel_mente_messages').delete().eq('id',selectedMsg.id); showToast('🗑️ Deleted'); closeCtx(); }catch(e){ showToast(e.message); } }
@@ -273,7 +292,7 @@ async function loadMessages(){
   }catch(e){ console.log(e); }
 }
 loadMessages();
-supabaseClient.channel('mente-fixed-v6').on('postgres_changes',{event:'INSERT',schema:'public',table:'msel_mente_messages'},payload=>{
+supabaseClient.channel('mente-fixed-v7-group').on('postgres_changes',{event:'INSERT',schema:'public',table:'msel_mente_messages'},payload=>{
   allMessages = allMessages.filter(m=>!String(m.id).startsWith('temp-'));
   allMessages.push(payload.new);
   renderMessages(allMessages);
@@ -324,16 +343,17 @@ async function banUserForever(){ if(!selectedMsg||!myIsAdmin) return; if(!confir
 async function restoreUser(){ if(!selectedMsg||!myIsAdmin) return; let n=selectedMsg.name; delete bannedMap[n]; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); try{ await supabaseClient.from('msel_mente_bans').delete().eq('name',n); }catch(e){} showToast('✅ Restored'); closeCtx(); }
 function openBanList(){ let list=document.getElementById('banList'); let keys=Object.keys(bannedMap); if(!keys.length) list.innerHTML='<p style="text-align:center;opacity:.6">No banned</p>'; else list.innerHTML=keys.map(k=>{ let b=bannedMap[k]; let until=b.until? new Date(b.until).toLocaleString(): 'Forever'; return `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #1e3a5f"><div><b>${k}</b><br><small style="color:${b.status==='banned'?'#ef4444':'#f59e0b'}">${b.status} - ${until}</small></div><button onclick="quickRestore('${k}')" style="background:#22c55e;border:0;padding:6px 12px;border-radius:20px;font-weight:900">Restore</button></div>`; }).join(''); document.getElementById('banModal').style.display='block'; }
 async function quickRestore(name){ delete bannedMap[name]; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); try{ await supabaseClient.from('msel_mente_bans').delete().eq('name',name); }catch(e){} showToast('✅ Restored'); openBanList(); }
-async function sendMsg(mediaUrl=null,mediaType='text'){
+async function sendMsg(mediaUrl=null,mediaType='text', extraUrls=null){
   let myBan=getBanStatus(myName); if(myBan){ showToast(myBan.status==='banned'?'🚫 BANNED':'⏸️ SUSPENDED'); return; }
   let input=document.getElementById('msgInput'); let text=input.value.trim(); if(!text&&!mediaUrl) return;
   let sendName=myIsAdmin?'MSEL BOSS':myName; let sendCode=myIsAdmin?'MSEL-BOSS-001':myCode;
   let tempId='temp-'+Date.now()+'-'+Math.random();
-  let optimisticMsg={id:tempId,name:sendName,code:sendCode,message:text||`[${mediaType}]`,media_url:mediaUrl||null,type:mediaUrl?mediaType:'text',created_at:new Date().toISOString(),viewed_by:[myName],reactions:{},reply_to:replyToData};
+  let optimisticMsg={id:tempId,name:sendName,code:sendCode,message:text||`[${mediaType}]`,media_url:mediaUrl||null,media_urls:extraUrls||null,type:mediaUrl?mediaType:'text',created_at:new Date().toISOString(),viewed_by:[myName],reactions:{},reply_to:replyToData};
   allMessages.push(optimisticMsg); renderMessages(allMessages); isNearBottom=true; scrollToBottom(true);
   if(!mediaUrl){ input.value=''; autoResize(); toggleSendMic(); }
   let payload={name:sendName,code:sendCode,message:text||`[${mediaType}]`,viewed_by:[myName]}; 
   if(mediaUrl){ payload.media_url=mediaUrl; payload.type=mediaType; }
+  if(extraUrls){ payload.media_urls=extraUrls; payload.type='album'; }
   if(replyToData) payload.reply_to=replyToData;
   try{ let {error}=await supabaseClient.from('msel_mente_messages').insert(payload); if(error) throw error; }catch(e){ if(replyToData){ try{ delete payload.reply_to; let {error:e2}=await supabaseClient.from('msel_mente_messages').insert(payload); if(e2) throw e2; }catch(err2){ showToast('❌ '+err2.message); return; } }else{ showToast('❌ '+e.message); return; } }
   cancelReply();
@@ -371,20 +391,19 @@ function removePreview(i){ selectedFiles.splice(i,1); if(selectedFiles.length===
 function closeMediaPreview(){ document.getElementById('mediaPreviewModal').style.display='none'; selectedFiles=[]; }
 async function sendAllMedia(){
   let files=[...selectedFiles]; closeMediaPreview(); if(!files.length) return;
-  showToast('⏳ Uploading '+files.length+' files...');
-  let sent=0;
+  showToast('⏳ Uploading '+files.length+' as group album...');
+  let urls=[];
   for(let f of files){
     if(f.size>25*1024*1024){ showToast(f.name+' too big'); continue; }
     try{ 
-      let type='file'; if(f.type.startsWith('image/')) type='image'; else if(f.type.startsWith('video/')) type='video'; else if(f.type.startsWith('audio/')) type='voice'; 
       let toUp=await compressImage(f); 
       let url=await uploadMedia(toUp); 
-      await sendMsg(url,type); 
-      sent++;
-      await new Promise(r=>setTimeout(r,800));
+      urls.push(url);
     }catch(err){ showToast('❌ '+f.name+': '+err.message); }
   }
-  showToast('✅ '+sent+'/'+files.length+' sent!');
+  if(!urls.length){ showToast('❌ No file uploaded'); return; }
+  await sendMsg(urls[0], 'album', urls);
+  showToast('✅ '+urls.length+' sent as group!');
 }
 async function startRecording(){
   try{
