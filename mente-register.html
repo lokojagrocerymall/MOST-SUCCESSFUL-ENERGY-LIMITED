@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Create MENTE Account - MSEL</title>
+<title>Create MENTE Account</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
@@ -23,8 +23,6 @@ button.main:disabled{opacity:.5}
 .logo-wrap img{max-width:140px}
 .bottom-links{text-align:center;margin-top:16px;font-size:12px}
 .bottom-links a{color:#4a0a4a;font-weight:800;text-decoration:none}
-.pwd-wrap{position:relative}
-.pwd-wrap span{position:absolute;right:12px;top:18px;cursor:pointer;font-size:11px;color:#666;font-weight:900}
 </style>
 </head>
 <body>
@@ -65,18 +63,6 @@ button.main:disabled{opacity:.5}
 <label>8. Username</label>
 <input type="text" id="username" placeholder="username" maxlength="30" oninput="this.value=this.value.replace(/\s+/g,'').toLowerCase()">
 
-<label>9. Password (for secure login)</label>
-<div class="pwd-wrap">
-<input type="password" id="password" placeholder="Min 6 characters">
-<span onclick="togglePwd('password')">SHOW</span>
-</div>
-
-<label>10. Confirm Password</label>
-<div class="pwd-wrap">
-<input type="password" id="confirmPassword" placeholder="Repeat password">
-<span onclick="togglePwd('confirmPassword')">SHOW</span>
-</div>
-
 <div id="errorMsg" class="error"></div>
 <div id="successMsg" class="success"></div>
 
@@ -100,16 +86,10 @@ const whatsappEl = document.getElementById('whatsapp');
 const emailEl = document.getElementById('email');
 const businessEl = document.getElementById('business');
 const usernameEl = document.getElementById('username');
-const passwordEl = document.getElementById('password');
-const confirmPasswordEl = document.getElementById('confirmPassword');
 const errorMsg = document.getElementById('errorMsg');
 const successMsg = document.getElementById('successMsg');
 const btn = document.getElementById('createBtn');
 
-function togglePwd(id){
-  let el=document.getElementById(id);
-  el.type = el.type==='password'?'text':'password';
-}
 function showError(txt){ errorMsg.innerText=txt; errorMsg.style.display='block'; successMsg.style.display='none'; }
 function showSuccess(txt){ successMsg.innerText=txt; successMsg.style.display='block'; errorMsg.style.display='none'; }
 
@@ -128,8 +108,6 @@ async function createAccount(){
   let email = emailEl.value.trim().toLowerCase();
   let business_name = businessEl.value.trim();
   let username = usernameEl.value.trim().toLowerCase().replace(/\s+/g,'');
-  let password = passwordEl.value.trim();
-  let confirmPassword = confirmPasswordEl.value.trim();
 
   if(full_name.length < 3){ showError('❌ Enter full name'); return; }
   if(address.length < 5){ showError('❌ Enter valid address'); return; }
@@ -139,8 +117,6 @@ async function createAccount(){
   if(!email.includes('@')){ showError('❌ Enter valid email'); return; }
   if(business_name.length < 2){ showError('❌ Enter business name'); return; }
   if(username.length < 3){ showError('❌ Username must be at least 3 chars'); return; }
-  if(password.length < 6){ showError('❌ Password must be at least 6 characters'); return; }
-  if(password !== confirmPassword){ showError('❌ Passwords do not match'); return; }
 
   btn.disabled=true; btn.innerText='⏳ Checking...';
   try{
@@ -158,7 +134,7 @@ async function createAccount(){
       email: email,
       business_name: business_name,
       username: username,
-      password: password,
+      password: msel_whatsapp,
       status: 'pending',
       approval_status: 'pending',
       role: 'mente',
@@ -166,7 +142,7 @@ async function createAccount(){
     });
     if(error) throw error;
 
-    showSuccess('✅ Submitted! Awaiting Admin approval. You will login with phone + password.');
+    showSuccess('✅ Submitted! Awaiting Admin approval. Login with Username: '+username+' and Password: your WhatsApp number');
     setTimeout(()=>{ window.location.href='mente-login.html'; }, 1500);
 
   }catch(e){ showError('❌ '+e.message); btn.disabled=false; btn.innerText='Submit For Approval'; }
