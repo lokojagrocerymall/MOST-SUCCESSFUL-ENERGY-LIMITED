@@ -58,7 +58,7 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 .album-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;max-width:280px;margin-top:6px;border-radius:12px;overflow:hidden;background:#000}
 .album-grid img{width:100%;height:120px;object-fit:cover;display:block;background:#000;cursor:zoom-in}
 .album-grid video{width:100%;height:120px;object-fit:cover;display:block;background:#000}
-#waPicker{background:#111;z-index:500;padding:0;display:none;flex-direction:column}
+#waPicker{background:#111;z-index:600;padding:0;display:none;flex-direction:column}
 .waHeader{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#111;color:#fff}
 .waGrid{flex:1;overflow:auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;padding:2px;background:#000}
 .waThumb{position:relative;aspect-ratio:1;background:#222;overflow:hidden}
@@ -95,7 +95,6 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <div id="chatBox"></div>
 <div id="bottomAnchor" style="height:1px;"></div>
 <div id="notifyToast"></div>
-
 <div id="imgViewer">
 <img id="viewerImg" src="">
 <div style="margin-top:10px;color:#fff;font-size:13px;font-weight:900"><span id="viewerIndex">1 / 1</span></div>
@@ -106,13 +105,11 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <button onclick="document.getElementById('imgViewer').style.display='none'" style="background:#fff;color:#000;padding:10px 20px;border-radius:20px;font-weight:900;border:0">✕</button>
 </div>
 </div>
-
 <div id="waPicker">
-<div class="waHeader"><div style="display:flex;align-items:center;gap:12px"><button onclick="closeWaPicker()" style="background:0;border:0;color:#fff;font-size:22px">✕</button><span style="font-weight:900">Recents • <span id="waCount">0</span> selected</span></div><button onclick="sendWaPicker()" style="background:#22c55e;color:#000;border:0;padding:6px 14px;border-radius:20px;font-weight:900">Send</button></div>
+<div class="waHeader"><div style="display:flex;align-items:center;gap:12px"><button onclick="closeWaPicker()" style="background:0;border:0;color:#fff;font-size:22px">✕</button><span style="font-weight:900">Recents • <span id="waCount">0</span> selected</span></div><div style="display:flex;gap:8px"><button onclick="document.getElementById('fileInput').click()" style="background:#2a3942;color:#fff;border:1px solid #334155;padding:6px 12px;border-radius:20px;font-weight:900">+ Add</button><button onclick="sendWaPicker()" style="background:#22c55e;color:#000;border:0;padding:6px 14px;border-radius:20px;font-weight:900">Send</button></div></div>
 <div id="waGrid" class="waGrid"></div>
 <div class="waBottom"><input id="waCaption" class="waCaption" placeholder="Add a caption..."><button class="waSend" onclick="sendWaPicker()">➤<span id="waSendCount">0</span></button></div>
 </div>
-
 <div id="recordingBar">
 <div style="display:flex;justify-content:space-between;align-items:center;width:100%"><span style="color:#ef4444">🔴 Recording</span><span id="recTimer">00:00</span></div>
 <div style="height:6px;background:#334155;border-radius:6px;overflow:hidden"><div id="recProgress" style="height:100%;width:0%;background:#ef4444"></div></div>
@@ -188,7 +185,6 @@ function scrollToBottom(force){
   setTimeout(doScroll,800);
 }
 function parseAlbumUrls(m){
-  if(m.media_urls && Array.isArray(m.media_urls)) return m.media_urls;
   let url = m.media_url||'';
   if(!url) return [];
   if(url.includes('|')) return url.split('|').filter(u=>u.trim());
@@ -220,7 +216,6 @@ function prevViewerImg(){ if(currentAlbum.length<=1) return; currentAlbumIndex =
 let touchStartX=0;
 document.getElementById('imgViewer').addEventListener('touchstart', e=>{ touchStartX=e.changedTouches[0].screenX; }, {passive:true});
 document.getElementById('imgViewer').addEventListener('touchend', e=>{ let dx=e.changedTouches[0].screenX-touchStartX; if(Math.abs(dx)>50){ if(dx<0) nextViewerImg(); else prevViewerImg(); } }, {passive:true});
-
 async function loadAccounts(){
   if(accountsLoaded) return;
   try{
@@ -273,7 +268,6 @@ async function pinMessage(){ if(!myIsAdmin){ showToast('Boss only'); return; } i
 async function unpinMessage(){ if(!myIsAdmin){ showToast('Boss only'); return; } try{ if(pinnedMessage?.id) await supabaseClient.from('msel_mente_messages').update({is_pinned:false}).eq('id',pinnedMessage.id); }catch(e){} localStorage.removeItem('msel_pinned_msg'); pinnedMessage=null; document.getElementById('pinnedBanner').style.display='none'; showToast('Unpinned'); closeCtx(); }
 function openSearch(){ document.getElementById('searchModal').style.display='block'; document.getElementById('searchInput').focus(); doSearch(); }
 function doSearch(){ let q=document.getElementById('searchInput').value.toLowerCase().trim(); let res=document.getElementById('searchResults'); if(!q){ res.innerHTML='<p style="opacity:0.6;text-align:center">Type to search...</p>'; return; } let matches=allMessages.filter(m=> (m.message&&m.message.toLowerCase().includes(q)) || (m.name&&m.name.toLowerCase().includes(q))).slice(-50).reverse(); if(!matches.length){ res.innerHTML='<p style="opacity:0.6;text-align:center">No results</p>'; return; } res.innerHTML=matches.map(m=>`<div onclick="document.getElementById('searchModal').style.display='none';scrollToMsg('${m.id}')" style="padding:10px;border-bottom:1px solid #1e3a5f;cursor:pointer"><div style="font-weight:900;font-size:12px">${escapeHtml(m.name)} • ${formatNigeriaTime(m.created_at)}</div><div style="font-size:12px;opacity:0.8">${escapeHtml(m.message||'[media]')}</div></div>`).join(''); }
-
 function renderMessages(data){
   if(isTyping && document.activeElement===document.getElementById('msgInput')) return;
   allMessages=data; let box=document.getElementById('chatBox'); box.innerHTML='';
@@ -349,7 +343,7 @@ async function loadMessages(){
   }catch(e){ console.log(e); }
 }
 loadMessages();
-supabaseClient.channel('mente-final-multi-v6').on('postgres_changes',{event:'INSERT',schema:'public',table:'msel_mente_messages'},payload=>{
+supabaseClient.channel('mente-fixed-multi-v7').on('postgres_changes',{event:'INSERT',schema:'public',table:'msel_mente_messages'},payload=>{
   allMessages = allMessages.filter(m=>!String(m.id).startsWith('temp-'));
   allMessages.push(payload.new);
   renderMessages(allMessages);
@@ -399,8 +393,6 @@ async function banUserForever(){ if(!selectedMsg||!myIsAdmin) return; if(!confir
 async function restoreUser(){ if(!selectedMsg||!myIsAdmin) return; let n=selectedMsg.name; delete bannedMap[n]; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); try{ await supabaseClient.from('msel_mente_bans').delete().eq('name',n); }catch(e){} showToast('✅ Restored'); closeCtx(); }
 function openBanList(){ let list=document.getElementById('banList'); let keys=Object.keys(bannedMap); if(!keys.length) list.innerHTML='<p style="text-align:center;opacity:.6">No banned</p>'; else list.innerHTML=keys.map(k=>{ let b=bannedMap[k]; let until=b.until? new Date(b.until).toLocaleString(): 'Forever'; return `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #1e3a5f"><div><b>${k}</b><br><small style="color:${b.status==='banned'?'#ef4444':'#f59e0b'}">${b.status} - ${until}</small></div><button onclick="quickRestore('${k}')" style="background:#22c55e;border:0;padding:6px 12px;border-radius:20px;font-weight:900">Restore</button></div>`; }).join(''); document.getElementById('banModal').style.display='block'; }
 async function quickRestore(name){ delete bannedMap[name]; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); try{ await supabaseClient.from('msel_mente_bans').delete().eq('name',name); }catch(e){} showToast('✅ Restored'); openBanList(); }
-
-// FIXED: NO media_urls COLUMN - USE media_url WITH | SEPARATOR
 async function sendMsg(mediaUrl=null,mediaType='text'){
   let myBan=getBanStatus(myName); if(myBan){ showToast(myBan.status==='banned'?'🚫 BANNED':'⏸️ SUSPENDED'); return; }
   let input=document.getElementById('msgInput'); let text=input.value.trim(); if(!text&&!mediaUrl) return;
@@ -428,25 +420,32 @@ document.getElementById('sendBtn').addEventListener('click',()=>sendMsg());
 msgInput.addEventListener('keydown',e=>{ if(e.key==='Enter' && e.shiftKey){ e.preventDefault(); sendMsg(); } });
 if(window.visualViewport){ window.visualViewport.addEventListener('resize',()=>{ if(isNearBottom || document.activeElement===msgInput) scrollToBottom(true); }); }
 
-// MULTIPLE PICKER FIXED - LIKE WHATSAPP SCREENSHOT 2
 function openWaPicker(files){
-  waFiles = files.slice(0,10);
+  // ACCUMULATE - don't wipe previous
+  files.forEach(f=>{
+    if(waFiles.length<10){
+      let exists = waFiles.some(x=> x.name===f.name && x.size===f.size);
+      if(!exists) waFiles.push(f);
+    }
+  });
   let grid = document.getElementById('waGrid');
   grid.innerHTML='';
   waFiles.forEach((f,i)=>{
     let url = URL.createObjectURL(f);
     let isVid = f.type.startsWith('video/');
-    grid.innerHTML+=`<div class="waThumb"><div class="waNum sel" id="waNum${i}">${i+1}</div>${isVid?`<video src="${url}" muted></video>`:`<img src="${url}">`}</div>`;
+    grid.innerHTML+=`<div class="waThumb" onclick="removeWa(${i})"><div class="waNum sel">${i+1}</div><div style="position:absolute;top:2px;left:4px;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;z-index:2">X</div>${isVid?`<video src="${url}" muted></video>`:`<img src="${url}">`}</div>`;
   });
   document.getElementById('waPicker').style.display='flex';
   updateWaCounts();
 }
-function closeWaPicker(){ document.getElementById('waPicker').style.display='none'; waFiles=[]; }
+function removeWa(i){ waFiles.splice(i,1); if(waFiles.length===0) closeWaPicker(); else openWaPicker([]); }
+function closeWaPicker(){ document.getElementById('waPicker').style.display='none'; }
 function updateWaCounts(){ document.getElementById('waCount').innerText=waFiles.length; document.getElementById('waSendCount').innerText=waFiles.length; }
 async function sendWaPicker(){
   let files = [...waFiles];
   let caption = document.getElementById('waCaption').value.trim();
   closeWaPicker();
+  waFiles=[];
   if(!files.length) return;
   let urls=[];
   showToast('⏳ Uploading '+files.length+'...');
@@ -461,17 +460,16 @@ async function sendWaPicker(){
   document.getElementById('waCaption').value='';
 }
 
-document.getElementById('fileInput').addEventListener('change',async e=>{
+let fileInputEl = document.getElementById('fileInput');
+fileInputEl.multiple = true;
+fileInputEl.setAttribute('multiple','multiple');
+
+fileInputEl.addEventListener('change',async e=>{
   let files=Array.from(e.target.files||[]); 
   if(!files.length) return;
   e.target.value='';
-  if(files.length>1){
-    openWaPicker(files); // Show WhatsApp picker like Screenshot 2 with numbers 1 2 3 4 5
-  } else {
-    let f = files[0];
-    let url = await uploadMedia(await compressImage(f));
-    await sendMsg(url, f.type.startsWith('video/')?'video':'image');
-  }
+  // Always open WhatsApp picker - accumulates
+  openWaPicker(files);
 });
 async function startRecording(){
   try{
