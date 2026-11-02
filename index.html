@@ -64,7 +64,7 @@ nav a:last-child{color:#ff0000!important;font-weight:900}
 <a href="#" onclick="openPage('servicesPage');toggleMenu()">Services</a>
 <a href="#" onclick="openPage('trainingPage');toggleMenu()">Training</a>
 <a href="#" onclick="openPage('materialsPage');toggleMenu()">Materials</a>
-<a href="mente-chat.html" onclick="toggleMenu()">💬 Mente Chat</a>
+<a href="javascript:void(0)" onclick="openMenteChat();toggleMenu()">💬 Mente Chat</a>
 <a href="#" onclick="openPage('galleryPage');toggleMenu()">Gallery</a>
 <a href="#" onclick="openPage('contactPage');toggleMenu()">Contact</a>
 </nav>
@@ -118,6 +118,23 @@ const BUCKET = 'msel-project';
 function toggleMenu(){document.getElementById('navMenu').classList.toggle('show')}
 function openPage(id){closeAll();document.getElementById(id).style.display='block';window.scrollTo(0,0);document.body.style.overflow='hidden';}
 function closeAll(){document.querySelectorAll('.page-modal').forEach(m=>m.style.display='none');document.body.style.overflow='auto';window.scrollTo(0,0);}
+
+// FIXED: Tap Mente Chat → Direct to Login box (old login field) - no alert
+function openMenteChat(){
+  try{
+    let sess = JSON.parse(localStorage.getItem('msel_mente_session')||'null');
+    if(sess && sess.name){
+      // Already logged in → go to chatroom directly
+      location.href='mente-chat.html';
+    } else {
+      // Not logged in → go to LOGIN box directly (scrap alert)
+      location.href='mente-login.html';
+    }
+  }catch(e){
+    location.href='mente-login.html';
+  }
+}
+
 function openLightbox(src, title, type){
  let lb=document.getElementById('lightbox');
  let img=document.getElementById('lightboxImg');
