@@ -74,12 +74,17 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <body>
 <header>
 <div class="left"><img src="logo.png" alt="MSEL"><div><h1>MSEL MENTE CHAT</h1><small id="userLabel">Loading...</small><br><small id="onlineCount" style="font-size:10px;color:#22c55e">● 0 members</small></div></div>
-<div style="display:flex;align-items:center"><button class="menuBtn" onclick="toggleMenu()">☰</button></div>
+<div style="display:flex;align-items:center;gap:6px">
+<a id="backToAdminBtn" href="admin.html" style="display:none;background:#fff;color:#8B005C;padding:6px 12px;border-radius:20px;text-decoration:none;font-weight:900;font-size:11px">← Dashboard</a>
+<a href="mente-private-chat.html" style="background:#f59e0b;color:#000;text-decoration:none;padding:6px 10px;border-radius:20px;font-size:11px;font-weight:900">💬 Private</a>
+<button class="menuBtn" onclick="toggleMenu()">☰</button>
+</div>
 </header>
 <div id="pinnedBanner" onclick="scrollToPinned()"></div>
 <div id="menuDropdown">
 <a href="#" onclick="openSearch();toggleMenu();return false" style="background:#22c55e;color:#000">🔍 Search Messages</a>
 <a href="engineers.html" onclick="toggleMenu()">🛒 Shop</a>
+<a href="mente-private-chat.html" onclick="toggleMenu()" style="background:#f59e0b;color:#000">💬 Private Chat (WhatsApp style)</a>
 <a href="#" onclick="openMembers();toggleMenu();return false" style="background:#FFC72C;color:#000">👥 Members</a>
 <a href="#" id="adminListBtn" style="display:none" onclick="openBanList();toggleMenu();return false">👑 Bans</a>
 <a href="index.html" style="background:#fff;color:#000">🏠 Home</a>
@@ -151,12 +156,17 @@ if(!session && adminSession){
   session = { name: adminSession.name || adminSession.full_name || 'MSEL BOSS', code: 'MSEL-BOSS-001', role: 'admin' };
   localStorage.setItem('msel_mente_session', JSON.stringify(session));
 }
-if(!session){ alert('🔐 Create account first.'); location.href='mente-register.html'; }
+if(!session){ location.href='mente-login.html'; }
 
 let myName=session?.name||'Guest'; let myCode=session?.code||'MSEL2026'; let myRole=session?.role||'mente';
 let myIsAdmin=myRole==='admin'||myName==='MSEL BOSS'||myName.toLowerCase().includes('boss')||myCode.toUpperCase().includes('BOSS');
 document.getElementById('userLabel').innerText=myIsAdmin?'👑 MSEL BOSS (Admin)':myName+' ('+myCode+')';
 if(myIsAdmin) document.getElementById('adminListBtn').style.display='block';
+// ADMIN RETURN TO DASHBOARD - INVISIBLE TO PUBLIC MENTES - ONLY SHOW FOR ADMIN
+if(myIsAdmin){
+  let adminBtn=document.getElementById('backToAdminBtn');
+  if(adminBtn) adminBtn.style.display='inline-block';
+}
 let bannedMap=JSON.parse(localStorage.getItem('msel_banned_map')||'{}');
 let allMessages=[]; let selectedMsg=null; let replyToData=null; let accountsMap={}; let accountsLoaded=false; let viewedOnce=false; let allAccountsList=[]; let recStartTime=null; let recInterval=null; let recordedBlob=null; let mediaRecorder=null; let audioChunks=[]; let isRecording=false; let pinnedMessage=null; 
 let isNearBottom=true; let isTyping=false;
