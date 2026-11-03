@@ -27,6 +27,16 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 .msg video.chat-video{width:100%;max-width:280px;border-radius:12px;margin-top:6px;background:#000;display:block}
 .msg audio{width:260px;margin-top:6px;height:38px;display:block}
 .replyBox{background:rgba(0,0,0,.25);border-left:3px solid #FFC72C;padding:6px 8px;border-radius:8px;margin-bottom:6px;font-size:11px;opacity:.9;cursor:pointer;display:inline-block}
+/* NEW REPLY THREAD STYLES - Facebook style */
+.reply-action{font-size:12px;font-weight:800;color:#FFC72C;margin-top:5px;cursor:pointer;display:inline-block;padding:2px 0}
+.reply-action:hover{text-decoration:underline}
+.view-replies-btn{font-size:12px;font-weight:900;color:#cbd5e1;margin-top:6px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.view-replies-btn:hover{color:#fff}
+.thread-container{display:none;flex-direction:column;gap:12px;margin-top:10px;margin-left:10px;padding-left:12px;border-left:2px solid rgba(255,255,255,.2)}
+.thread-container.open{display:flex}
+.thread-msg{max-width:100%;padding:0;font-size:13px;background:transparent !important}
+.replying-bar{position:fixed;bottom:65px;left:0;right:0;background:#1e293b;border-top:2px solid #FFC72C;padding:8px 12px;display:none;justify-content:space-between;align-items:center;z-index:55;font-size:12px}
+.replying-bar.show{display:flex}
 .reactions{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
 .react{font-size:13px;background:#000!important;padding:5px 10px;border-radius:16px;display:flex;align-items:center;gap:4px;border:1.5px solid #FFC72C;color:#fff;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.6)}
 .react.me{background:#000!important;color:#FFC72C!important;font-weight:900;border:1.5px solid #FFC72C}
@@ -76,7 +86,7 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 .private-main{display:flex;flex:1;overflow:hidden}
 .private-list{width:38%;max-width:320px;background:#1e293b;border-right:1px solid #334155;overflow-y:auto;display:flex;flex-direction:column}
 .private-list-head{padding:10px;font-weight:900;font-size:12px;background:#0f172a;border-bottom:1px solid #334155}
-.private-item{padding:10px;border-bottom:1px solid #1e293b;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.private-item{padding:10px;border-bottom:1px solid #1e3b;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
 .private-item:hover,.private-item.active{background:#052e16;border-left:3px solid #22c55e}
 .private-item .pname{font-size:12px;font-weight:800}
 .private-item .pstate{font-size:10px;color:#94a3b8}
@@ -173,6 +183,7 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <div id="viewModal"><div class="banBox"><h3 style="color:#22c55e;text-align:center">👁️ Viewed</h3><div id="viewList" style="margin:14px 0"></div><button onclick="document.getElementById('viewModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:#fff;border:0;border-radius:10px;font-weight:900">Close</button></div></div>
 <div id="editModal"><div class="banBox"><h3 style="color:#FFC72C;text-align:center">✏️ Edit Your Message</h3><textarea id="editInput" style="width:100%;min-height:90px;margin:12px 0;padding:12px;border-radius:10px;background:#1e293b;color:#fff;border:1px solid #334155"></textarea><div style="display:flex;gap:8px"><button onclick="saveEdit()" style="flex:1;padding:12px;background:#22c55e;color:#000;border:0;border-radius:12px;font-weight:900">Save Edit</button><button onclick="document.getElementById('editModal').style.display='none'" style="flex:1;padding:12px;background:#334155;color:#fff;border:0;border-radius:12px;font-weight:900">Cancel</button></div></div></div>
 <input type="file" id="fileInput" accept="image/*,video/*" multiple>
+<div id="replyBar" class="replying-bar"><div><b id="replyBarName" style="color:#FFC72C">Replying to...</b><br><small id="replyBarText" style="opacity:.8"></small></div><button onclick="cancelReply()" style="background:#ef4444;color:#fff;border:0;width:30px;height:30px;border-radius:50%;font-weight:900">✕</button></div>
 <div class="inputBar">
 <label for="fileInput" class="iconBtn" style="cursor:pointer">📎</label>
 <textarea id="msgInput" class="textInput" placeholder="Type message... Press Enter for new line" rows="1"></textarea>
@@ -241,7 +252,7 @@ function showToast(t){ let e=document.getElementById('notifyToast'); e.innerText
 function formatNigeriaTime(d){ let x=new Date(d); let c=new Date(x.getTime() + 60*60*1000); return `${c.toLocaleTimeString('en-NG',{hour:'numeric',minute:'2-digit',hour12:true})} • ${c.toLocaleDateString('en-NG',{day:'2-digit',month:'2-digit',year:'numeric'})}`; }
 function isAdminMsg(m){ return m.type==='system'||m.name==='MSEL BOSS'||(m.code&&m.code.toUpperCase().includes('BOSS'))||(m.name&&m.name.toLowerCase().includes('boss'))||(accountsMap[m.name]?.role==='admin'); }
 function getBanStatus(name){ let b=bannedMap[name]; if(!b) return null; if(b.status==='suspended'){ if(new Date()>new Date(b.until)){ delete bannedMap[name]; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); return null; } return b; } return b; }
-function scrollToMsg(id){ let el=document.querySelector(`[data-id="${id}"]`); if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.classList.add('highlight'); setTimeout(()=>el.classList.remove('highlight'),2500); } }
+function scrollToMsg(id){ let el=document.querySelector(`[data-id="${id}"]`); if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.classList.add('highlight'); setTimeout(()=>el.classList.remove('highlight'),2500); let thr=document.getElementById('replies-'+id); if(thr){ thr.classList.add('open'); let btn=document.getElementById('viewbtn-'+id); if(btn) btn.innerHTML='▲ Hide replies'; } } }
 function scrollToBottom(force){
   const box=document.getElementById('chatBox');
   if(!box) return;
@@ -475,58 +486,136 @@ async function pinMessage(){ if(!myIsAdmin){ showToast('Boss only'); return; } i
 async function unpinMessage(){ if(!myIsAdmin){ showToast('Boss only'); return; } try{ if(pinnedMessage?.id) await supabaseClient.from('msel_mente_messages').update({is_pinned:false}).eq('id',pinnedMessage.id); }catch(e){} localStorage.removeItem('msel_pinned_msg'); pinnedMessage=null; document.getElementById('pinnedBanner').style.display='none'; showToast('Unpinned'); closeCtx(); }
 function openSearch(){ document.getElementById('searchModal').style.display='block'; document.getElementById('searchInput').focus(); doSearch(); }
 function doSearch(){ let q=document.getElementById('searchInput').value.toLowerCase().trim(); let res=document.getElementById('searchResults'); if(!q){ res.innerHTML='<p style="opacity:0.6;text-align:center">Type to search...</p>'; return; } let matches=allMessages.filter(m=> (m.message&&m.message.toLowerCase().includes(q)) || (m.name&&m.name.toLowerCase().includes(q))).slice(-50).reverse(); if(!matches.length){ res.innerHTML='<p style="opacity:0.6;text-align:center">No results</p>'; return; } res.innerHTML=matches.map(m=>`<div onclick="document.getElementById('searchModal').style.display='none';scrollToMsg('${m.id}')" style="padding:10px;border-bottom:1px solid #1e3a5f;cursor:pointer"><div style="font-weight:900;font-size:12px">${escapeHtml(m.name)} • ${formatNigeriaTime(m.created_at)}</div><div style="font-size:12px;opacity:0.8">${escapeHtml(m.message||'[media]')}</div></div>`).join(''); }
+
+/* NEW: Build message HTML with reply threading */
+function buildMsgHTML(m){
+  let type=(m.type||'').toLowerCase(); 
+  if(type==='system') return {html:`<div class="msg system" data-id="${m.id}">${escapeHtml(m.message||'')} • ${formatNigeriaTime(m.created_at)}</div>`,isSystem:true};
+  let isMe=m.name===myName; let admin=isAdminMsg(m);
+  let bossBadge=admin?'<span class="badge-boss">👑 MSEL BOSS</span>':''; 
+  let albumUrls = parseAlbumUrls(m);
+  let isAlbum = albumUrls.length>1;
+  let mediaUrl = m.media_url||'';
+  let txt=m.message||''; 
+  let lowerUrl=(mediaUrl||'').toLowerCase();
+  let isImageUrl=lowerUrl.includes('.jpg')||lowerUrl.includes('.png')||lowerUrl.includes('.jpeg')||lowerUrl.includes('wa_')||lowerUrl.includes('supabase');
+  let isVideoUrl=lowerUrl.includes('.mp4')||lowerUrl.includes('.webm')||lowerUrl.includes('.mov');
+  let backup=localStorage.getItem('reaction_backup_'+m.id);
+  if(backup){ try{ let b=JSON.parse(backup); if(Object.keys(b).length>0 && (!m.reactions || Object.keys(m.reactions).length===0)) m.reactions=b; }catch(e){} }
+  let reactsHtml=''; let reacts=m.reactions||{}; 
+  if(Object.keys(reacts).length){ reactsHtml='<div class="reactions">'; for(let e in reacts){ let u=reacts[e]||[]; if(u.length>0) reactsHtml+=`<span class="react ${u.includes(myName)?'me':''}" onclick="event.stopPropagation();quickReact('${m.id}','${e}')">${e} ${u.length}</span>`; } reactsHtml+='</div>'; }
+  let replyHtml=''; if(m.reply_to){ replyHtml=`<div class="replyBox" onclick="event.stopPropagation();scrollToMsg('${m.reply_to.id}')">${escapeHtml(m.reply_to.name)}: ${escapeHtml((m.reply_to.message||'').substring(0,80))} 👆</div>`; }
+  let realName=getRealName(m); let displayName=admin?'MSEL BOSS':escapeHtml(realName); 
+  let codeVal=escapeHtml(m.code||''); let nameLine=(codeVal && realName.toUpperCase()!==codeVal.toUpperCase())?`${displayName} • ${codeVal}`:displayName; 
+  let initial=realName.charAt(0).toUpperCase(); 
+  let editedTag=m.is_edited?'<small style="opacity:.6"> (edited)</small>':''; 
+  let pinnedTag=(m.is_pinned||m.pinned||(pinnedMessage&&pinnedMessage.id===m.id))?'<span style="background:#FFC72C;color:#000;font-size:8px;padding:2px 5px;border-radius:6px;margin-left:4px">📌 PINNED</span>':'';
+  let mediaHtml='';
+  if(isAlbum){
+    mediaHtml=`<div class="album-grid">`+ albumUrls.map((u,i)=>{
+      let lu=(u||'').toLowerCase();
+      let safeAlbum = JSON.stringify(albumUrls).replace(/"/g,'&quot;');
+      if(lu.includes('.mp4')||lu.includes('.webm')||lu.includes('.mov')){
+        return `<video src="${u}" onclick="event.stopPropagation();openImageViewer('${u}', ${safeAlbum}, ${i})" controls playsinline muted></video>`;
+      } else {
+        return `<img src="${u}" loading="lazy" onclick="event.stopPropagation();openImageViewer('${u}', ${safeAlbum}, ${i})">`;
+      }
+    }).join('') + `</div>`;
+  } else if(mediaUrl && (type==='image' || type==='album' || isImageUrl)){
+    mediaHtml=`<img src="${mediaUrl}" class="chat-img" loading="lazy" onload="scrollToBottom(false)" onclick="event.stopPropagation();openImageViewer('${mediaUrl}')">`;
+  } else if(mediaUrl && (type==='video' || isVideoUrl)){
+    mediaHtml=`<video src="${mediaUrl}" class="chat-video" controls playsinline></video>`;
+  } else if(mediaUrl && type==='voice'){
+    mediaHtml=`<audio src="${mediaUrl}" controls style="width:260px"></audio>`;
+  } else if(mediaUrl){
+    mediaHtml=`<a href="${mediaUrl}" target="_blank" style="color:#FFC72C;font-weight:900">📎 View File</a>`;
+  }
+  let html=`<div style="font-weight:900;font-size:11px;margin-bottom:4px"><span class="avatar ${admin?'bossAvatar':''}">${admin?'👑':initial}</span>${nameLine} ${bossBadge} ${pinnedTag}${editedTag}</div>${replyHtml}${mediaHtml}`;
+  if(txt && !txt.includes('|') && !txt.startsWith('http') && txt.toLowerCase()!=='[image]' && txt.toLowerCase()!=='[video]' && txt.toLowerCase()!=='[voice]' && txt.toLowerCase()!=='[file]' && txt.toLowerCase()!=='[album]' && !txt.startsWith('📷')) html+=`<div style="margin-top:4px;white-space:pre-wrap;word-break:break-word">${escapeHtml(txt)}</div>`;
+  html+=`${reactsHtml}<div style="display:flex;gap:12px;align-items:center;margin-top:4px"><span class="reply-action" onclick="event.stopPropagation();replyToMessage('${m.id}')">Reply</span><span style="font-size:10px;opacity:.6">🕒 ${formatNigeriaTime(m.created_at)}</span></div>`;
+  return {html: `<div class="msg ${isMe?'me':'other'} ${admin?'boss':''}" data-id="${m.id}"><div class="bubble">${html}</div></div>`, isSystem:false};
+}
+
 function renderMessages(data){
   if(isTyping && document.activeElement===document.getElementById('msgInput')) return;
   allMessages=data; let box=document.getElementById('chatBox'); box.innerHTML='';
+  let parentMap={}; let topLevel=[];
   data.forEach(m=>{
-    let type=(m.type||'').toLowerCase(); 
-    if(type==='system'){ box.innerHTML+=`<div class="msg system" data-id="${m.id}">${escapeHtml(m.message||'')} • ${formatNigeriaTime(m.created_at)}</div>`; return; }
-    let isMe=m.name===myName; let admin=isAdminMsg(m); let ban=getBanStatus(m.name); 
-    let bossBadge=admin?'<span class="badge-boss">👑 MSEL BOSS</span>':''; 
-    let albumUrls = parseAlbumUrls(m);
-    let isAlbum = albumUrls.length>1;
-    let mediaUrl = m.media_url||'';
-    let txt=m.message||''; 
-    let lowerUrl=(mediaUrl||'').toLowerCase();
-    let isImageUrl=lowerUrl.includes('.jpg')||lowerUrl.includes('.png')||lowerUrl.includes('.jpeg')||lowerUrl.includes('wa_')||lowerUrl.includes('supabase');
-    let isVideoUrl=lowerUrl.includes('.mp4')||lowerUrl.includes('.webm')||lowerUrl.includes('.mov');
-    let backup=localStorage.getItem('reaction_backup_'+m.id);
-    if(backup){ try{ let b=JSON.parse(backup); if(Object.keys(b).length>0 && (!m.reactions || Object.keys(m.reactions).length===0)) m.reactions=b; }catch(e){} }
-    let reactsHtml=''; let reacts=m.reactions||{}; 
-    if(Object.keys(reacts).length){ reactsHtml='<div class="reactions">'; for(let e in reacts){ let u=reacts[e]||[]; if(u.length>0) reactsHtml+=`<span class="react ${u.includes(myName)?'me':''}" onclick="event.stopPropagation();quickReact('${m.id}','${e}')">${e} ${u.length}</span>`; } reactsHtml+='</div>'; }
-    let replyHtml=''; if(m.reply_to){ replyHtml=`<div class="replyBox" onclick="event.stopPropagation();scrollToMsg('${m.reply_to.id}')">${escapeHtml(m.reply_to.name)}: ${escapeHtml((m.reply_to.message||'').substring(0,80))} 👆</div>`; }
-    let realName=getRealName(m); let displayName=admin?'MSEL BOSS':escapeHtml(realName); 
-    let codeVal=escapeHtml(m.code||''); let nameLine=(codeVal && realName.toUpperCase()!==codeVal.toUpperCase())?`${displayName} • ${codeVal}`:displayName; 
-    let initial=realName.charAt(0).toUpperCase(); 
-    let editedTag=m.is_edited?'<small style="opacity:.6"> (edited)</small>':''; 
-    let pinnedTag=(m.is_pinned||m.pinned||(pinnedMessage&&pinnedMessage.id===m.id))?'<span style="background:#FFC72C;color:#000;font-size:8px;padding:2px 5px;border-radius:6px;margin-left:4px">📌 PINNED</span>':'';
-    let mediaHtml='';
-    if(isAlbum){
-      mediaHtml=`<div class="album-grid">`+ albumUrls.map((u,i)=>{
-        let lu=(u||'').toLowerCase();
-        let safeAlbum = JSON.stringify(albumUrls).replace(/"/g,'&quot;');
-        if(lu.includes('.mp4')||lu.includes('.webm')||lu.includes('.mov')){
-          return `<video src="${u}" onclick="event.stopPropagation();openImageViewer('${u}', ${safeAlbum}, ${i})" controls playsinline muted></video>`;
-        } else {
-          return `<img src="${u}" loading="lazy" onclick="event.stopPropagation();openImageViewer('${u}', ${safeAlbum}, ${i})">`;
-        }
-      }).join('') + `</div>`;
-    } else if(mediaUrl && (type==='image' || type==='album' || isImageUrl)){
-      mediaHtml=`<img src="${mediaUrl}" class="chat-img" loading="lazy" onload="scrollToBottom(false)" onclick="event.stopPropagation();openImageViewer('${mediaUrl}')">`;
-    } else if(mediaUrl && (type==='video' || isVideoUrl)){
-      mediaHtml=`<video src="${mediaUrl}" class="chat-video" controls playsinline></video>`;
-    } else if(mediaUrl && type==='voice'){
-      mediaHtml=`<audio src="${mediaUrl}" controls style="width:260px"></audio>`;
-    } else if(mediaUrl){
-      mediaHtml=`<a href="${mediaUrl}" target="_blank" style="color:#FFC72C;font-weight:900">📎 View File</a>`;
+    if(m.reply_to && m.reply_to.id){
+      if(!parentMap[m.reply_to.id]) parentMap[m.reply_to.id]=[];
+      parentMap[m.reply_to.id].push(m);
+    } else {
+      if((m.type||'').toLowerCase()!=='system') topLevel.push(m);
+      else topLevel.push(m);
     }
-    let html=`<div style="font-weight:900;font-size:11px;margin-bottom:4px"><span class="avatar ${admin?'bossAvatar':''}">${admin?'👑':initial}</span>${nameLine} ${bossBadge} ${pinnedTag}${editedTag}</div>${replyHtml}${mediaHtml}`;
-    if(txt && !txt.includes('|') && !txt.startsWith('http') && txt.toLowerCase()!=='[image]' && txt.toLowerCase()!=='[video]' && txt.toLowerCase()!=='[voice]' && txt.toLowerCase()!=='[file]' && txt.toLowerCase()!=='[album]' && !txt.startsWith('📷')) html+=`<div style="margin-top:4px;white-space:pre-wrap;word-break:break-word">${escapeHtml(txt)}</div>`;
-    html+=`${reactsHtml}<div class="views"><span>🕒 ${formatNigeriaTime(m.created_at)}</span></div>`;
-    box.innerHTML+=`<div class="msg ${isMe?'me':'other'} ${admin?'boss':''} ${ban?'bannedMsg':''}" data-id="${m.id}"><div class="bubble">${html}</div></div>`;
+  });
+  // also include messages that are top but also have replies: we already have all in data, but for grouping we need to render in chronological order
+  let renderedIds=new Set();
+  data.forEach(m=>{
+    if(renderedIds.has(m.id)) return;
+    let type=(m.type||'').toLowerCase();
+    if(type==='system'){
+      box.innerHTML+=`<div class="msg system" data-id="${m.id}">${escapeHtml(m.message||'')} • ${formatNigeriaTime(m.created_at)}</div>`;
+      renderedIds.add(m.id);
+      return;
+    }
+    if(m.reply_to && m.reply_to.id) return; // will be rendered under parent
+    let built=buildMsgHTML(m);
+    if(built.isSystem){ box.innerHTML+=built.html; }
+    else {
+      let replies=parentMap[m.id]||[];
+      let wrapper=`<div style="display:flex;flex-direction:column;gap:2px;max-width:82%;${m.name===myName?'align-self:flex-end':'align-self:flex-start'}">${built.html}`;
+      if(replies.length>0){
+        let count=replies.length;
+        wrapper+=`<div id="viewbtn-${m.id}" class="view-replies-btn" onclick="toggleReplies('${m.id}')"><span>▼</span> View ${count} ${count===1?'reply':'replies'}</div><div id="replies-${m.id}" class="thread-container">`;
+        replies.forEach(r=>{
+          let rb=buildMsgHTML(r);
+          wrapper+=rb.html;
+          renderedIds.add(r.id);
+          let subReplies=parentMap[r.id]||[];
+          if(subReplies.length>0){
+            subReplies.forEach(sr=>{
+              let srb=buildMsgHTML(sr);
+              wrapper+=`<div style="margin-left:12px;border-left:2px solid rgba(255,199,44,.3);padding-left:8px">${srb.html}</div>`;
+              renderedIds.add(sr.id);
+            });
+          }
+        });
+        wrapper+=`</div>`;
+      }
+      wrapper+=`</div>`;
+      box.innerHTML+=wrapper;
+    }
+    renderedIds.add(m.id);
+  });
+  // render any orphan replies whose parent was deleted or not in view
+  data.forEach(m=>{
+    if(!renderedIds.has(m.id)){
+      let b=buildMsgHTML(m);
+      box.innerHTML+=b.html;
+    }
   });
   box.innerHTML+=`<div id="bottomAnchor" style="height:1px;"></div>`;
   attachLongPress(); if(isNearBottom) scrollToBottom(false); trackViews(); loadPinned(); updateOnlineCount();
+}
+
+function toggleReplies(parentId){
+  let el=document.getElementById('replies-'+parentId);
+  let btn=document.getElementById('viewbtn-'+parentId);
+  if(!el) return;
+  el.classList.toggle('open');
+  if(el.classList.contains('open')){
+    btn.innerHTML='<span>▲</span> Hide replies';
+  } else {
+    let count=el.children.length;
+    btn.innerHTML='<span>▼</span> View '+count+' '+(count===1?'reply':'replies');
+  }
+}
+function replyToMessage(id){
+  let msg=allMessages.find(m=>m.id==id);
+  if(!msg) return;
+  selectedMsg=msg;
+  startReply();
 }
 function attachLongPress(){ let timer; document.querySelectorAll('.msg').forEach(el=>{ const start=(e)=>{ timer=setTimeout(()=>{ selectMsgLong(el.dataset.id); },600); }; const clear=()=>clearTimeout(timer); el.addEventListener('touchstart',start,{passive:true}); el.addEventListener('touchend',clear); el.addEventListener('mousedown',start); el.addEventListener('mouseup',clear); el.addEventListener('mouseleave',clear); }); }
 function selectMsgLong(id){
@@ -625,8 +714,19 @@ async function react(emoji){
   }
 }
 function quickReact(id,emoji){ selectedMsg=allMessages.find(m=>m.id==id); if(selectedMsg) react(emoji); }
-function startReply(){ if(!selectedMsg) return; replyToData={id:selectedMsg.id,name:selectedMsg.name,message:selectedMsg.message||''}; closeCtx(); document.getElementById('msgInput').focus(); }
-function cancelReply(){ replyToData=null; }
+function startReply(){ 
+  if(!selectedMsg) return; 
+  replyToData={id:selectedMsg.id,name:selectedMsg.name,message:selectedMsg.message||''}; 
+  document.getElementById('replyBarName').innerText='Replying to '+selectedMsg.name;
+  document.getElementById('replyBarText').innerText=(selectedMsg.message||'[media]').substring(0,80);
+  document.getElementById('replyBar').classList.add('show');
+  closeCtx(); 
+  document.getElementById('msgInput').focus(); 
+}
+function cancelReply(){ 
+  replyToData=null; 
+  document.getElementById('replyBar').classList.remove('show');
+}
 async function saveBan(name,status,until=null){ let p={name,status,banned_by:myName,until}; bannedMap[name]=p; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); try{ await supabaseClient.from('msel_mente_bans').upsert(p,{onConflict:'name'}); }catch(e){} }
 async function deleteMsgAdmin(){ if(!selectedMsg||!myIsAdmin) return; if(!confirm('Remove?')) return; try{ await supabaseClient.from('msel_mente_messages').delete().eq('id',selectedMsg.id); showToast('🗑️ Removed'); closeCtx(); }catch(e){ showToast(e.message); } }
 async function suspendUser(){ if(!selectedMsg||!myIsAdmin) return; let until=new Date(Date.now()+86400000).toISOString(); await saveBan(selectedMsg.name,'suspended',until); showToast('⏸️ Suspended'); closeCtx(); }
@@ -641,7 +741,7 @@ async function sendMsg(mediaUrl=null,mediaType='text'){
   let tempId='temp-'+Date.now()+'-'+Math.random();
   let optimisticMsg={id:tempId,name:sendName,code:sendCode,message:text||'',media_url:mediaUrl||null,type:mediaUrl?mediaType:'text',created_at:new Date().toISOString(),viewed_by:[myName],reactions:{},reply_to:replyToData};
   if(mediaUrl){ allMessages.push(optimisticMsg); renderMessages(allMessages); isNearBottom=true; scrollToBottom(true); }
-  if(!mediaUrl){ input.value=''; autoResize(); toggleSendMic(); allMessages.push(optimisticMsg); renderMessages(allMessages); scrollToBottom(true); }
+  if(!mediaUrl){ input.value=''; autoResize(); toggleSendMic(); allMessages.push(optimisticMsg); renderMessages(allMessages); scrollToBottom(true); cancelReply(); }
   let payload={name:sendName,code:sendCode,message:text||'',viewed_by:[myName]}; 
   if(mediaUrl){ payload.media_url=mediaUrl; payload.type=mediaType; }
   if(replyToData) payload.reply_to=replyToData;
@@ -733,7 +833,7 @@ let micBtn=document.getElementById('micBtn');
 micBtn.addEventListener('mousedown',e=>{e.preventDefault(); startRecording();});
 micBtn.addEventListener('touchstart',e=>{e.preventDefault(); startRecording();},{passive:false});
 function logout(){ try{ if(!myIsAdmin){ supabaseClient.from('msel_mente_messages').insert({name:myName,code:myCode,message:`👋 ${myName} left the chat`,type:'system'}).then(()=>{}); } }catch(e){} localStorage.removeItem('msel_mente_session'); localStorage.removeItem('msel_admin_session'); location.href='index.html'; }
-document.addEventListener('click',e=>{ if(!e.target.closest('#menuDropdown')&&!e.target.closest('.menuBtn')){ document.getElementById('menuDropdown').style.display='none'; } if(!e.target.closest('.msg')&&!e.target.closest('#ctxMenu')&&!e.target.closest('#banModal')&&!e.target.closest('#viewModal')&&!e.target.closest('#editModal')&&!e.target.closest('#membersModal')&&!e.target.closest('#searchModal')&&!e.target.closest('#imgViewer')&&!e.target.closest('#waPicker')&&!e.target.closest('#privatePanel')&&!e.target.closest('#onlineModal')){ document.getElementById('ctxMenu').style.display='none'; } });
+document.addEventListener('click',e=>{ if(!e.target.closest('#menuDropdown')&&!e.target.closest('.menuBtn')){ document.getElementById('menuDropdown').style.display='none'; } if(!e.target.closest('.msg')&&!e.target.closest('#ctxMenu')&&!e.target.closest('#banModal')&&!e.target.closest('#viewModal')&&!e.target.closest('#editModal')&&!e.target.closest('#membersModal')&&!e.target.closest('#searchModal')&&!e.target.closest('#imgViewer')&&!e.target.closest('#waPicker')&&!e.target.closest('#privatePanel')&&!e.target.closest('#onlineModal')&&!e.target.closest('#replyBar')){ document.getElementById('ctxMenu').style.display='none'; } });
 </script>
 </body>
 </html>
