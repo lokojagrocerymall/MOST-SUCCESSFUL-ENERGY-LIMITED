@@ -35,12 +35,12 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 .textInput{flex:1;min-width:0;padding:11px 14px;border-radius:22px;border:1px solid #334155;background:#1e293b;color:#fff;outline:none;font-size:14px;resize:none;min-height:42px;max-height:120px;line-height:1.4;overflow-y:auto;white-space:pre-wrap;word-break:break-word}
 .sendBtn{background:#22c55e;color:#000;font-weight:900;min-width:42px;width:42px;height:42px;border-radius:50%;border:0;cursor:pointer;font-size:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .menuBtn{background:#FFC72C;color:#000;border:0;width:42px;height:42px;border-radius:50%;font-weight:900;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-left:8px}
-#menuDropdown{display:none;position:fixed;top:60px;right:3%;background:#0f172a;border:2px solid #FFC72C;border-radius:16px;padding:10px;z-index:200;min-width:220px;flex-direction:column;gap:8px}
+#menuDropdown{display:none;position:fixed;top:60px;right:3%;background:#0f172a;border:2px solid #FFC72C;border-radius:16px;padding:10px;z-index:200;min-width:240px;flex-direction:column;gap:8px}
 #menuDropdown a,#menuDropdown button{padding:12px 14px;border-radius:12px;border:1px solid #334155;background:#1e293b;color:#fff;font-weight:900;text-decoration:none;text-align:left;cursor:pointer;font-size:14px;display:block;width:100%}
 #notifyToast{position:fixed;top:80px;right:10px;background:#22c55e;color:#000;padding:10px 14px;border-radius:10px;font-size:12px;font-weight:900;display:none;z-index:9999}
 #recordingBar{display:none;position:fixed;bottom:65px;left:3%;right:3%;background:#111;color:#fff;padding:12px 16px;border-radius:24px;font-weight:900;z-index:60;border:2px solid #ef4444;flex-direction:column;gap:8px}
 #fileInput{display:none}
-#ctxMenu{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#1e293b;border:2px solid #FFC72C;border-radius:18px;padding:10px;display:none;flex-direction:column;gap:6px;z-index:9999;min-width:280px;max-width:92%;max-height:85vh;overflow-y:auto}
+#ctxMenu{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#1e293b;border:2px solid #FFC72C;border-radius:18px;padding:10px;display:none;flex-direction:column;gap:6px;z-index:9999;min-width:300px;max-width:92%;max-height:85vh;overflow-y:auto}
 #ctxMenu .mTitle{font-size:11px;font-weight:900;color:#FFC72C;text-align:center;padding:4px 0;border-bottom:1px solid #334155;margin-bottom:4px}
 #ctxMenu button{padding:12px 12px;border-radius:12px;border:0;font-weight:900;font-size:13px;cursor:pointer;text-align:left;background:#0f172a;color:#fff;border:1px solid #334155}
 #ctxMenu button.del{background:#ef4444;color:#fff}
@@ -69,7 +69,6 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 .waCaption{flex:1;padding:12px 14px;border-radius:24px;border:0;background:#2a3942;color:#fff;outline:none}
 .waSend{width:48px;height:48px;border-radius:50%;background:#22c55e;color:#000;border:0;font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center;position:relative}
 .waSend span{position:absolute;top:-4px;right:-4px;background:#fff;color:#000;font-size:11px;font-weight:900;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center}
-/* PRIVATE CHAT INSIDE - OPTION A */
 #privatePanel{display:none;position:fixed;inset:0;z-index:450;background:#0f172a;flex-direction:column}
 #privatePanel.show{display:flex}
 .private-top{display:flex;justify-content:space-between;align-items:center;padding:10px;background:#8B005C;border-bottom:1px solid rgba(255,255,255,.2)}
@@ -94,33 +93,31 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <header>
 <div class="left"><img src="logo.png" alt="MSEL"><div><h1>MSEL MENTE CHAT</h1><small id="userLabel">Loading...</small><br><small id="onlineCount" style="font-size:10px;color:#22c55e">● 0 members</small></div></div>
 <div style="display:flex;align-items:center;gap:6px">
-<a id="backToAdminBtn" href="admin.html" style="display:none;background:#fff;color:#8B005C;padding:6px 12px;border-radius:20px;text-decoration:none;font-weight:900;font-size:11px">← Dashboard</a>
-<button onclick="openPrivatePanel()" style="background:#f59e0b;color:#000;border:0;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:900;cursor:pointer">💬 Private</button>
 <button class="menuBtn" onclick="toggleMenu()">☰</button>
 </div>
 </header>
 <div id="pinnedBanner" onclick="scrollToPinned()"></div>
 <div id="menuDropdown">
 <a href="#" onclick="openSearch();toggleMenu();return false" style="background:#22c55e;color:#000">🔍 Search Messages</a>
+<a href="#" id="menuDashboardBtn" style="display:none;background:#fff;color:#8B005C" onclick="location.href='admin.html';toggleMenu();return false">← Back to Dashboard</a>
+<a href="#" onclick="openPrivatePanel();toggleMenu();return false" style="background:#f59e0b;color:#000">💬 Private Chat</a>
 <a href="engineers.html" onclick="toggleMenu()">🛒 Shop</a>
-<a href="#" onclick="openPrivatePanel();toggleMenu();return false" style="background:#f59e0b;color:#000">💬 Private Chat (WhatsApp style) - Inside</a>
 <a href="#" onclick="openMembers();toggleMenu();return false" style="background:#FFC72C;color:#000">👥 Members</a>
 <a href="#" id="adminListBtn" style="display:none" onclick="openBanList();toggleMenu();return false">👑 Bans</a>
 <a href="index.html" style="background:#fff;color:#000">🏠 Home</a>
 <button onclick="logout()" style="background:#ef4444;color:#fff">🚪 Logout</button>
 </div>
 
-<!-- PRIVATE CHAT INSIDE - OPTION A -->
 <div id="privatePanel">
 <div class="private-top">
-<div style="display:flex;align-items:center;gap:10px"><button onclick="closePrivatePanel()" style="background:0;border:0;color:#fff;font-size:22px">✕</button><b>💬 Private Chat - Mentes</b></div>
-<div style="display:flex;gap:6px"><button id="toggleListBtn" onclick="togglePrivateList()" style="background:#1e293b;color:#fff;border:1px solid #334155;padding:6px 10px;border-radius:8px;font-size:11px">👥 List</button><button onclick="closePrivatePanel()" style="background:#fff;color:#000;border:0;padding:6px 12px;border-radius:20px;font-weight:900">Group</button></div>
+<div style="display:flex;align-items:center;gap:10px"><button onclick="closePrivatePanel()" style="background:0;border:0;color:#fff;font-size:22px">✕</button><b>💬 Private Chat</b></div>
+<div style="display:flex;gap:6px"><button onclick="togglePrivateList()" style="background:#1e293b;color:#fff;border:1px solid #334155;padding:6px 10px;border-radius:8px;font-size:11px">👥 List</button><button onclick="closePrivatePanel()" style="background:#fff;color:#000;border:0;padding:6px 12px;border-radius:20px;font-weight:900">Group</button></div>
 </div>
 <div class="private-main">
-<div class="private-list" id="privateList"><div class="private-list-head">👥 Approved Mentes - Tap to private chat</div><div id="privateMenteList" style="flex:1;overflow-y:auto">Loading...</div></div>
+<div class="private-list" id="privateList"><div class="private-list-head">👥 Tap to private chat</div><div id="privateMenteList" style="flex:1;overflow-y:auto">Loading...</div></div>
 <div class="private-chat-area">
-<div class="private-chat-head"><span id="privateChatWith">Select a mente to start private chat</span><br><small id="privateChatState" style="font-size:10px;color:#FFC72C"></small></div>
-<div class="private-box" id="privateBox"><div style="text-align:center;padding:40px 10px;opacity:.6">👋 This is private chat inside group chatroom<br><br>Tap any mente from list → chat like WhatsApp<br><br>Only you and that mente see these messages.<br><br>💡 Admin can see all, mentes can't.</div></div>
+<div class="private-chat-head"><span id="privateChatWith">Select a mente</span><br><small id="privateChatState" style="font-size:10px;color:#FFC72C"></small></div>
+<div class="private-box" id="privateBox"><div style="text-align:center;padding:40px 10px;opacity:.6">👋 Select mente from list to start private chat<br><br>Only you and that mente see it.</div></div>
 <div class="private-input"><input type="text" id="privateInput" placeholder="Type private message..." onkeypress="if(event.key==='Enter') sendPrivateMsg()"><button onclick="sendPrivateMsg()">Send</button></div>
 </div>
 </div>
@@ -160,9 +157,11 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <div id="ctxMenu">
 <div class="mTitle" id="ctxTitle">Message</div>
 <div class="emoRow"><span onclick="react('👍')">👍</span><span onclick="react('❤️')">❤️</span><span onclick="react('😂')">😂</span><span onclick="react('😮')">😮</span><span onclick="react('🙏')">🙏</span><span onclick="react('🔥')">🔥</span><span onclick="react('💯')">💯</span></div>
-<button onclick="startReply()">💬 Reply</button><button onclick="tagUser()">🏷️ Tag User</button>
-<button id="ctxPin" style="display:none;background:#FFC72C;color:#000" onclick="pinMessage()">📌 Pin Message (Boss)</button>
-<button id="ctxUnpin" style="display:none;background:#ef4444;color:#fff" onclick="unpinMessage()">❌ Unpin (Boss)</button>
+<button onclick="startReply()">💬 Reply</button>
+<button id="ctxReplyPrivate" style="display:none;background:#f59e0b;color:#000" onclick="replyPrivately()">↩️ Reply privately</button>
+<button onclick="tagUser()">🏷️ Tag User</button>
+<button id="ctxPin" style="display:none;background:#FFC72C;color:#000" onclick="pinMessage()">📌 Pin Message</button>
+<button id="ctxUnpin" style="display:none;background:#ef4444;color:#fff" onclick="unpinMessage()">❌ Unpin</button>
 <button id="ctxSave" style="display:none" class="save" onclick="saveMedia()">💾 Save Media</button>
 <button id="ctxView" onclick="showViewersFromMenu()">👁️ Viewed By</button><button id="ctxCopy" onclick="copyText()">📋 Copy Text</button>
 <button id="ctxEdit" style="display:none" onclick="openEdit()">✏️ Edit (5h)</button><button id="ctxDel" style="display:none" class="del" onclick="deleteOwnMsg()">🗑️ Delete My Chat / Media</button>
@@ -197,10 +196,9 @@ if(!session){ location.href='mente-login.html'; }
 let myName=session?.name||'Guest'; let myCode=session?.code||'MSEL2026'; let myRole=session?.role||'mente';
 let myIsAdmin=myRole==='admin'||myName==='MSEL BOSS'||myName.toLowerCase().includes('boss')||myCode.toUpperCase().includes('BOSS');
 document.getElementById('userLabel').innerText=myIsAdmin?'👑 MSEL BOSS (Admin)':myName+' ('+myCode+')';
-if(myIsAdmin) document.getElementById('adminListBtn').style.display='block';
 if(myIsAdmin){
-  let adminBtn=document.getElementById('backToAdminBtn');
-  if(adminBtn) adminBtn.style.display='inline-block';
+  document.getElementById('adminListBtn').style.display='block';
+  document.getElementById('menuDashboardBtn').style.display='block';
 }
 let bannedMap=JSON.parse(localStorage.getItem('msel_banned_map')||'{}');
 let allMessages=[]; let selectedMsg=null; let replyToData=null; let accountsMap={}; let accountsLoaded=false; let viewedOnce=false; let allAccountsList=[]; let recStartTime=null; let recInterval=null; let recordedBlob=null; let mediaRecorder=null; let audioChunks=[]; let isRecording=false; let pinnedMessage=null; 
@@ -286,7 +284,7 @@ async function loadPrivateMentes(){
     let unread=privateUnreadCounts[a.id]||0;
     let active=privateCurrentWith && privateCurrentWith.id===a.id?'active':'';
     html+=`<div class="private-item ${active}" onclick="startPrivateChat('${a.id}')">
-      <div><div class="pname">● ${escapeHtml(name)}</div><div class="pstate">${escapeHtml(a.state||'')}${a.phone?' • '+escapeHtml(a.phone.slice(-4)):''}</div></div>
+      <div><div class="pname">● ${escapeHtml(name)}</div><div class="pstate">${escapeHtml(a.state||'')}</div></div>
       <div>${unread>0?`<span class="p-unread">${unread}</span>`:''} 💬</div>
     </div>`;
   });
@@ -297,7 +295,7 @@ function startPrivateChat(id){
   if(!m) return;
   privateCurrentWith=m;
   document.getElementById('privateChatWith').innerText='💬 '+(m.full_name||m.name);
-  document.getElementById('privateChatState').innerText=(m.state||'')+' • '+ (m.phone||'');
+  document.getElementById('privateChatState').innerText=(m.state||'');
   document.getElementById('privateList').classList.remove('open');
   privateUnreadCounts[id]=0;
   loadPrivateMentes();
@@ -333,6 +331,23 @@ async function sendPrivateMsg(){
     }]);
     loadPrivateMessages();
   }catch(e){ showToast('Error: '+e.message+' - Create table msel_private_messages'); }
+}
+function replyPrivately(){
+  if(!selectedMsg) return;
+  let name=selectedMsg.name;
+  if(name===myName){ showToast('You cannot reply privately to yourself'); return; }
+  closeCtx();
+  openPrivatePanel();
+  setTimeout(()=>{
+    let m=allAccountsList.find(a=> (a.name===name)||(a.full_name===name)||(a.code===selectedMsg.code));
+    if(m){ startPrivateChat(m.id); }
+    else {
+      // Fallback: try by name match
+      let found=allAccountsList.find(a=> (a.full_name||a.name).toLowerCase()===name.toLowerCase());
+      if(found) startPrivateChat(found.id);
+      else showToast('Opening private list - find '+name);
+    }
+  },300);
 }
 
 async function loadAccounts(){
@@ -441,7 +456,23 @@ function renderMessages(data){
   attachLongPress(); if(isNearBottom) scrollToBottom(false); trackViews(); loadPinned(); updateOnlineCount();
 }
 function attachLongPress(){ let timer; document.querySelectorAll('.msg').forEach(el=>{ const start=(e)=>{ timer=setTimeout(()=>{ selectMsgLong(el.dataset.id); },600); }; const clear=()=>clearTimeout(timer); el.addEventListener('touchstart',start,{passive:true}); el.addEventListener('touchend',clear); el.addEventListener('mousedown',start); el.addEventListener('mouseup',clear); el.addEventListener('mouseleave',clear); }); }
-function selectMsgLong(id){ if(navigator.vibrate) navigator.vibrate(50); selectedMsg=allMessages.find(m=>m.id==id); if(!selectedMsg) return; if((selectedMsg.type||'').toLowerCase()==='system') return; document.getElementById('ctxTitle').innerText=selectedMsg.name + (selectedMsg.name===myName?' (You)':''); let isMe=selectedMsg.name===myName; let hasMedia=!!(selectedMsg.media_url||selectedMsg.media_urls); document.getElementById('ctxSave').style.display=hasMedia?'block':'none'; document.getElementById('ctxEdit').style.display=(isMe && (Date.now()-new Date(selectedMsg.created_at).getTime())<5*60*60*1000)?'block':'none'; document.getElementById('ctxDel').style.display=isMe?'block':'none'; document.getElementById('ctxAdmin').style.display=(myIsAdmin && !isMe)?'flex':'none'; document.getElementById('ctxPin').style.display=myIsAdmin?'block':'none'; document.getElementById('ctxUnpin').style.display=(myIsAdmin && pinnedMessage)?'block':'none'; document.getElementById('ctxMenu').style.display='flex'; }
+function selectMsgLong(id){
+  if(navigator.vibrate) navigator.vibrate(50);
+  selectedMsg=allMessages.find(m=>m.id==id);
+  if(!selectedMsg) return;
+  if((selectedMsg.type||'').toLowerCase()==='system') return;
+  document.getElementById('ctxTitle').innerText=selectedMsg.name + (selectedMsg.name===myName?' (You)':'');
+  let isMe=selectedMsg.name===myName;
+  let hasMedia=!!(selectedMsg.media_url||selectedMsg.media_urls);
+  document.getElementById('ctxSave').style.display=hasMedia?'block':'none';
+  document.getElementById('ctxEdit').style.display=(isMe && (Date.now()-new Date(selectedMsg.created_at).getTime())<5*60*60*1000)?'block':'none';
+  document.getElementById('ctxDel').style.display=isMe?'block':'none';
+  document.getElementById('ctxReplyPrivate').style.display=!isMe?'block':'none';
+  document.getElementById('ctxAdmin').style.display=(myIsAdmin && !isMe)?'flex':'none';
+  document.getElementById('ctxPin').style.display=myIsAdmin?'block':'none';
+  document.getElementById('ctxUnpin').style.display=(myIsAdmin && pinnedMessage)?'block':'none';
+  document.getElementById('ctxMenu').style.display='flex';
+}
 function closeCtx(){ document.getElementById('ctxMenu').style.display='none'; }
 function saveMedia(){ if(!selectedMsg) return; let urls=parseAlbumUrls(selectedMsg); openImageViewer(urls[0], urls, 0); closeCtx(); }
 function copyText(){ if(!selectedMsg) return; let t=selectedMsg.message||''; if(navigator.clipboard) navigator.clipboard.writeText(t); showToast('📋 Copied'); closeCtx(); }
