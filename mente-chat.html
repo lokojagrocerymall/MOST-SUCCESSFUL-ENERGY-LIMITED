@@ -69,6 +69,25 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 .waCaption{flex:1;padding:12px 14px;border-radius:24px;border:0;background:#2a3942;color:#fff;outline:none}
 .waSend{width:48px;height:48px;border-radius:50%;background:#22c55e;color:#000;border:0;font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center;position:relative}
 .waSend span{position:absolute;top:-4px;right:-4px;background:#fff;color:#000;font-size:11px;font-weight:900;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+/* PRIVATE CHAT INSIDE - OPTION A */
+#privatePanel{display:none;position:fixed;inset:0;z-index:450;background:#0f172a;flex-direction:column}
+#privatePanel.show{display:flex}
+.private-top{display:flex;justify-content:space-between;align-items:center;padding:10px;background:#8B005C;border-bottom:1px solid rgba(255,255,255,.2)}
+.private-main{display:flex;flex:1;overflow:hidden}
+.private-list{width:38%;max-width:320px;background:#1e293b;border-right:1px solid #334155;overflow-y:auto;display:flex;flex-direction:column}
+.private-list-head{padding:10px;font-weight:900;font-size:12px;background:#0f172a;border-bottom:1px solid #334155}
+.private-item{padding:10px;border-bottom:1px solid #1e293b;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.private-item:hover,.private-item.active{background:#052e16;border-left:3px solid #22c55e}
+.private-item .pname{font-size:12px;font-weight:800}
+.private-item .pstate{font-size:10px;color:#94a3b8}
+.private-chat-area{flex:1;display:flex;flex-direction:column;background:#8B005C}
+.private-chat-head{padding:10px;background:#1e293b;border-bottom:1px solid #334155;font-weight:900;font-size:13px}
+.private-box{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.private-input{padding:10px;display:flex;gap:6px;border-top:1px solid rgba(255,255,255,.2);background:#1e293b}
+.private-input input{flex:1;padding:12px;border-radius:20px;border:1px solid #334155;background:#0f172a;color:#fff;outline:none}
+.private-input button{padding:12px 18px;border-radius:20px;border:0;background:#f59e0b;color:#000;font-weight:900;cursor:pointer}
+.p-unread{background:#ef4444;color:#fff;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:900}
+@media(max-width:700px){.private-list{width:100%;max-width:100%;position:absolute;left:0;top:0;bottom:0;z-index:2;transform:translateX(-100%);transition:.3s}.private-list.open{transform:translateX(0)}.private-main{position:relative}}
 </style>
 </head>
 <body>
@@ -76,7 +95,7 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <div class="left"><img src="logo.png" alt="MSEL"><div><h1>MSEL MENTE CHAT</h1><small id="userLabel">Loading...</small><br><small id="onlineCount" style="font-size:10px;color:#22c55e">● 0 members</small></div></div>
 <div style="display:flex;align-items:center;gap:6px">
 <a id="backToAdminBtn" href="admin.html" style="display:none;background:#fff;color:#8B005C;padding:6px 12px;border-radius:20px;text-decoration:none;font-weight:900;font-size:11px">← Dashboard</a>
-<a href="mente-private-chat.html" style="background:#f59e0b;color:#000;text-decoration:none;padding:6px 10px;border-radius:20px;font-size:11px;font-weight:900">💬 Private</a>
+<button onclick="openPrivatePanel()" style="background:#f59e0b;color:#000;border:0;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:900;cursor:pointer">💬 Private</button>
 <button class="menuBtn" onclick="toggleMenu()">☰</button>
 </div>
 </header>
@@ -84,12 +103,29 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <div id="menuDropdown">
 <a href="#" onclick="openSearch();toggleMenu();return false" style="background:#22c55e;color:#000">🔍 Search Messages</a>
 <a href="engineers.html" onclick="toggleMenu()">🛒 Shop</a>
-<a href="mente-private-chat.html" onclick="toggleMenu()" style="background:#f59e0b;color:#000">💬 Private Chat (WhatsApp style)</a>
+<a href="#" onclick="openPrivatePanel();toggleMenu();return false" style="background:#f59e0b;color:#000">💬 Private Chat (WhatsApp style) - Inside</a>
 <a href="#" onclick="openMembers();toggleMenu();return false" style="background:#FFC72C;color:#000">👥 Members</a>
 <a href="#" id="adminListBtn" style="display:none" onclick="openBanList();toggleMenu();return false">👑 Bans</a>
 <a href="index.html" style="background:#fff;color:#000">🏠 Home</a>
 <button onclick="logout()" style="background:#ef4444;color:#fff">🚪 Logout</button>
 </div>
+
+<!-- PRIVATE CHAT INSIDE - OPTION A -->
+<div id="privatePanel">
+<div class="private-top">
+<div style="display:flex;align-items:center;gap:10px"><button onclick="closePrivatePanel()" style="background:0;border:0;color:#fff;font-size:22px">✕</button><b>💬 Private Chat - Mentes</b></div>
+<div style="display:flex;gap:6px"><button id="toggleListBtn" onclick="togglePrivateList()" style="background:#1e293b;color:#fff;border:1px solid #334155;padding:6px 10px;border-radius:8px;font-size:11px">👥 List</button><button onclick="closePrivatePanel()" style="background:#fff;color:#000;border:0;padding:6px 12px;border-radius:20px;font-weight:900">Group</button></div>
+</div>
+<div class="private-main">
+<div class="private-list" id="privateList"><div class="private-list-head">👥 Approved Mentes - Tap to private chat</div><div id="privateMenteList" style="flex:1;overflow-y:auto">Loading...</div></div>
+<div class="private-chat-area">
+<div class="private-chat-head"><span id="privateChatWith">Select a mente to start private chat</span><br><small id="privateChatState" style="font-size:10px;color:#FFC72C"></small></div>
+<div class="private-box" id="privateBox"><div style="text-align:center;padding:40px 10px;opacity:.6">👋 This is private chat inside group chatroom<br><br>Tap any mente from list → chat like WhatsApp<br><br>Only you and that mente see these messages.<br><br>💡 Admin can see all, mentes can't.</div></div>
+<div class="private-input"><input type="text" id="privateInput" placeholder="Type private message..." onkeypress="if(event.key==='Enter') sendPrivateMsg()"><button onclick="sendPrivateMsg()">Send</button></div>
+</div>
+</div>
+</div>
+
 <div id="approvalBlock">
 <img src="logo.png" style="width:90px;height:90px;object-fit:contain;margin-bottom:20px">
 <h2 style="color:#FFC72C">⏳ Awaiting Approval</h2>
@@ -162,7 +198,6 @@ let myName=session?.name||'Guest'; let myCode=session?.code||'MSEL2026'; let myR
 let myIsAdmin=myRole==='admin'||myName==='MSEL BOSS'||myName.toLowerCase().includes('boss')||myCode.toUpperCase().includes('BOSS');
 document.getElementById('userLabel').innerText=myIsAdmin?'👑 MSEL BOSS (Admin)':myName+' ('+myCode+')';
 if(myIsAdmin) document.getElementById('adminListBtn').style.display='block';
-// ADMIN RETURN TO DASHBOARD - INVISIBLE TO PUBLIC MENTES - ONLY SHOW FOR ADMIN
 if(myIsAdmin){
   let adminBtn=document.getElementById('backToAdminBtn');
   if(adminBtn) adminBtn.style.display='inline-block';
@@ -172,6 +207,8 @@ let allMessages=[]; let selectedMsg=null; let replyToData=null; let accountsMap=
 let isNearBottom=true; let isTyping=false;
 let currentAlbum=[]; let currentAlbumIndex=0;
 let waFiles=[];
+let privateCurrentWith=null;
+let privateUnreadCounts={};
 
 function toggleMenu(){ let d=document.getElementById('menuDropdown'); d.style.display=d.style.display==='flex'?'none':'flex'; }
 function escapeHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
@@ -226,6 +263,78 @@ function prevViewerImg(){ if(currentAlbum.length<=1) return; currentAlbumIndex =
 let touchStartX=0;
 document.getElementById('imgViewer').addEventListener('touchstart', e=>{ touchStartX=e.changedTouches[0].screenX; }, {passive:true});
 document.getElementById('imgViewer').addEventListener('touchend', e=>{ let dx=e.changedTouches[0].screenX-touchStartX; if(Math.abs(dx)>50){ if(dx<0) nextViewerImg(); else prevViewerImg(); } }, {passive:true});
+
+function openPrivatePanel(){
+  document.getElementById('privatePanel').classList.add('show');
+  loadPrivateMentes();
+}
+function closePrivatePanel(){
+  document.getElementById('privatePanel').classList.remove('show');
+  privateCurrentWith=null;
+}
+function togglePrivateList(){
+  document.getElementById('privateList').classList.toggle('open');
+}
+async function loadPrivateMentes(){
+  if(!allAccountsList.length) await loadAccounts();
+  let list=document.getElementById('privateMenteList');
+  let approved=allAccountsList.filter(a=>{ let s=(a.status||a.approval_status||'').toLowerCase(); return s==='approved'||s==='active'; });
+  let html='';
+  approved.forEach(a=>{
+    let name=a.full_name||a.name||'Unknown';
+    if(name===myName) return;
+    let unread=privateUnreadCounts[a.id]||0;
+    let active=privateCurrentWith && privateCurrentWith.id===a.id?'active':'';
+    html+=`<div class="private-item ${active}" onclick="startPrivateChat('${a.id}')">
+      <div><div class="pname">● ${escapeHtml(name)}</div><div class="pstate">${escapeHtml(a.state||'')}${a.phone?' • '+escapeHtml(a.phone.slice(-4)):''}</div></div>
+      <div>${unread>0?`<span class="p-unread">${unread}</span>`:''} 💬</div>
+    </div>`;
+  });
+  list.innerHTML=html||'<div style="padding:20px;opacity:.5">No mentes</div>';
+}
+function startPrivateChat(id){
+  let m=allAccountsList.find(x=>x.id===id);
+  if(!m) return;
+  privateCurrentWith=m;
+  document.getElementById('privateChatWith').innerText='💬 '+(m.full_name||m.name);
+  document.getElementById('privateChatState').innerText=(m.state||'')+' • '+ (m.phone||'');
+  document.getElementById('privateList').classList.remove('open');
+  privateUnreadCounts[id]=0;
+  loadPrivateMentes();
+  loadPrivateMessages();
+}
+async function loadPrivateMessages(){
+  if(!privateCurrentWith) return;
+  try{
+    let myId=session.id||myName;
+    const {data}=await supabaseClient.from('msel_private_messages').select('*').or(`and(sender_id.eq.${myId},receiver_id.eq.${privateCurrentWith.id}),and(sender_id.eq.${privateCurrentWith.id},receiver_id.eq.${myId}),and(sender_name.eq.${myName},receiver_name.eq.${privateCurrentWith.full_name||privateCurrentWith.name}),and(sender_name.eq.${privateCurrentWith.full_name||privateCurrentWith.name},receiver_name.eq.${myName})`).order('created_at',{ascending:true});
+    let box=document.getElementById('privateBox');
+    if(!data||data.length===0){ box.innerHTML='<div style="text-align:center;opacity:.5;padding:30px">No private messages with '+(privateCurrentWith.full_name||privateCurrentWith.name)+'<br>Say hello! 👋</div>'; return; }
+    box.innerHTML=data.map(mm=>{
+      let isMe=(mm.sender_id===myId)||(mm.sender_name===myName);
+      return `<div class="msg ${isMe?'me':'other'}"><div class="bubble" style="background:${isMe?'#22c55e':'#1e293b'}!important;color:${isMe?'#000':'#fff'}!important;padding:8px 12px!important;border-radius:12px!important;display:block">${escapeHtml(mm.message)}<div style="font-size:9px;opacity:.6;margin-top:4px">${new Date(mm.created_at).toLocaleTimeString()} ${isMe?'✓✓':''}</div></div></div>`;
+    }).join('');
+    box.scrollTop=box.scrollHeight;
+  }catch(e){ console.log('private',e.message); }
+}
+async function sendPrivateMsg(){
+  let input=document.getElementById('privateInput');
+  let txt=input.value.trim();
+  if(!txt||!privateCurrentWith){ if(!privateCurrentWith) showToast('Select mente first'); return; }
+  input.value='';
+  try{
+    let myId=session.id||myName;
+    await supabaseClient.from('msel_private_messages').insert([{
+      sender_id:myId,
+      sender_name:myName,
+      receiver_id:privateCurrentWith.id,
+      receiver_name:privateCurrentWith.full_name||privateCurrentWith.name,
+      message:txt
+    }]);
+    loadPrivateMessages();
+  }catch(e){ showToast('Error: '+e.message+' - Create table msel_private_messages'); }
+}
+
 async function loadAccounts(){
   if(accountsLoaded) return;
   try{
@@ -266,7 +375,7 @@ function openMembers(){
   let approved = allAccountsList.filter(a=>{ let s=(a.status||a.approval_status||'').toLowerCase(); return s==='approved'||s==='active'; });
   document.getElementById('membersList').innerHTML= approved.map(a=>{
     let name=a.full_name||a.name||'Unknown'; let phone=a.phone||a.whatsapp||'—'; let code=a.code||''; let role=a.role||'mente'; let joined=a.created_at?new Date(a.created_at).toLocaleDateString():''; let isBoss=role==='admin'||name.toLowerCase().includes('boss');
-    return `<div style="display:flex;gap:10px;align-items:center;padding:12px;border-bottom:1px solid #1e3a5f"><div style="width:36px;height:36px;border-radius:50%;background:${isBoss?'linear-gradient(90deg,#FFC72C,#FF8C00)':'#22c55e'};display:flex;align-items:center;justify-content:center;font-weight:900;color:#000">${escapeHtml(name.charAt(0).toUpperCase())}</div><div style="flex:1"><div style="font-weight:900;font-size:13px">${escapeHtml(name)} ${isBoss?'<span style="font-size:9px;background:gold;color:#000;padding:2px 6px;border-radius:8px">BOSS</span>':''}</div><div style="font-size:11px;opacity:0.8">📞 ${escapeHtml(phone)} • ${escapeHtml(code)}</div><div style="font-size:10px;opacity:0.5">Joined: ${joined} • approved</div></div></div>`;
+    return `<div style="display:flex;gap:10px;align-items:center;padding:12px;border-bottom:1px solid #1e3a5f"><div style="width:36px;height:36px;border-radius:50%;background:${isBoss?'linear-gradient(90deg,#FFC72C,#FF8C00)':'#22c55e'};display:flex;align-items:center;justify-content:center;font-weight:900;color:#000">${escapeHtml(name.charAt(0).toUpperCase())}</div><div style="flex:1"><div style="font-weight:900;font-size:13px">${escapeHtml(name)} ${isBoss?'<span style="font-size:9px;background:gold;color:#000;padding:2px 6px;border-radius:8px">BOSS</span>':''}</div><div style="font-size:11px;opacity:0.8">📞 ${escapeHtml(phone)} • ${escapeHtml(code)}</div><div style="font-size:10px;opacity:0.5">Joined: ${joined} • approved</div></div><div><button onclick="openPrivatePanel();startPrivateChat('${a.id}')" style="background:#f59e0b;color:#000;border:0;padding:6px 10px;border-radius:12px;font-weight:900;font-size:11px">💬 Private</button></div></div>`;
   }).join('') || '<p style="text-align:center;opacity:.6">No approved yet</p>';
   document.getElementById('membersModal').style.display='block';
 }
@@ -364,6 +473,19 @@ supabaseClient.channel('mente-fixed-multi-v7').on('postgres_changes',{event:'INS
 }).on('postgres_changes',{event:'DELETE',schema:'public',table:'msel_mente_messages'},payload=>{
   allMessages=allMessages.filter(m=>m.id!==payload.old.id);
   renderMessages(allMessages);
+}).subscribe();
+supabaseClient.channel('mente-private-inside').on('postgres_changes',{event:'INSERT',schema:'public',table:'msel_private_messages'},payload=>{
+  let msg=payload.new;
+  let myId=session.id||myName;
+  if(msg.receiver_id===myId || msg.receiver_name===myName){
+    if(privateCurrentWith && (msg.sender_id===privateCurrentWith.id || msg.sender_name===privateCurrentWith.full_name||privateCurrentWith.name)){
+      loadPrivateMessages();
+    } else {
+      privateUnreadCounts[msg.sender_id]=(privateUnreadCounts[msg.sender_id]||0)+1;
+      loadPrivateMentes();
+      showToast('💬 New private message from '+msg.sender_name);
+    }
+  }
 }).subscribe();
 window.addEventListener('load',()=>{ setTimeout(()=>{ isNearBottom=true; scrollToBottom(true); },500); });
 async function trackViews(){ if(viewedOnce) return; viewedOnce=true; for(let m of allMessages.slice(-20)){ if(m.name===myName) continue; let viewed=m.viewed_by||[]; if(!Array.isArray(viewed)) viewed=[]; if(!viewed.includes(myName)){ viewed.push(myName); try{ await supabaseClient.from('msel_mente_messages').update({viewed_by:viewed}).eq('id',m.id); }catch(e){} await new Promise(r=>setTimeout(r,400)); } } }
@@ -502,7 +624,7 @@ let micBtn=document.getElementById('micBtn');
 micBtn.addEventListener('mousedown',e=>{e.preventDefault(); startRecording();});
 micBtn.addEventListener('touchstart',e=>{e.preventDefault(); startRecording();},{passive:false});
 function logout(){ try{ if(!myIsAdmin){ supabaseClient.from('msel_mente_messages').insert({name:myName,code:myCode,message:`👋 ${myName} left the chat`,type:'system'}).then(()=>{}); } }catch(e){} localStorage.removeItem('msel_mente_session'); localStorage.removeItem('msel_admin_session'); location.href='index.html'; }
-document.addEventListener('click',e=>{ if(!e.target.closest('#menuDropdown')&&!e.target.closest('.menuBtn')){ document.getElementById('menuDropdown').style.display='none'; } if(!e.target.closest('.msg')&&!e.target.closest('#ctxMenu')&&!e.target.closest('#banModal')&&!e.target.closest('#viewModal')&&!e.target.closest('#editModal')&&!e.target.closest('#membersModal')&&!e.target.closest('#searchModal')&&!e.target.closest('#imgViewer')&&!e.target.closest('#waPicker')){ document.getElementById('ctxMenu').style.display='none'; } });
+document.addEventListener('click',e=>{ if(!e.target.closest('#menuDropdown')&&!e.target.closest('.menuBtn')){ document.getElementById('menuDropdown').style.display='none'; } if(!e.target.closest('.msg')&&!e.target.closest('#ctxMenu')&&!e.target.closest('#banModal')&&!e.target.closest('#viewModal')&&!e.target.closest('#editModal')&&!e.target.closest('#membersModal')&&!e.target.closest('#searchModal')&&!e.target.closest('#imgViewer')&&!e.target.closest('#waPicker')&&!e.target.closest('#privatePanel')){ document.getElementById('ctxMenu').style.display='none'; } });
 </script>
 </body>
 </html>
