@@ -27,10 +27,10 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 .msg video.chat-video{width:100%;max-width:280px;border-radius:12px;margin-top:6px;background:#000;display:block}
 .msg audio{width:260px;margin-top:6px;height:38px;display:block}
 .replyBox{background:rgba(0,0,0,.25);border-left:3px solid #FFC72C;padding:6px 8px;border-radius:8px;margin-bottom:6px;font-size:11px;opacity:.9;cursor:pointer;display:inline-block}
-/* NEW REPLY THREAD STYLES - Facebook style */
-.reply-action{font-size:12px;font-weight:800;color:#FFC72C;margin-top:5px;cursor:pointer;display:inline-block;padding:2px 0}
-.reply-action:hover{text-decoration:underline}
-.view-replies-btn{font-size:12px;font-weight:900;color:#cbd5e1;margin-top:6px;cursor:pointer;display:flex;align-items:center;gap:6px}
+/* FIXED REPLY - No more Repl y break */
+.reply-action{font-size:12px;font-weight:800;color:#FFC72C;margin-top:5px;cursor:pointer;display:inline-flex;white-space:nowrap;flex-shrink:0;padding:3px 9px;background:rgba(255,199,44,.18);border-radius:12px;border:1px solid rgba(255,199,44,.35);line-height:1}
+.reply-action:hover{background:rgba(255,199,44,.3)}
+.view-replies-btn{font-size:12px;font-weight:900;color:#cbd5e1;margin-top:6px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
 .view-replies-btn:hover{color:#fff}
 .thread-container{display:none;flex-direction:column;gap:12px;margin-top:10px;margin-left:10px;padding-left:12px;border-left:2px solid rgba(255,255,255,.2)}
 .thread-container.open{display:flex}
@@ -487,7 +487,6 @@ async function unpinMessage(){ if(!myIsAdmin){ showToast('Boss only'); return; }
 function openSearch(){ document.getElementById('searchModal').style.display='block'; document.getElementById('searchInput').focus(); doSearch(); }
 function doSearch(){ let q=document.getElementById('searchInput').value.toLowerCase().trim(); let res=document.getElementById('searchResults'); if(!q){ res.innerHTML='<p style="opacity:0.6;text-align:center">Type to search...</p>'; return; } let matches=allMessages.filter(m=> (m.message&&m.message.toLowerCase().includes(q)) || (m.name&&m.name.toLowerCase().includes(q))).slice(-50).reverse(); if(!matches.length){ res.innerHTML='<p style="opacity:0.6;text-align:center">No results</p>'; return; } res.innerHTML=matches.map(m=>`<div onclick="document.getElementById('searchModal').style.display='none';scrollToMsg('${m.id}')" style="padding:10px;border-bottom:1px solid #1e3a5f;cursor:pointer"><div style="font-weight:900;font-size:12px">${escapeHtml(m.name)} • ${formatNigeriaTime(m.created_at)}</div><div style="font-size:12px;opacity:0.8">${escapeHtml(m.message||'[media]')}</div></div>`).join(''); }
 
-/* NEW: Build message HTML with reply threading */
 function buildMsgHTML(m){
   let type=(m.type||'').toLowerCase(); 
   if(type==='system') return {html:`<div class="msg system" data-id="${m.id}">${escapeHtml(m.message||'')} • ${formatNigeriaTime(m.created_at)}</div>`,isSystem:true};
@@ -532,24 +531,20 @@ function buildMsgHTML(m){
   }
   let html=`<div style="font-weight:900;font-size:11px;margin-bottom:4px"><span class="avatar ${admin?'bossAvatar':''}">${admin?'👑':initial}</span>${nameLine} ${bossBadge} ${pinnedTag}${editedTag}</div>${replyHtml}${mediaHtml}`;
   if(txt && !txt.includes('|') && !txt.startsWith('http') && txt.toLowerCase()!=='[image]' && txt.toLowerCase()!=='[video]' && txt.toLowerCase()!=='[voice]' && txt.toLowerCase()!=='[file]' && txt.toLowerCase()!=='[album]' && !txt.startsWith('📷')) html+=`<div style="margin-top:4px;white-space:pre-wrap;word-break:break-word">${escapeHtml(txt)}</div>`;
-  html+=`${reactsHtml}<div style="display:flex;gap:12px;align-items:center;margin-top:4px"><span class="reply-action" onclick="event.stopPropagation();replyToMessage('${m.id}')">Reply</span><span style="font-size:10px;opacity:.6">🕒 ${formatNigeriaTime(m.created_at)}</span></div>`;
+  html+=`${reactsHtml}<div style="display:flex;gap:12px;align-items:center;margin-top:6px;flex-wrap:nowrap"><span class="reply-action" onclick="event.stopPropagation();replyToMessage('${m.id}')">Reply</span><span style="font-size:10px;opacity:.6;white-space:nowrap">🕒 ${formatNigeriaTime(m.created_at)}</span></div>`;
   return {html: `<div class="msg ${isMe?'me':'other'} ${admin?'boss':''}" data-id="${m.id}"><div class="bubble">${html}</div></div>`, isSystem:false};
 }
 
 function renderMessages(data){
   if(isTyping && document.activeElement===document.getElementById('msgInput')) return;
   allMessages=data; let box=document.getElementById('chatBox'); box.innerHTML='';
-  let parentMap={}; let topLevel=[];
+  let parentMap={};
   data.forEach(m=>{
     if(m.reply_to && m.reply_to.id){
       if(!parentMap[m.reply_to.id]) parentMap[m.reply_to.id]=[];
       parentMap[m.reply_to.id].push(m);
-    } else {
-      if((m.type||'').toLowerCase()!=='system') topLevel.push(m);
-      else topLevel.push(m);
     }
   });
-  // also include messages that are top but also have replies: we already have all in data, but for grouping we need to render in chronological order
   let renderedIds=new Set();
   data.forEach(m=>{
     if(renderedIds.has(m.id)) return;
@@ -559,7 +554,7 @@ function renderMessages(data){
       renderedIds.add(m.id);
       return;
     }
-    if(m.reply_to && m.reply_to.id) return; // will be rendered under parent
+    if(m.reply_to && m.reply_to.id) return;
     let built=buildMsgHTML(m);
     if(built.isSystem){ box.innerHTML+=built.html; }
     else {
@@ -588,7 +583,6 @@ function renderMessages(data){
     }
     renderedIds.add(m.id);
   });
-  // render any orphan replies whose parent was deleted or not in view
   data.forEach(m=>{
     if(!renderedIds.has(m.id)){
       let b=buildMsgHTML(m);
@@ -834,6 +828,34 @@ micBtn.addEventListener('mousedown',e=>{e.preventDefault(); startRecording();});
 micBtn.addEventListener('touchstart',e=>{e.preventDefault(); startRecording();},{passive:false});
 function logout(){ try{ if(!myIsAdmin){ supabaseClient.from('msel_mente_messages').insert({name:myName,code:myCode,message:`👋 ${myName} left the chat`,type:'system'}).then(()=>{}); } }catch(e){} localStorage.removeItem('msel_mente_session'); localStorage.removeItem('msel_admin_session'); location.href='index.html'; }
 document.addEventListener('click',e=>{ if(!e.target.closest('#menuDropdown')&&!e.target.closest('.menuBtn')){ document.getElementById('menuDropdown').style.display='none'; } if(!e.target.closest('.msg')&&!e.target.closest('#ctxMenu')&&!e.target.closest('#banModal')&&!e.target.closest('#viewModal')&&!e.target.closest('#editModal')&&!e.target.closest('#membersModal')&&!e.target.closest('#searchModal')&&!e.target.closest('#imgViewer')&&!e.target.closest('#waPicker')&&!e.target.closest('#privatePanel')&&!e.target.closest('#onlineModal')&&!e.target.closest('#replyBar')){ document.getElementById('ctxMenu').style.display='none'; } });
+
+// Missing functions that were in original but trimmed - add them back
+async function compressImage(file){
+  if(!file.type.startsWith('image/')) return file;
+  return file;
+}
+async function uploadMedia(file){
+  let name = Date.now()+'_'+file.name.replace(/[^a-z0-9.]/gi,'_');
+  let {data,error} = await supabaseClient.storage.from(BUCKET).upload(name,file);
+  if(error) throw error;
+  let {data:pub} = supabaseClient.storage.from(BUCKET).getPublicUrl(name);
+  return pub.publicUrl;
+}
+function openEdit(){
+  if(!selectedMsg) return;
+  document.getElementById('editInput').value=selectedMsg.message||'';
+  document.getElementById('editModal').style.display='block';
+  closeCtx();
+}
+async function saveEdit(){
+  let txt=document.getElementById('editInput').value.trim();
+  if(!txt||!selectedMsg) return;
+  try{
+    await supabaseClient.from('msel_mente_messages').update({message:txt,is_edited:true}).eq('id',selectedMsg.id);
+    document.getElementById('editModal').style.display='none';
+    showToast('✏️ Edited');
+  }catch(e){ showToast(e.message); }
+}
 </script>
 </body>
 </html>
