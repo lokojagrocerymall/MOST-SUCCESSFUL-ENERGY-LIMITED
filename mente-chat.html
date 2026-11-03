@@ -387,12 +387,12 @@ function openOnlineList(){
     let name=a.full_name||a.name;
     return memberNames.has(name)||viewers.has(name)||name===myName||name.toLowerCase().includes('boss');
   });
-  // If no viewed data, show all approved as online
   if(onlineMembers.length===0) onlineMembers=approved;
   document.getElementById('onlineModalCount').innerText=onlineMembers.length;
   document.getElementById('onlineList').innerHTML=onlineMembers.map(a=>{
     let name=a.full_name||a.name||'Unknown';
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #1e3a5f;cursor:pointer" onclick="selectOnlinePerson('${a.id}')"><div><b>● ${escapeHtml(name)}</b><br><small style="opacity:.6">${escapeHtml(a.state||'')}${a.code?' • '+escapeHtml(a.code):''}</small></div><div style="font-size:18px">👆</div></div>`;
+    let phone=a.phone||a.whatsapp||a.phone_number||a.mobile||a.tel||'';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #1e3a5f;cursor:pointer" onclick="selectOnlinePerson('${a.id}')"><div><b>● ${escapeHtml(name)}</b><br><small style="opacity:.6">${escapeHtml(a.state||'')}${phone?' • '+escapeHtml(phone):''}</small></div></div>`;
   }).join('')||'<p style="text-align:center;opacity:.6">No online</p>';
   document.getElementById('onlineActions').style.display='none';
   onlineSelected=null;
@@ -443,7 +443,6 @@ function updateOnlineCount(){
   let online = onlineMembers.length;
   if(online>total) online=total;
   if(online<1) online=1;
-  // Simple count only
   document.getElementById('onlineCount').innerText=`● ${online} online`;
 }
 function checkApproval(){
