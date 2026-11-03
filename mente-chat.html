@@ -13,6 +13,7 @@ header{background:#8B005C;color:#fff;padding:10px 3%;display:flex;justify-conten
 header img{height:38px}
 header h1{font-size:16px;line-height:1.1;color:#fff}
 #userLabel{color:#FFC72C !important}
+#onlineCount{cursor:pointer;text-decoration:underline dotted}
 .badge-boss{background:linear-gradient(90deg,#FFC72C,#FF8C00);color:#000;font-size:9px;font-weight:900;padding:3px 8px;border-radius:12px;margin-left:5px;display:inline-flex}
 @keyframes highlight{0%{box-shadow:0 0 0 0 #22c55e}50%{box-shadow:0 0 0 10px rgba(34,197,94,.6);transform:scale(1.02)}100%{box-shadow:0 0 0 0 transparent}}
 .highlight{animation:highlight 1.2s ease 2}
@@ -47,7 +48,7 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 #ctxMenu button.save{background:#22c55e;color:#000}
 #ctxMenu .emoRow{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:6px 0}
 #ctxMenu .emoRow span{font-size:26px;cursor:pointer;padding:6px 8px;background:#0f172a;border-radius:12px;border:1px solid #334155}
-#banModal,#viewModal,#editModal,#membersModal,#searchModal,#imgViewer,#waPicker{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:300;padding:12px;overflow:auto}
+#banModal,#viewModal,#editModal,#membersModal,#searchModal,#imgViewer,#waPicker,#onlineModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:300;padding:12px;overflow:auto}
 .banBox{background:#0f1a2e;max-width:520px;margin:20px auto;border-radius:16px;padding:18px;border:2px solid #FFC72C}
 .avatar{width:20px;height:20px;border-radius:50%;background:#22c55e;color:#000;font-weight:900;font-size:10px;display:inline-flex;align-items:center;justify-content:center;margin-right:4px}
 .avatar.bossAvatar{background:linear-gradient(90deg,#FFC72C,#FF8C00)}
@@ -91,10 +92,8 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 </head>
 <body>
 <header>
-<div class="left"><img src="logo.png" alt="MSEL"><div><h1>MSEL MENTE CHAT</h1><small id="userLabel">Loading...</small><br><small id="onlineCount" style="font-size:10px;color:#22c55e">● 0 members</small></div></div>
-<div style="display:flex;align-items:center;gap:6px">
-<button class="menuBtn" onclick="toggleMenu()">☰</button>
-</div>
+<div class="left"><img src="logo.png" alt="MSEL"><div><h1>MSEL MENTE CHAT</h1><small id="userLabel">Loading...</small><br><small id="onlineCount" style="font-size:11px;color:#22c55e" onclick="openOnlineList()">● Loading...</small></div></div>
+<div style="display:flex;align-items:center"><button class="menuBtn" onclick="toggleMenu()">☰</button></div>
 </header>
 <div id="pinnedBanner" onclick="scrollToPinned()"></div>
 <div id="menuDropdown">
@@ -104,6 +103,7 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <a href="engineers.html" onclick="toggleMenu()">🛒 Shop</a>
 <a href="#" onclick="openMembers();toggleMenu();return false" style="background:#FFC72C;color:#000">👥 Members</a>
 <a href="#" id="adminListBtn" style="display:none" onclick="openBanList();toggleMenu();return false">👑 Bans</a>
+<button id="muteBtn" onclick="toggleMute();toggleMenu()" style="background:#1e293b">🔔 Mute Notifications</button>
 <a href="index.html" style="background:#fff;color:#000">🏠 Home</a>
 <button onclick="logout()" style="background:#ef4444;color:#fff">🚪 Logout</button>
 </div>
@@ -159,7 +159,6 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <div class="emoRow"><span onclick="react('👍')">👍</span><span onclick="react('❤️')">❤️</span><span onclick="react('😂')">😂</span><span onclick="react('😮')">😮</span><span onclick="react('🙏')">🙏</span><span onclick="react('🔥')">🔥</span><span onclick="react('💯')">💯</span></div>
 <button onclick="startReply()">💬 Reply</button>
 <button id="ctxReplyPrivate" style="display:none;background:#f59e0b;color:#000" onclick="replyPrivately()">↩️ Reply privately</button>
-<button onclick="tagUser()">🏷️ Tag User</button>
 <button id="ctxPin" style="display:none;background:#FFC72C;color:#000" onclick="pinMessage()">📌 Pin Message</button>
 <button id="ctxUnpin" style="display:none;background:#ef4444;color:#fff" onclick="unpinMessage()">❌ Unpin</button>
 <button id="ctxSave" style="display:none" class="save" onclick="saveMedia()">💾 Save Media</button>
@@ -169,6 +168,7 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <button class="del" onclick="deleteMsgAdmin()">🗑️ Admin Remove</button><button style="background:#f59e0b;color:#000" onclick="suspendUser()">⏸️ Suspend 24h</button><button style="background:#000;color:#ef4444;border:1px solid #ef4444" onclick="banUserForever()">🚫 Ban Forever</button><button style="background:#22c55e;color:#000" onclick="restoreUser()">✅ Restore User</button>
 </div><button style="background:#334155" onclick="closeCtx()">✕ Close</button></div>
 <div id="membersModal"><div class="banBox" style="max-width:600px"><h2 style="color:#FFC72C;text-align:center">👥 MENTE Members</h2><p id="membersCount" style="text-align:center;opacity:0.7;margin:8px 0;font-size:12px;display:none"></p><div id="membersList" style="margin:14px 0;max-height:70vh;overflow:auto"></div><button onclick="document.getElementById('membersModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:#fff;border:0;border-radius:10px;font-weight:900">Close</button></div></div>
+<div id="onlineModal"><div class="banBox" style="max-width:420px"><h2 style="color:#22c55e;text-align:center">● <span id="onlineModalCount">0</span> online</h2><div id="onlineList" style="margin:14px 0;max-height:60vh;overflow:auto"></div><div id="onlineActions" style="display:none;margin-top:10px;padding:10px;background:#1e293b;border-radius:12px;border:1px solid #334155"><div id="onlineSelectedName" style="font-weight:900;font-size:13px;margin-bottom:8px;text-align:center"></div><div style="display:flex;gap:8px"><button onclick="onlineChatPrivate()" style="flex:1;padding:12px;background:#f59e0b;color:#000;border:0;border-radius:12px;font-weight:900">💬 Chat privately</button><button onclick="onlineTagPerson()" style="flex:1;padding:12px;background:#FFC72C;color:#000;border:0;border-radius:12px;font-weight:900">🏷️ Tag this person</button></div></div><button onclick="document.getElementById('onlineModal').style.display='none'" style="width:100%;margin-top:10px;padding:12px;background:#334155;color:#fff;border:0;border-radius:10px;font-weight:900">Close</button></div></div>
 <div id="banModal"><div class="banBox"><h2 style="color:#FFC72C;text-align:center">👑 Banned List</h2><div id="banList" style="margin:14px 0"></div><button onclick="document.getElementById('banModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:#fff;border:0;border-radius:10px;font-weight:900">Close</button></div></div>
 <div id="viewModal"><div class="banBox"><h3 style="color:#22c55e;text-align:center">👁️ Viewed</h3><div id="viewList" style="margin:14px 0"></div><button onclick="document.getElementById('viewModal').style.display='none'" style="width:100%;padding:12px;background:#334155;color:#fff;border:0;border-radius:10px;font-weight:900">Close</button></div></div>
 <div id="editModal"><div class="banBox"><h3 style="color:#FFC72C;text-align:center">✏️ Edit Your Message</h3><textarea id="editInput" style="width:100%;min-height:90px;margin:12px 0;padding:12px;border-radius:10px;background:#1e293b;color:#fff;border:1px solid #334155"></textarea><div style="display:flex;gap:8px"><button onclick="saveEdit()" style="flex:1;padding:12px;background:#22c55e;color:#000;border:0;border-radius:12px;font-weight:900">Save Edit</button><button onclick="document.getElementById('editModal').style.display='none'" style="flex:1;padding:12px;background:#334155;color:#fff;border:0;border-radius:12px;font-weight:900">Cancel</button></div></div></div>
@@ -179,6 +179,7 @@ header h1{font-size:16px;line-height:1.1;color:#fff}
 <button class="iconBtn" id="micBtn">🎤</button>
 <button class="sendBtn" id="sendBtn">➤</button>
 </div>
+<audio id="chatSound" preload="auto" src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3?filename=notification-2.mp3"></audio>
 <script>
 const SUPABASE_URL='https://rsnsciisycruhxtvfhwb.supabase.co';
 const SUPABASE_KEY='sb_publishable_s38AGGB3mnHpRMIDkVsfow_bs-Fz00g';
@@ -207,6 +208,32 @@ let currentAlbum=[]; let currentAlbumIndex=0;
 let waFiles=[];
 let privateCurrentWith=null;
 let privateUnreadCounts={};
+let onlineSelected=null;
+let isMuted=localStorage.getItem('msel_mute')==='1';
+
+function updateMuteBtn(){
+  let b=document.getElementById('muteBtn');
+  if(b) b.innerText=isMuted?'🔕 Unmute Notifications':'🔔 Mute Notifications';
+}
+updateMuteBtn();
+function toggleMute(){
+  isMuted=!isMuted;
+  localStorage.setItem('msel_mute',isMuted?'1':'0');
+  updateMuteBtn();
+  showToast(isMuted?'🔕 Muted':'🔔 Unmuted');
+}
+function playNotif(){
+  if(isMuted) return;
+  try{ let a=document.getElementById('chatSound'); a.currentTime=0; a.play().catch(()=>{}); if(navigator.vibrate) navigator.vibrate([100,50,100]); }catch{}
+}
+async function pushNotif(title,body){
+  if(isMuted) return;
+  if(Notification && Notification.permission==='granted'){
+    try{ new Notification(title,{body,icon:'logo.png'}); }catch{}
+  } else if(Notification && Notification.permission!=='denied'){
+    try{ let p=await Notification.requestPermission(); if(p==='granted') new Notification(title,{body,icon:'logo.png'}); }catch{}
+  }
+}
 
 function toggleMenu(){ let d=document.getElementById('menuDropdown'); d.style.display=d.style.display==='flex'?'none':'flex'; }
 function escapeHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
@@ -342,12 +369,55 @@ function replyPrivately(){
     let m=allAccountsList.find(a=> (a.name===name)||(a.full_name===name)||(a.code===selectedMsg.code));
     if(m){ startPrivateChat(m.id); }
     else {
-      // Fallback: try by name match
       let found=allAccountsList.find(a=> (a.full_name||a.name).toLowerCase()===name.toLowerCase());
       if(found) startPrivateChat(found.id);
       else showToast('Opening private list - find '+name);
     }
   },300);
+}
+
+function openOnlineList(){
+  if(!allAccountsList.length){ showToast('Loading...'); loadAccounts().then(()=>openOnlineList()); return; }
+  let approved=allAccountsList.filter(a=>{ let s=(a.status||a.approval_status||'').toLowerCase(); return s==='approved'||s==='active'; });
+  let viewers=new Set();
+  allMessages.slice(-30).forEach(m=>{ (m.viewed_by||[]).forEach(v=>viewers.add(v)); });
+  viewers.add(myName);
+  let memberNames=new Set(approved.map(a=> a.full_name||a.name));
+  let onlineMembers=approved.filter(a=>{
+    let name=a.full_name||a.name;
+    return memberNames.has(name)||viewers.has(name)||name===myName||name.toLowerCase().includes('boss');
+  });
+  // If no viewed data, show all approved as online
+  if(onlineMembers.length===0) onlineMembers=approved;
+  document.getElementById('onlineModalCount').innerText=onlineMembers.length;
+  document.getElementById('onlineList').innerHTML=onlineMembers.map(a=>{
+    let name=a.full_name||a.name||'Unknown';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #1e3a5f;cursor:pointer" onclick="selectOnlinePerson('${a.id}')"><div><b>● ${escapeHtml(name)}</b><br><small style="opacity:.6">${escapeHtml(a.state||'')}${a.code?' • '+escapeHtml(a.code):''}</small></div><div style="font-size:18px">👆</div></div>`;
+  }).join('')||'<p style="text-align:center;opacity:.6">No online</p>';
+  document.getElementById('onlineActions').style.display='none';
+  onlineSelected=null;
+  document.getElementById('onlineModal').style.display='block';
+}
+function selectOnlinePerson(id){
+  let a=allAccountsList.find(x=>x.id===id);
+  if(!a) return;
+  onlineSelected=a;
+  document.getElementById('onlineSelectedName').innerText='👤 '+ (a.full_name||a.name);
+  document.getElementById('onlineActions').style.display='block';
+}
+function onlineChatPrivate(){
+  if(!onlineSelected) return;
+  document.getElementById('onlineModal').style.display='none';
+  openPrivatePanel();
+  setTimeout(()=>startPrivateChat(onlineSelected.id),300);
+}
+function onlineTagPerson(){
+  if(!onlineSelected) return;
+  let name=onlineSelected.full_name||onlineSelected.name;
+  let input=document.getElementById('msgInput');
+  input.value=(input.value?input.value+' ':'')+'@'+name+' ';
+  document.getElementById('onlineModal').style.display='none';
+  input.focus();
 }
 
 async function loadAccounts(){
@@ -360,17 +430,21 @@ async function loadAccounts(){
 }
 function updateOnlineCount(){
   let approvedMembers = allAccountsList.filter(a=>{ let s=(a.status||a.approval_status||'').toLowerCase(); return s==='approved'||s==='active'; });
-  let total = approvedMembers.length || allAccountsList.length || 0;
+  let total = approvedMembers.length || 0;
+  if(total===0){
+    document.getElementById('onlineCount').innerText=`● 0 online`;
+    return;
+  }
   let viewers = new Set();
   allMessages.slice(-30).forEach(m=>{ (m.viewed_by||[]).forEach(v=> viewers.add(v)); });
   viewers.add(myName);
   let memberNames = new Set(approvedMembers.map(a=> a.full_name||a.name));
-  if(memberNames.size===0) memberNames = new Set(allAccountsList.map(a=> a.full_name||a.name));
   let onlineMembers = [...viewers].filter(v=> memberNames.has(v)||v===myName||v.toLowerCase().includes('boss'));
-  let online = Math.min(onlineMembers.length,total);
-  if(total>0 && online===0) online=1;
+  let online = onlineMembers.length;
   if(online>total) online=total;
-  document.getElementById('onlineCount').innerText=`● ${total} members, ${online} online`;
+  if(online<1) online=1;
+  // Simple count only
+  document.getElementById('onlineCount').innerText=`● ${online} online`;
 }
 function checkApproval(){
   if(myIsAdmin) return;
@@ -494,30 +568,41 @@ async function loadMessages(){
 }
 loadMessages();
 supabaseClient.channel('mente-fixed-multi-v7').on('postgres_changes',{event:'INSERT',schema:'public',table:'msel_mente_messages'},payload=>{
-  allMessages = allMessages.filter(m=>!String(m.id).startsWith('temp-'));
-  allMessages.push(payload.new);
+  let m=payload.new;
+  if(m.name!==myName){
+    playNotif();
+    pushNotif('MSEL MENTE CHAT - '+m.name, (m.message||'New message').slice(0,80));
+    showToast('💬 '+m.name+': '+(m.message||'media').slice(0,40));
+  }
+  allMessages = allMessages.filter(x=>!String(x.id).startsWith('temp-'));
+  allMessages.push(m);
   renderMessages(allMessages);
   scrollToBottom(false);
 }).on('postgres_changes',{event:'UPDATE',schema:'public',table:'msel_mente_messages'},payload=>{
-  let i=allMessages.findIndex(m=>m.id===payload.new.id);
+  let i=allMessages.findIndex(x=>x.id===payload.new.id);
   if(i>-1){ allMessages[i]=payload.new; renderMessages(allMessages); }
 }).on('postgres_changes',{event:'DELETE',schema:'public',table:'msel_mente_messages'},payload=>{
-  allMessages=allMessages.filter(m=>m.id!==payload.old.id);
+  allMessages=allMessages.filter(x=>x.id!==payload.old.id);
   renderMessages(allMessages);
 }).subscribe();
 supabaseClient.channel('mente-private-inside').on('postgres_changes',{event:'INSERT',schema:'public',table:'msel_private_messages'},payload=>{
   let msg=payload.new;
   let myId=session.id||myName;
   if(msg.receiver_id===myId || msg.receiver_name===myName){
+    playNotif();
+    pushNotif('Private from '+msg.sender_name, msg.message.slice(0,80));
     if(privateCurrentWith && (msg.sender_id===privateCurrentWith.id || msg.sender_name===privateCurrentWith.full_name||privateCurrentWith.name)){
       loadPrivateMessages();
     } else {
       privateUnreadCounts[msg.sender_id]=(privateUnreadCounts[msg.sender_id]||0)+1;
       loadPrivateMentes();
-      showToast('💬 New private message from '+msg.sender_name);
+      showToast('💬 Private from '+msg.sender_name);
     }
   }
 }).subscribe();
+if(Notification && Notification.permission!=='granted' && Notification.permission!=='denied'){
+  try{ Notification.requestPermission(); }catch{}
+}
 window.addEventListener('load',()=>{ setTimeout(()=>{ isNearBottom=true; scrollToBottom(true); },500); });
 async function trackViews(){ if(viewedOnce) return; viewedOnce=true; for(let m of allMessages.slice(-20)){ if(m.name===myName) continue; let viewed=m.viewed_by||[]; if(!Array.isArray(viewed)) viewed=[]; if(!viewed.includes(myName)){ viewed.push(myName); try{ await supabaseClient.from('msel_mente_messages').update({viewed_by:viewed}).eq('id',m.id); }catch(e){} await new Promise(r=>setTimeout(r,400)); } } }
 function showViewers(id){ let msg=allMessages.find(x=>x.id==id); let viewed=msg?.viewed_by||[]; let list=document.getElementById('viewList'); if(!viewed.length) list.innerHTML='<p style="opacity:.6;text-align:center">No views yet</p>'; else list.innerHTML=`<p style="margin-bottom:10px;font-weight:900;color:#FFC72C">👁️ ${viewed.length} viewed:</p>`+viewed.map(n=>`<div style="padding:8px;border-bottom:1px solid #1e3a5f">👤 ${escapeHtml(n)}</div>`).join(''); document.getElementById('viewModal').style.display='block'; }
@@ -543,12 +628,6 @@ async function react(emoji){
 function quickReact(id,emoji){ selectedMsg=allMessages.find(m=>m.id==id); if(selectedMsg) react(emoji); }
 function startReply(){ if(!selectedMsg) return; replyToData={id:selectedMsg.id,name:selectedMsg.name,message:selectedMsg.message||''}; closeCtx(); document.getElementById('msgInput').focus(); }
 function cancelReply(){ replyToData=null; }
-function tagUser(){ if(!selectedMsg) return; insertTag(selectedMsg.name); closeCtx(); }
-function insertTag(n){ let i=document.getElementById('msgInput'); i.value+=(i.value?' ':'')+'@'+n+' '; i.focus(); autoResize(); }
-function openEdit(){ if(!selectedMsg || selectedMsg.name!==myName){ showToast('Own only'); return; } if((Date.now() - new Date(selectedMsg.created_at).getTime()) > 5*60*60*1000){ showToast('Edit expired'); return; } document.getElementById('editInput').value=selectedMsg.message||''; document.getElementById('editModal').style.display='block'; closeCtx(); }
-async function saveEdit(){ let newText=document.getElementById('editInput').value.trim(); if(!newText) return; try{ await supabaseClient.from('msel_mente_messages').update({message:newText,is_edited:true}).eq('id',selectedMsg.id); showToast('✏️ Edited'); document.getElementById('editModal').style.display='none'; loadMessages(); }catch(e){ showToast(e.message); } }
-async function compressImage(file){ if(!file.type.startsWith('image/')) return file; if(file.size < 100*1024) return file; return new Promise(res=>{ let img=new Image(); img.src=URL.createObjectURL(file); img.onload=()=>{ let canvas=document.createElement('canvas'); let max=1000; let w=img.width,h=img.height; if(w>max||h>max){ if(w>h){ h*=max/w; w=max; } else { w*=max/h; h=max; } } canvas.width=w; canvas.height=h; let ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h); canvas.toBlob(b=>{ let newFile=new File([b], file.name.replace(/\.\w+$/,'.jpg'), {type:'image/jpeg'}); res(newFile); },'image/jpeg',0.70); }; img.onerror=()=>res(file); }); }
-async function uploadMedia(f){ let ext=f.name.split('.').pop(); let name=`chat/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`; let {error}=await supabaseClient.storage.from(BUCKET).upload(name,f); if(error) throw error; let {data}=supabaseClient.storage.from(BUCKET).getPublicUrl(name); return data.publicUrl; }
 async function saveBan(name,status,until=null){ let p={name,status,banned_by:myName,until}; bannedMap[name]=p; localStorage.setItem('msel_banned_map',JSON.stringify(bannedMap)); try{ await supabaseClient.from('msel_mente_bans').upsert(p,{onConflict:'name'}); }catch(e){} }
 async function deleteMsgAdmin(){ if(!selectedMsg||!myIsAdmin) return; if(!confirm('Remove?')) return; try{ await supabaseClient.from('msel_mente_messages').delete().eq('id',selectedMsg.id); showToast('🗑️ Removed'); closeCtx(); }catch(e){ showToast(e.message); } }
 async function suspendUser(){ if(!selectedMsg||!myIsAdmin) return; let until=new Date(Date.now()+86400000).toISOString(); await saveBan(selectedMsg.name,'suspended',until); showToast('⏸️ Suspended'); closeCtx(); }
@@ -655,7 +734,7 @@ let micBtn=document.getElementById('micBtn');
 micBtn.addEventListener('mousedown',e=>{e.preventDefault(); startRecording();});
 micBtn.addEventListener('touchstart',e=>{e.preventDefault(); startRecording();},{passive:false});
 function logout(){ try{ if(!myIsAdmin){ supabaseClient.from('msel_mente_messages').insert({name:myName,code:myCode,message:`👋 ${myName} left the chat`,type:'system'}).then(()=>{}); } }catch(e){} localStorage.removeItem('msel_mente_session'); localStorage.removeItem('msel_admin_session'); location.href='index.html'; }
-document.addEventListener('click',e=>{ if(!e.target.closest('#menuDropdown')&&!e.target.closest('.menuBtn')){ document.getElementById('menuDropdown').style.display='none'; } if(!e.target.closest('.msg')&&!e.target.closest('#ctxMenu')&&!e.target.closest('#banModal')&&!e.target.closest('#viewModal')&&!e.target.closest('#editModal')&&!e.target.closest('#membersModal')&&!e.target.closest('#searchModal')&&!e.target.closest('#imgViewer')&&!e.target.closest('#waPicker')&&!e.target.closest('#privatePanel')){ document.getElementById('ctxMenu').style.display='none'; } });
+document.addEventListener('click',e=>{ if(!e.target.closest('#menuDropdown')&&!e.target.closest('.menuBtn')){ document.getElementById('menuDropdown').style.display='none'; } if(!e.target.closest('.msg')&&!e.target.closest('#ctxMenu')&&!e.target.closest('#banModal')&&!e.target.closest('#viewModal')&&!e.target.closest('#editModal')&&!e.target.closest('#membersModal')&&!e.target.closest('#searchModal')&&!e.target.closest('#imgViewer')&&!e.target.closest('#waPicker')&&!e.target.closest('#privatePanel')&&!e.target.closest('#onlineModal')){ document.getElementById('ctxMenu').style.display='none'; } });
 </script>
 </body>
 </html>
