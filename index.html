@@ -48,8 +48,8 @@ nav a:last-child{color:#ff0000!important;font-weight:900}
 .gallery-item iframe,.gallery-item video{width:100%;height:260px;object-fit:contain;display:block;background:#000}
 .gallery-item p{padding:12px;font-size:14px;color:#0f172a;text-align:center;font-weight:700;background:#F1F8E9;border-top:1px solid #C8E6C9}
 .mat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px;margin-top:20px}
-.mat{background:#f9f9f9;border-radius:10px;padding:18px;font-weight:bold;border:1px dashed #00924C;color:#333;text-align:center;min-height:160px;display:flex;flex-direction:column;justify-content:center}
-.mat img{width:100%;height:140px;object-fit:contain;margin-bottom:10px}
+.mat{background:#f9f9f9;border-radius:10px;padding:12px;font-weight:bold;border:1px dashed #00924C;color:#333;text-align:center}
+.mat img{width:100%;height:160px;object-fit:contain;border-radius:8px}
 #lightbox{display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.88);justify-content:center;align-items:center;flex-direction:column;padding:10px}
 #lightbox.show{display:flex}
 #lightbox img{max-width:96%;max-height:88vh;width:auto;height:auto;object-fit:contain;border-radius:14px;border:5px solid #22c55e;background:#000}
@@ -102,7 +102,7 @@ nav a:last-child{color:#ff0000!important;font-weight:900}
 
 <div id="servicesPage" class="page-modal"><div class="page-head"><button class="back-arrow" onclick="closeAll()">←</button><div class="page-title">What We Do - Services</div></div><div class="page-body"><h2 style="color:#00924C;text-align:center;font-size:30px">What We Do</h2><br><div class="card"><h3>1. Construction of Biogas System</h3><p>Construction of Biodigester integrated with Biofill - converts human waste, animal dungs and kitchen waste to Biogas. For industries, homes, schools, estates etc.</p></div><div class="card"><h3>2. Biofill System Construction</h3><p>Modern biofil toilet digester for Maryland, Ikeja, Lagos. Compact, no soakaway needed. Works in waterlogged areas.</p></div><div class="card"><h3>3. Materials Sales</h3><p>Sales of Biodigester & Biofill materials: Digester bags, enzymes, PVC, sealants, vents, kits. Nationwide delivery.</p></div><div class="card"><h3>4. Practical Physical and Online Training</h3><p>We train engineers on biodigester & biofill construction both physically on site and online via Telegram. Certificate, mentorship, lifetime support.</p></div></div></div>
 <div id="trainingPage" class="page-modal"><div class="page-head"><button class="back-arrow" onclick="closeAll()">←</button><div class="page-title">MSEL Mentorship Training</div></div><div class="page-body" style="background:#f0fdf4"><h2 style="text-align:center;color:#00924C;font-size:30px">MSEL Mentorship Training</h2><p style="text-align:center;color:#666;margin-top:8px">We Train Engineers Both Online & Physically — 100% Practical</p><br><div class="card" style="border-left:5px solid #00924C"><h3>💻 Online Practical Training</h3><p style="line-height:1.8">✅ Live biodigester construction demos<br>✅ Biofill & biogas installation practicals<br>✅ Training held on Telegram<br>✅ Access to MSEL MENTE private shop<br>✅ Certificate + Mentorship<br>✅ Lifetime support group</p><br><a href="https://wa.me/2347011620564" class="btn">Register for Online Training</a></div><div class="card" style="border-left:5px solid #E67E22"><h3>👷 Physical Practical Training</h3><p style="line-height:1.8">✅ Hands-on site construction training<br>✅ Real house biodigester & biofill build<br>✅ Biogas piping & stove connection<br>✅ Available in Lagos, Port Harcourt, Delta & Other States<br>✅ Certificate + MSEL MENTE access<br>✅ Become certified installer</p><br><a href="https://wa.me/2347011620564" class="btn" style="background:#00924C">Register for Physical Training</a></div></div></div>
-<div id="materialsPage" class="page-modal"><div class="page-head"><button class="back-arrow" onclick="closeAll()">←</button><div class="page-title">Construction Materials</div></div><div class="page-body"><h2 style="text-align:center;color:#00924C;font-size:30px">Construction Materials For Sale</h2><div id="matGrid" class="mat-grid">Loading...</div><br><a href="https://wa.me/2347011620564" class="btn" style="background:#00924C">Order Materials on WhatsApp</a></div></div>
+<div id="materialsPage" class="page-modal"><div class="page-head"><button class="back-arrow" onclick="closeAll()">←</button><div class="page-title">Construction Materials</div></div><div class="page-body"><h2 style="text-align:center;color:#00924C;font-size:30px">Construction Materials For Sale</h2><div id="matGrid" class="mat-grid"></div><br><a href="https://wa.me/2347011620564" class="btn" style="background:#00924C">Order Materials on WhatsApp</a></div></div>
 <div id="galleryPage" class="page-modal"><div class="page-head"><button class="back-arrow" onclick="closeAll()">←</button><div class="page-title">Full Gallery</div></div><div class="page-body" style="background:#E8F5E9"><div id="fullGalleryGrid" class="gallery-grid"></div></div></div>
 <div id="contactPage" class="page-modal"><div class="page-head"><button class="back-arrow" onclick="closeAll()">←</button><div class="page-title">Contact Us</div></div><div class="page-body" style="background:#0e0e0e;color:#fff;text-align:center"><h2 style="font-size:30px">Contact Us Today</h2><br><p>📍 <b>14, Adedotun Dina Crescent, Mende Maryland, Lagos</b></p><br><p>📞 <b>07011620564, 08104441545</b></p><br><p>✉️ mostsuccessfulenergy@gmail.com</p><br><br><a href="https://wa.me/2347011620564" class="btn">Chat on WhatsApp</a></div></div>
 
@@ -144,28 +144,37 @@ function escapeHtml(s){ return (s||'').replace(/'/g,"&#39;").replace(/"/g,"&quot
 
 function loadMaterials(){
  let matGrid=document.getElementById('matGrid');
- // Fetch from ALL possible shop storages - engineers.html uses same keys
- let keys = ['msel_products','msel_shop_products','msel_mente_products','msel_engineers_products'];
- let products = [];
- for(let k of keys){
-   try{
-     let arr = JSON.parse(localStorage.getItem(k)||'[]');
-     if(Array.isArray(arr) && arr.length) { products = arr; break; }
-   }catch(e){}
+ let products = null;
+ // Find products from ANY localStorage key - engineers.html uses different keys on different phones
+ try{
+   let allKeys = [];
+   for(let i=0;i<localStorage.length;i++){ allKeys.push(localStorage.key(i)); }
+   // Known keys first
+   let checkKeys = ['msel_products','msel_mente_products','msel_shop_products','msel_engineers_products'].concat(allKeys);
+   for(let k of checkKeys){
+     try{
+       let val = localStorage.getItem(k);
+       if(!val) continue;
+       let arr = JSON.parse(val);
+       if(Array.isArray(arr) && arr.length>0 && (arr[0].name || arr[0].title) && (arr[0].img || arr[0].image || arr[0].src)){
+         products = arr;
+         break;
+       }
+     }catch(e){}
+   }
+ }catch(e){}
+
+ if(products && products.length){
+   // Show REAL images from engineers.html shop WITHOUT prices - like before, perfectly
+   matGrid.innerHTML = products.map(p=>{
+     let img = p.img || p.image || p.src || '';
+     let name = p.name || p.title || '';
+     if(!img) return '';
+     return `<div class="mat"><img src="${img}" alt=""><br>${escapeHtml(name)}</div>`;
+   }).join('');
+ } else {
+   matGrid.innerHTML = '';
  }
- // If still empty, show REAL message without fake logo
- if(!products.length){
-   matGrid.innerHTML = '<p style="color:#00924C;font-weight:700;text-align:center;padding:30px">No materials in shop yet. Add products in Admin / Engineers.html — they will appear here automatically (images only, no prices).</p>';
-   return;
- }
- // Render REAL images from engineers.html shop WITHOUT prices
- matGrid.innerHTML = products.map(p=>{
-   let img = p.img || p.image || p.src || '';
-   if(!img) return ''; // Remove logo - if no real image, skip
-   // Skip if img is logo.png placeholder
-   if(img.includes('logo.png') || img.includes('MSEL')) return `<div class="mat"><div style="color:#999;font-size:13px">No image</div><br>${escapeHtml(p.name||p.title||'Product')}</div>`;
-   return `<div class="mat"><img src="${img}" loading="lazy" alt="${escapeHtml(p.name||'')}"><br>${escapeHtml(p.name||p.title||'Product')}</div>`;
- }).join('') || '<p style="text-align:center;color:#666">Add real product images in Admin to show here.</p>';
 }
 
 async function loadGallery(){
