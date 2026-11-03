@@ -3,10 +3,16 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MOST SUCCESSFUL ENERGY LIMITED</title>
-<link rel="icon" href="favicon.ico" type="image/x-icon">
-<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-<link rel="icon" href="logo.png" type="image/png">
-<link rel="apple-touch-icon" href="logo.png">
+<link rel="icon" href="/favicon.ico?v=5" type="image/x-icon">
+<link rel="shortcut icon" href="/favicon.ico?v=5" type="image/x-icon">
+<link rel="icon" href="/logo.png?v=5" type="image/png">
+<link rel="apple-touch-icon" href="/logo.png?v=5">
+<meta property="og:title" content="MOST SUCCESSFUL ENERGY LIMITED">
+<meta property="og:description" content="Biodigester & Biofill Experts - No More Soakaway!">
+<meta property="og:image" content="https://most-successful-energy-limited.vercel.app/logo.png?v=5">
+<meta property="og:url" content="https://most-successful-energy-limited.vercel.app">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#00924C">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
@@ -145,11 +151,9 @@ function escapeHtml(s){ return (s||'').replace(/'/g,"&#39;").replace(/"/g,"&quot
 function loadMaterials(){
  let matGrid=document.getElementById('matGrid');
  let products = null;
- // Find products from ANY localStorage key - engineers.html uses different keys on different phones
  try{
    let allKeys = [];
    for(let i=0;i<localStorage.length;i++){ allKeys.push(localStorage.key(i)); }
-   // Known keys first
    let checkKeys = ['msel_products','msel_mente_products','msel_shop_products','msel_engineers_products'].concat(allKeys);
    for(let k of checkKeys){
      try{
@@ -163,9 +167,7 @@ function loadMaterials(){
      }catch(e){}
    }
  }catch(e){}
-
  if(products && products.length){
-   // Show REAL images from engineers.html shop WITHOUT prices - like before, perfectly
    matGrid.innerHTML = products.map(p=>{
      let img = p.img || p.image || p.src || '';
      let name = p.name || p.title || '';
@@ -194,12 +196,10 @@ async function loadGallery(){
      });
    }
  }catch(e){}
-
  let g = [...supabaseGallery, ...localGallery];
  let seen = new Set(); let unique=[];
  g.forEach(it=>{ if(!seen.has(it.src)){ seen.add(it.src); unique.push(it); } });
  g = unique;
-
  let floatingTrack=document.getElementById('floatingTrack');
  let fullGrid=document.getElementById('fullGalleryGrid');
  if(!g.length){
